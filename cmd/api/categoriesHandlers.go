@@ -9,13 +9,19 @@ import (
 )
 
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new category")
+	var categoryInput data.Category
+	err := app.readJSON(w, r, &categoryInput)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	fmt.Fprintf(w, "%v+\n", categoryInput)
 }
 
 func (app *application) getCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readUUIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		app.notFoundResponse(w, r)
 		return
 	}
 
@@ -37,8 +43,7 @@ func (app *application) getCategoryHandler(w http.ResponseWriter, r *http.Reques
 
 	err = app.writeJson(w, http.StatusOK, envelope, nil)
 	if err != nil {
-		app.logger.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 
 }
