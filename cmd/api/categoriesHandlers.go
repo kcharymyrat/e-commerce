@@ -6,15 +6,39 @@ import (
 	"time"
 
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	var categoryInput data.Category
+	var categoryInput struct {
+		NameTk   string           `json:"name_tk"`
+		NameEn   string           `json:"name_en"`
+		NameRu   string           `json:"name_ru"`
+		Parent   *data.Category   `json:"parent,omitempty"`
+		Children []*data.Category `json:"children,omitempty"`
+	}
+
 	err := app.readJSON(w, r, &categoryInput)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
+
+	category := &data.Category{
+		NameTk:   categoryInput.NameTk,
+		NameEn:   categoryInput.NameEn,
+		NameRu:   categoryInput.NameRu,
+		Parent:   categoryInput.Parent,
+		Children: categoryInput.Children,
+	}
+
+	v := validator.New()
+
+	if data.ValidateCategory(v, category); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	fmt.Fprintf(w, "%v+\n", categoryInput)
 }
 
