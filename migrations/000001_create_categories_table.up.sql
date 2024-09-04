@@ -7,8 +7,37 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create case-insensitive character string type
 CREATE EXTENSION IF NOT EXISTS citext;
 
--- users table for authentiction
-CREATE TABLE IF NOT EXISTS users(
+-- Triggers
+CREATE OR REPLACE FUNCTION prevent_created_at_update() RETURN TRIGGER AS $$
+BEGIN
+    IF NEW.created_at <> OLD.created_at THEN
+        RAISE EXCEPTION 'Updating the value for created_at is not allowed'
+    ENF IF;
+ENG;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION set_timestamps() RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        NEW.created_at := NOW();
+        NEW.updated_at := NOW();
+        RETURN NEW;
+    END IF;
+
+    IF (TG_OP = 'UPDATE') THEN
+        IF (NEW.updated_at < OLD.updated_at) THEN
+            RAISE EXCEPTION 'updated_at cannot be before the current updated_at value';
+        END IF;
+        NEW.updated_at := NOW();
+        RETURN NEW;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+-- users table for authentication
+CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone varchar(20) UNIQUE NOT NULL,
     password bytea NOT NULL,
@@ -31,6 +60,7 @@ CREATE TABLE IF NOT EXISTS users(
     prod_ref_signups integer NOT NULL DEFAULT 0 CHECK (prod_ref_signups >= 0),
     prod_ref_bought integer NOT NULL DEFAULT 0 CHECK (prod_ref_bought >= 0),
 
+    total_referrals integer NOT NULL DEFAULT 0 CHECK (total_referrals >= 0),
     _dynamic_discount_percent decimal(5, 2) NOT NULL DEFAULT 0.00,
     dyn_disc_percent decimal(5, 2) GENERATED ALWAYS AS ( 
         CASE 
@@ -61,7 +91,6 @@ CREATE TABLE IF NOT EXISTS users(
     CHECK valid_updated_at (updated_at >= created_at)
 );
 
--- indexes for performance
 CREATE INDEX idx_users_phone ON users(phone);
 CREATE INDEX idx_users_first_name ON users(first_name);
 CREATE INDEX idx_users_last_name ON users(last_name);
@@ -69,36 +98,17 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_dob ON users(dob);
 CREATE INDEX idx_users_is_staff ON users(is_staff);
 
--- Trigger to handel created_at and updated_at
-CREATE OR REPLACE FUNCTION set_timestamps() RETURNS TRIGGER AS $$
-BEGIN
-    -- On INSERT, set the created_at and created_by columns only once
-    IF (TG_OP = 'INSERT') THEN
-        NEW.created_at := NOW();
-        NEW.updated_at := NOW();
-        RETURN NEW;
-    END IF;
+CREATE TRIGGER users_prevent_created_at_update
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_at_update();
 
-    -- On UPDATE, modify updated_at and updated_by, and ensure updated_at is not before the previous value
-    IF (TG_OP = 'UPDATE') THEN
-        IF (NEW.updated_at < OLD.updated_at) THEN
-            RAISE EXCEPTION 'updated_at cannot be before the current updated_at value';
-        END IF;
-        NEW.updated_at := NOW();
-        RETURN NEW;
-    END IF;
-
-    RETURN NULL; -- Result is ignored since this is a trigger
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply the above trigger for users table
 CREATE TRIGGER users_set_timestamps
 BEFORE INSERT OR UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION set_timestamps();
 
-
+-- user_referrals table 
 CREATE TABLE IF NOT EXISTS user_referrals (
     id bigserial PRIMARY KEY,
     user_id uuid NOT NULL UNIQUE,
@@ -106,16 +116,78 @@ CREATE TABLE IF NOT EXISTS user_referrals (
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
+    CONSTRAINT user_refferal_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+
     CHECK (updated_at > created_at),
-    CONSTRAINT user_refferal_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX idx_user_user_id ON user_referrals(user_id);
-CREATE INDEX idx_user_referal_code ON user_referrals(code);
+CREATE INDEX idx_user_referrals_user_id ON user_referrals(user_id);
+CREATE INDEX idx_user_referrals_code ON user_referrals(code);
 
+CREATE TRIGGER user_referrals_prevent_created_at_update
+BEFORE UPDATE ON user_referrals
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_at_update();
 
-CREATE TRIGGER user_refferals_set_timeststamps()
-BEFORE INSERT OR UPDATE ON users
+CREATE TRIGGER user_refferals_set_timeststamps
+BEFORE INSERT OR UPDATE ON user_referrals
 FOR EACH ROW
 EXECUTE FUNCTION set_timestamps();
 
+
+-- user_product_referrals table
+CREATE TABLE IF NOT EXISTS user_product_referrals (
+    id bigserial PRIMARY KEY,
+    user_id uuid NOT NULL,
+    product_id uuid NOT NULL,
+    code varchar(50) NOT NULL,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(), 
+
+    CONSTRAINT user_prod_refs_user_id_fk FOREIGN KEY users(id) ON DELETE CASCADE,
+    CONSTRAINT user_prod_refs_product_id_fk FOREIGN kEY products(id) ON DELETE CASCADE,
+    
+    UNIQUE (user_id, product_id),
+    CHECK (updated_at >= created_at)
+);
+
+CREATE INDEX idx_user_prod_refs_user_id ON user_product_referrals(user_id);
+CREATE INDEX idx_user_prod_refs_product_id ON user_product_referrals(product_id);
+CREATE INDEX idx_user_prod_refs_code ON user_product_referrals(code);
+
+CREATE TRIGGER user_prod_refs_prevent_created_at_update
+BEFORE UPDATE ON user_product_referrals
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_at_update();
+
+CREATE TRIGGER user_prod_refs_set_timestamps
+BEFORE INSERT OR UPDATE ON user_product_referrals
+FOR EACH ROW
+EXECUTE set_timestamps();
+
+
+-- user_bough_products table
+CREATE TABLE IF NOT EXISTS user_bought_products (
+    id bigserial PRIMARY KEY,
+    user_id uuid NOT NULL,
+    product_id uuid NOT NULL,
+    quantity integer NOT NULL DEFAULT 1;
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
+    update_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
+
+    UNIQUE (user_id, product_id),
+    CHECK (updated_at >= created_at)
+);
+
+CREATE INDEX idx_user_bght_prods_user_id ON user_bought_products(user_id);
+CREATE INDEX idx_user_bght_prods_prod_id ON user_bought_products(product_id);
+
+CREATE TRIGGER user_bght_prods_prevent_created_at_update
+BEFORE UPDATE ON user_bought_products
+FOR EACH ROW
+EXECUTE prevent_created_at_update();
+
+CREATE TRIGGER user_bght_prods_set_timestamps
+BEFORE INSERT OR UPDATE ON user_bought_products
+FOR EACH ROW
+EXECUTE set_timestamps();
