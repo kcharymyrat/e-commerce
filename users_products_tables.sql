@@ -36,6 +36,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
 -- users table for authentication
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -191,3 +193,55 @@ CREATE TRIGGER user_bght_prods_set_timestamps
 BEFORE INSERT OR UPDATE ON user_bought_products
 FOR EACH ROW
 EXECUTE set_timestamps();
+
+
+-- languages table
+CREATE TABLE IF NOT EXISTS languages (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code varchar(10) NOT NULL UNIQUE,
+    name varchar(50) NOT NULL,
+    create_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+
+    CHECK (updated_at >= created_at)
+);
+
+CREATE INDEX idx_languages_code ON languages(code);
+
+
+-- brand table
+CREATE TABLE IF NOT EXISTS brands (
+    id bigserial PRIMARY KEY,
+    logo_url text NOT NULL UNIQUE,
+    title varchar(255) NOT NULL UNIQUE,
+    slug varchar(255) NOT NULL UNIQUE,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    created_by_id uuid NOT NULL,
+    updated_by_id uuid NOT NULL,
+
+    CHECK (updated_at >= created_at),
+    CONSTRAINT brands_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT brands_updated_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_brands_title ON brands(title);
+CREATE INDEX idx_brands_slug ON brands(slug);
+
+CREATE TRIGGER brands_set_timestamps
+BEFORE INSERT OR UPDATE ON brands
+FOR EACH ROW 
+EXECUTE set_timestamps();
+
+CREATE TRIGGER brands_prevent_created_at_update
+BEFORE UPDATE ON brands
+FOR EACH ROW
+EXECUTE prevent_created_at_update();
+
+
+-- category table
+CREATE TABLE IF NOT EXISTS categories (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    parent uuid,
+    
+);
