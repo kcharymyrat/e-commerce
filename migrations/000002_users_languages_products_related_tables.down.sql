@@ -285,8 +285,8 @@ CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     parent uuid,
     name varchar(50),
-    description text,
     slug varchar(50),
+    description text,
     image_url text NOT NULL,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
@@ -313,3 +313,47 @@ FOR EACH ROW
 EXECUTE FUNCTION prevent_created_at_update();
 
 
+-- products table
+CREATE TABLE IF NOT EXISTS products (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name varchar(50) NOT NULL UNIQUE,
+    slug varchar(50) NOT NULL UNIQUE,
+    description text,
+    code varchar(32) NOT NULL UNIQUE,
+    weight_kg decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (weight_kg >= 0.00),
+    stock_amount integer NOT NULL DEFAULT 0 CHECK (stock_amount >= 0),
+    is_adult boolean NOT NULL DEFAULT FALSE,
+    is_new boolean NOT NULL DEFAULT TRUE,
+    is_active boolean NOT NULL DEFAULT TRUE,
+    in_stock boolean NOT NULL GENERATED ALWAYS AS (
+        CASE 
+            WHEN stock_amount >= 0 THEN TRUE
+            ELSE FALSE
+        END
+    )STORED,
+    price decimal(10, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0.00),
+    sale_percent decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0.00 AND price <= 100.00),
+    sale_price decimal(10, 2) NOT NULL GENERATED ALWAYS AS (
+        price * (1::decimal - sale_percent / 100::decimal)
+    )STORED
+    image text NOT NULL,
+    thumbnail text NOT NULL,
+    video text NOT NULL,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    created_by_id uuid NOT NULL,
+    updated_by_id uuid NOT NULL,
+
+
+    CHECK (updated_at >= created_at),
+    CHECK (sale_price <= price),
+    CONSTRAINT products_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT products_updated_by_id_fk FOREIGN KEY  (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+
+CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
+CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_products_code ON products(code);
+CREATE INDEX IF NOT EXISTS idx_products_is_new ON products(is_new);
+CREATE INDEX IF NOT EXISTS idx_products_sale_percent ON products(sale_percent); 
