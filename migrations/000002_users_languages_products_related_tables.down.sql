@@ -1,181 +1,6 @@
--- Triggers
-CREATE OR REPLACE FUNCTION prevent_created_at_update() 
-RETURN TRIGGER AS $$
-BEGIN
-    IF NEW.created_at <> OLD.created_at THEN
-        RAISE EXCEPTION 'Updating the value for created_at is not allowed'
-    ENF IF;
-ENG;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION set_timestamps() 
-RETURNS TRIGGER AS $$
-BEGIN
-    IF (TG_OP = 'INSERT') THEN
-        NEW.created_at := NOW();
-        NEW.updated_at := NOW();
-        RETURN NEW;
-    END IF;
-
-    IF (TG_OP = 'UPDATE') THEN
-        IF (NEW.updated_at < OLD.updated_at) THEN
-            RAISE EXCEPTION 'updated_at cannot be before the current updated_at value';
-        END IF;
-        NEW.updated_at := NOW();
-        RETURN NEW;
-    END IF;
-
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION prevent_user_deletion() 
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Instead of deleting, mark the user as inactive
-    UPDATE users
-    SET is_active = FALSE
-    WHERE id = OLD.id;
-
-    -- Log that the user was marked as inactive
-    RAISE NOTICE 'User % marked as inactive instead of being deleted', OLD.id;
-
-    -- Prevent the actual deletion
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION enforce_banned_user_constraints()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- If the user is banned, make sure is_active and is_trusted are set to FALSE
-    IF NEW.is_banned = TRUE THEN
-        NEW.is_active := FALSE;
-        NEW.is_trusted := FALSE;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION ensure_superuser_is_admin_staff()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.is_superuser THEN
-        NEW.is_admin = TRUE;
-        NEW.is_staff = TRUE;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION ensure_admin_is_staff()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.is_admin THEN
-        NEW.is_staff = TRUE;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION update_product_rating() 
-RETURNS TRIGGER AS $$
-DECLARE
-    review_stats RECORD;
-BEGIN
-    -- Fetch number of reviews and average rating in one query
-    SELECT COUNT(*) AS num_reviews, COALESCE(AVG(rating), 0) as avg_rating
-    INTO review_stats
-    FROM product_reviews
-    WHERE product_id = NEW.product_id;
-
-    -- Update the product's number_of_reviews and average_rating
-    UPDATE products
-    SET 
-        number_of_reviews = review_stats.num_reviews,
-        average_rating = review_stats.avg_rating
-    WHERE id = NEW.product_id;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION check_user_bought_product()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Check if the user has purchased the product
-    IF NOT EXISTS (
-        SELECT 1
-        FROM user_bought_products
-        WHERE user_id = NEW.user_id
-          AND product_id = NEW.product_id
-    ) THEN
-        RAISE EXCEPTION 'User % has not bought the product %', NEW.user_id, NEW.product_id;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION prevent_user_id_change()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF OLD.user_id IS DISTINCT FROM NEW.user_id THEN
-        RAISE EXCEPTION 'user_id cannot be changed from % to %', OLD.user_id, NEW.user_id;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION validate_approved_by()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Ensure that approved_by_id exists and is a catalog manager
-    IF NEW.is_approved THEN
-        IF NOT EXISTS (
-            SELECT 1
-            FROM catalog_managers
-            WHERE user_id = NEW.approved_by_id
-        ) THEN
-            RAISE EXCEPTION 'approved_by_id % must be a valid catalog manager', NEW.approved_by_id;
-        END IF;
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION ensure_approved_by_set()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF NEW.is_approved AND NEW.approved_by_id IS NULL THEN
-        RAISE EXCEPTION 'approved_by_id must be set when is_approved is TRUE';
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
--- users table for authentication
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    phone varchar(20) UNIQUE NOT NULL,
+    phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^\+[1-9][0-9]{7,14}$'),
     password bytea NOT NULL,
 
     first_name varchar(50),
@@ -203,7 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
             WHEN _dynamic_discount_percent >= 10.00 THEN 10.00
             ELSE _dynamic_discount_percent 
         END
-    ) STORED
+    )STORED,
     bonus_points decimal(10, 2) NOT NULL DEFAULT 0.00 CHECK (bonus_points >= 0.00),
 
     is_staff boolean NOT NULL DEFAULT FALSE,
@@ -227,45 +52,7 @@ CREATE TABLE IF NOT EXISTS users (
     CHECK valid_updated_at (updated_at >= created_at)
 );
 
-CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
-CREATE INDEX IF NOT EXISTS idx_users_first_name ON users(first_name);
-CREATE INDEX IF NOT EXISTS idx_users_last_name ON users(last_name);
-CREATE INDEX IF NOT EXISTS idx_users_full_name ON users(first_name, last_name);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_is_staff ON users(is_staff);
 
-CREATE TRIGGER users_prevent_created_at_update
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-CREATE TRIGGER users_set_timestamps
-BEFORE INSERT OR UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER users_prevent_delete
-BEFORE DELETE ON users
-FOR EACH ROW
-EXECUTE FUNCTION prevent_user_deletion();
-
-CREATE TRIGGER enforce_banned_constraints_trigger
-BEFORE INSERT OR UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION enforce_banned_user_constraints();
-
-CREATE TRIGGER superuser_is_admin_and_is_staff
-BEFORE INSERT OR UPDATE ON users
-FOR EACH ROW 
-EXECUTE FUNCTION ensure_superuser_is_admin_staff();
-
-CREATE TRIGGER admin_is_staff
-BEFORE INSERT OR UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION ensure_admin_is_staff();
-
-
--- user_referrals table 
 CREATE TABLE IF NOT EXISTS user_referrals (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL UNIQUE,
@@ -273,26 +60,11 @@ CREATE TABLE IF NOT EXISTS user_referrals (
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT user_refferal_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-
     CHECK (updated_at > created_at),
+    CONSTRAINT user_refferal_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_referrals_user_id ON user_referrals(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_referrals_code ON user_referrals(code);
 
-CREATE TRIGGER user_referrals_prevent_created_at_update
-BEFORE UPDATE ON user_referrals
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-CREATE TRIGGER user_refferals_set_timeststamps
-BEFORE INSERT OR UPDATE ON user_referrals
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-
--- user_product_referrals table
 CREATE TABLE IF NOT EXISTS user_product_referrals (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL,
@@ -301,56 +73,26 @@ CREATE TABLE IF NOT EXISTS user_product_referrals (
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(), 
 
-    CONSTRAINT user_prod_refs_user_id_fk FOREIGN KEY users(id) ON DELETE CASCADE,
-    CONSTRAINT user_prod_refs_product_id_fk FOREIGN kEY products(id) ON DELETE CASCADE,
-    
     UNIQUE (user_id, product_id),
-    CHECK (updated_at >= created_at)
+    CHECK (updated_at >= created_at),
+    CONSTRAINT user_prod_refs_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT user_prod_refs_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_prod_refs_user_id ON user_product_referrals(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_prod_refs_product_id ON user_product_referrals(product_id);
-CREATE INDEX IF NOT EXISTS idx_user_prod_refs_code ON user_product_referrals(code);
 
-CREATE TRIGGER user_prod_refs_prevent_created_at_update
-BEFORE UPDATE ON user_product_referrals
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-CREATE TRIGGER user_prod_refs_set_timestamps
-BEFORE INSERT OR UPDATE ON user_product_referrals
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-
--- user_bough_products table
 CREATE TABLE IF NOT EXISTS user_bought_products (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL,
     product_id uuid NOT NULL,
-    quantity integer NOT NULL DEFAULT 1;
-    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
-    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
+    quantity integer NOT NULL DEFAULT 1,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
     UNIQUE (user_id, product_id),
     CHECK (updated_at >= created_at)
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_bght_prods_user_id ON user_bought_products(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_bght_prods_prod_id ON user_bought_products(product_id);
 
-CREATE TRIGGER user_bght_prods_prevent_created_at_update
-BEFORE UPDATE ON user_bought_products
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-CREATE TRIGGER user_bght_prods_set_timestamps
-BEFORE INSERT OR UPDATE ON user_bought_products
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-
--- languages table
 CREATE TABLE IF NOT EXISTS languages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     code varchar(10) NOT NULL UNIQUE,
@@ -365,20 +107,7 @@ CREATE TABLE IF NOT EXISTS languages (
     CONSTRAINT langs_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_languages_code ON languages(code);
 
-CREATE TRIGGER langs_set_timestamps 
-BEFORE INSERT OR UPDATE ON languages
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER langs_prevent_created_at_update
-BEFORE UPDATE ON languages
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- translations table
 CREATE TABLE IF NOT EXISTS translations (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     language_code varchar(10) NOT NULL,
@@ -396,28 +125,10 @@ CREATE TABLE IF NOT EXISTS translations (
     CONSTRAINT translations_entity_language_unique UNIQUE (entity_id, language_code, table_name, field_name),
     CONSTRAINT translations_language_code_fk FOREIGN KEY (language_code) REFERENCES languages(code) ON DELETE RESTRICT,
     CONSTRAINT translations_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT translations_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT translations_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_translations_lang_code ON translations(language_code);
-CREATE INDEX IF NOT EXISTS idx_translations_table_name ON translations(table_name);
-CREATE INDEX IF NOT EXISTS idx_translations_field_name ON translations(field_name);
-CREATE INDEX IF NOT EXISTS idx_translations_entity_id ON translations(entity_id);
-CREATE INDEX IF NOT EXISTS idx_translations_entity_language ON translations(entity_id, language_code);
 
-
-CREATE TRIGGER translations_set_timestamps
-BEFORE INSERT OR UPDATE ON translations
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER translations_prevent_created_at_update
-BEFORE UPDATE ON translations
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- brand table
 CREATE TABLE IF NOT EXISTS brands (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     logo_url text NOT NULL UNIQUE,
@@ -433,21 +144,7 @@ CREATE TABLE IF NOT EXISTS brands (
     CONSTRAINT brands_updated_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_brands_title ON brands(title);
-CREATE INDEX IF NOT EXISTS idx_brands_slug ON brands(slug);
 
-CREATE TRIGGER brands_set_timestamps
-BEFORE INSERT OR UPDATE ON brands
-FOR EACH ROW 
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER brands_prevent_created_at_update
-BEFORE UPDATE ON brands
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- categories table
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     parent uuid,
@@ -461,26 +158,11 @@ CREATE TABLE IF NOT EXISTS categories (
     updated_by_id uuid NOT NULL,
 
     CHECK (updated_at >= created_at),
-    CONSTRAINT categories_created_by_id_fk FOREIGN KEY (created_by_id) ON DELETE RESTRICT,
-    CONSTRAINT categories_created_by_id_fk FOREIGN KEY (updated_by_id) ON DELETE RESTRICT
+    CONSTRAINT categories_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT categories_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
-CREATE INDEX IF NOT EXISTS idx_categories_slug on categories(slug);
 
-
-CREATE TRIGGER categories_set_timestamps
-BEFORE INSERT OR UPDATE ON categories
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER categories_prevent_created_at_update
-BEFORE UPDATE ON categories
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- products table
 CREATE TABLE IF NOT EXISTS products (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL UNIQUE,
@@ -494,7 +176,7 @@ CREATE TABLE IF NOT EXISTS products (
     is_active boolean NOT NULL DEFAULT TRUE,
     in_stock boolean NOT NULL GENERATED ALWAYS AS (
         CASE 
-            WHEN stock_amount >= 0 THEN TRUE
+            WHEN stock_amount > 0 THEN TRUE
             ELSE FALSE
         END
     )STORED,
@@ -502,7 +184,7 @@ CREATE TABLE IF NOT EXISTS products (
     sale_percent decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0.00 AND price <= 100.00),
     sale_price decimal(10, 2) NOT NULL GENERATED ALWAYS AS (
         price * (1::decimal - sale_percent / 100::decimal)
-    )STORED
+    )STORED,
     image text NOT NULL,
     thumbnail text NOT NULL,
     video text NOT NULL,
@@ -521,56 +203,28 @@ CREATE TABLE IF NOT EXISTS products (
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
-CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
-CREATE INDEX IF NOT EXISTS idx_products_code ON products(code);
-CREATE INDEX IF NOT EXISTS idx_products_is_new ON products(is_new);
-CREATE INDEX IF NOT EXISTS idx_products_sale_percent ON products(sale_percent); 
-
-CREATE TRIGGER products_set_timestamps
-BEFORE INSERT OR UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER products_prevent_created_at_update
-BEFORE UPDATE ON products
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- products_brands table
 CREATE TABLE IF NOT EXISTS products_brands (
-    id uuid PRIMARY KEY DEFAULT uuid_generate_v4();
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
     brand_id uuid NOT NULL,
 
-    CONSTRAINT products_brands_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT products_brands_brand_id_fk FOREIGN KEY (product_id) REFERENCES brands(id) ON DELETE CASCADE,
     UNIQUE (product_id, brand_id),
+    CONSTRAINT products_brands_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT products_brands_brand_id_fk FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_products_brands_product_id ON products_brands(product_id);
-CREATE INDEX IF NOT EXISTS idx_products_brands_brand_id ON products_brands(brand_id);
-
-
--- products_categories table
 CREATE TABLE IF NOT EXISTS products_categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
     category_id uuid NOT NULL,
 
+    UNIQUE (product_id, category_id),
     CONSTRAINT products_categories_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT products_categories_category_id_fk FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
-    UNIQUE (product_id, category_id)
+    CONSTRAINT products_categories_category_id_fk FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_products_categories_product_id ON products_categories(product_id);
-CREATE INDEX IF NOT EXISTS idx_products_categories_category_id ON products_categories(category_id);
-
-
--- product_images table
 CREATE TABLE IF NOT EXISTS product_images (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
@@ -584,34 +238,20 @@ CREATE TABLE IF NOT EXISTS product_images (
     UNIQUE (product_id, image_url),
     CONSTRAINT prod_imgs_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     CONSTRAINT prod_imgs_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT prod_imgs_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT prod_imgs_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_prod_imgs_product_id ON product_images(product_id);
 
-CREATE TRIGGER prod_imgs_set_timestamps
-BEFORE INSERT OR UPDATE ON product_images
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER prod_imgs_prevent_created_at_update
-BEFORE UPDATE ON product_images
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- product_reviews table
--- TODO: Only user who bought the product can create and update reviews, except approved_by_id, is_approved fields
 CREATE TABLE IF NOT EXISTS product_reviews ( 
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
-    user_id uuid NOT NULL, -- TODO: Make sure no one can change the user_id once created
-    rating smallint decimal(3, 2) NOT NULL CHECK (rating BETWEEN 0.00 AND 5.00),
+    user_id uuid NOT NULL, 
+    rating decimal(3, 2) NOT NULL CHECK (rating BETWEEN 0.00 AND 5.00),
     review_text text,
     image_url text,
     video_url text,
-    approved_by_id uuid,  -- TODO: Make sure that approved user is_staff and not is_banned and is catalog_manager
-    is_approved boolean NOT NULL DEFAULT FALSE, -- TODO: Make sure that only when it is set to TRUE set approved_by_id to used_id
+    approved_by_id uuid, 
+    is_approved boolean NOT NULL DEFAULT FALSE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
@@ -622,47 +262,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
     CONSTRAINT prod_revs_approved_by_id_fk FOREIGN KEY (approved_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_prod_revs_product_id ON product_reviews(product_id);
-CREATE INDEX IF NOT EXISTS idx_prod_revs_user_id ON product_reviews(user_id);
-CREATE INDEX IF NOT EXISTS idx_prod_revs_rating ON product_reviews(rating);
 
-CREATE TRIGGER prod_revs_set_timestamps
-BEFORE INSERT OR UPDATE ON product_reviews
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER prod_revs_prevent_created_at_update
-BEFORE UPDATE ON product_reviews
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-CREATE TRIGGER trigger_update_product_rating
-BEFORE INSERT OR UPDATE ON product_reviews
-FOR EACH ROW
-EXECUTE FUNCTION update_product_rating();
-
--- CREATE OR REPLACE FUNCTION check_manager_approval()
--- RETURNS TRIGGER AS $$
--- BEGIN
---     -- Check if the user in 'approved_by_id' is a manager
---     IF NEW.approved_by_id IS NOT NULL THEN
---         -- Assume 'users' table has a 'role' field, where 'manager' is a valid role
---         PERFORM 1 FROM users WHERE id = NEW.approved_by_id AND role = 'manager';
---         IF NOT FOUND THEN
---             RAISE EXCEPTION 'Only managers can approve records';
---         END IF;
---     END IF;
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
--- -- Add the trigger to the table
--- CREATE TRIGGER check_approval_trigger
--- BEFORE INSERT OR UPDATE ON your_table_name
--- FOR EACH ROW
--- EXECUTE FUNCTION check_manager_approval();
-
-
--- attributes table
 CREATE TABLE IF NOT EXISTS attributes (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL UNIQUE,
@@ -672,22 +272,11 @@ CREATE TABLE IF NOT EXISTS attributes (
     updated_by_id uuid NOT NULL,
 
     CHECK (updated_at >= created_at),
+    CONSTRAINT attributes_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT attributes_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT EXISTS idx_attributes_name ON attributes(name);
 
-CREATE TRIGGER attributes_set_timestamps
-BEFORE INSERT OR UPDATE ON attributes
-FOR EACH ROW 
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER attributes_prevent_created_at_update
-BEFORE UPDATE ON attributes
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- attribute_values table
 CREATE TABLE IF NOT EXISTS attribute_values (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
@@ -702,25 +291,10 @@ CREATE TABLE IF NOT EXISTS attribute_values (
     UNIQUE (product_id, attribute_id),
     CONSTRAINT attr_vals_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     CONSTRAINT attr_vals_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT atts_vals_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT atts_vals_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
 
-CREATE INDEX IF NOT EXISTS idx_attr_vals_product_id ON attribute_values(product_id);
-CREATE INDEX IF NOT EXISTS idx_attr_vals_attribute_id ON attribute_values(attribute_id);
-
-CREATE TRIGGER attr_vals_set_timestamps
-BEFORE INSERT OR UPDATE ON attribute_values
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE TRIGGER attr_vals_prevent_created_at_update
-BEFORE UPDATE ON attribute_values
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- catalog_managers table
 CREATE TABLE IF NOT EXISTS catalog_managers (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL UNIQUE,
@@ -732,23 +306,10 @@ CREATE TABLE IF NOT EXISTS catalog_managers (
     CHECK (updated_at >= created_at),
     CONSTRAINT cm_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
     CONSTRAINT cm_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT cm_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT cm_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IF NOT idx_cm_user_id ON catalog_managers(user_id);
 
-CREATE TRIGGER cm_set_timestamps
-BEFORE INSERT OR UPDATE ON catalog_managers
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE INDEX cm_prevent_created_at_update
-BEFORE UPDATE ON catalog_managers
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-
-
--- customers table
 CREATE TABLE IF NOT EXISTS customers (
     id uudi PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL UNIQUE,
@@ -760,22 +321,5 @@ CREATE TABLE IF NOT EXISTS customers (
     CHECK (updated_at >= created_at),
     CONSTRAINT customers_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
     CONSTRAINT customers_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT customers_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT customers_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
 );
-
-CREATE INDEX IF NOT idx_customers_user_id ON customers(user_id);
-
-CREATE TRIGGER customers_set_timestamps
-BEFORE INSERT OR UPDATE ON customers
-FOR EACH ROW
-EXECUTE FUNCTION set_timestamps();
-
-CREATE INDEX customers_prevent_created_at_update
-BEFORE UPDATE ON customers
-FOR EACH ROW
-EXECUTE FUNCTION prevent_created_at_update();
-);
-
-
-
-
