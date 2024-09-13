@@ -90,6 +90,19 @@ ALTER SYSTEM SET
  max_parallel_maintenance_workers = '2';
 ```
 
+### DROP TABLE WITH OWNER SCRIPT
+```sql
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN SELECT tablename FROM pg_tables WHERE tableowner = 'dev' LOOP
+        EXECUTE 'DROP TABLE ' || quote_ident(r.tablename) || ' CASCADE';
+    END LOOP;
+END $$;
+```
+
+
 
 ### Working with golang-migrate SQL MIgrations
 - Creating a new up and down migrations with migrate:

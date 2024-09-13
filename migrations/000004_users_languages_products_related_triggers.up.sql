@@ -453,7 +453,7 @@ BEFORE INSERT OR UPDATE ON customers
 FOR EACH ROW
 EXECUTE FUNCTION set_timestamps();
 
-CREATE INDEX customers_prevent_created_at_update
+CREATE TRIGGER customers_prevent_created_at_update
 BEFORE UPDATE ON customers
 FOR EACH ROW
 EXECUTE FUNCTION prevent_created_at_update();
