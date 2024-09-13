@@ -41,15 +41,9 @@ CREATE TABLE IF NOT EXISTS users (
     created_by_id uuid,
     updated_by_id uuid,
 
-    CONSTRAINT users_invited_by_id_fk FOREIGN KEY (invited_by_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT users_inv_ref_id_fk FOREIGN KEY (inv_ref_id) REFERENCES user_referrals(id) ON DELETE SET NULL,
-    CONSTRAINT users_prod_ref_id_fk FOREIGN KEY (inv_prod_ref_id) REFERENCES user_product_referrals(id) ON DELETE SET NULL,
-    CONSTRAINT users_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT users_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE SET NULL,
-
-    CHECK valid__dynamic_discount (_dynamic_discount_percent >= 0.00 AND _dynamic_discount_percent <= 100.00),
-    CHECK valid_dyn_disc (dyn_disc_percent >= 0.00 AND dyn_disc_percent <= 10.00),
-    CHECK valid_updated_at (updated_at >= created_at)
+    CHECK (_dynamic_discount_percent >= 0.00 AND _dynamic_discount_percent <= 100.00),
+    CHECK (dyn_disc_percent >= 0.00 AND dyn_disc_percent <= 10.00),
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -60,8 +54,7 @@ CREATE TABLE IF NOT EXISTS user_referrals (
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
-    CHECK (updated_at > created_at),
-    CONSTRAINT user_refferal_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at > created_at)
 );
 
 
@@ -74,9 +67,7 @@ CREATE TABLE IF NOT EXISTS user_product_referrals (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(), 
 
     UNIQUE (user_id, product_id),
-    CHECK (updated_at >= created_at),
-    CONSTRAINT user_prod_refs_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT user_prod_refs_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -103,8 +94,7 @@ CREATE TABLE IF NOT EXISTS languages (
     updated_by_id uuid NOT NULL,
 
     CHECK (updated_at >= created_at),
-    CONSTRAINT langs_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT langs_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CONSTRAINT translations_entity_language_unique UNIQUE (entity_id, language_code, table_name, field_name)
 );
 
 
@@ -121,11 +111,7 @@ CREATE TABLE IF NOT EXISTS translations (
     created_by_id uuid NOT NULL, 
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT translations_entity_language_unique UNIQUE (entity_id, language_code, table_name, field_name),
-    CONSTRAINT translations_language_code_fk FOREIGN KEY (language_code) REFERENCES languages(code) ON DELETE RESTRICT,
-    CONSTRAINT translations_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT translations_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -229,8 +215,8 @@ CREATE TABLE IF NOT EXISTS product_images (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id uuid NOT NULL,
     image_url text NOT NULL,
-    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
-    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW();
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
