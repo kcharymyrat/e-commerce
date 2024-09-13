@@ -431,7 +431,7 @@ BEFORE INSERT OR UPDATE ON catalog_managers
 FOR EACH ROW
 EXECUTE FUNCTION set_timestamps();
 
-CREATE INDEX cm_prevent_created_at_update
+CREATE TRIGGER cm_prevent_created_at_update
 BEFORE UPDATE ON catalog_managers
 FOR EACH ROW
 EXECUTE FUNCTION prevent_created_at_update();

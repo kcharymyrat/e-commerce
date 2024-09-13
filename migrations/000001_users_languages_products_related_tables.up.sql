@@ -93,8 +93,7 @@ CREATE TABLE IF NOT EXISTS languages (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT translations_entity_language_unique UNIQUE (entity_id, language_code, table_name, field_name)
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -111,7 +110,8 @@ CREATE TABLE IF NOT EXISTS translations (
     created_by_id uuid NOT NULL, 
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at)
+    CHECK (updated_at >= created_at),
+    UNIQUE (entity_id, language_code, table_name, field_name)
 );
 
 
@@ -125,9 +125,7 @@ CREATE TABLE IF NOT EXISTS brands (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT brands_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT brands_updated_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -143,9 +141,7 @@ CREATE TABLE IF NOT EXISTS categories (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT categories_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT categories_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -183,9 +179,7 @@ CREATE TABLE IF NOT EXISTS products (
 
 
     CHECK (updated_at >= created_at),
-    CHECK (sale_price <= price),
-    CONSTRAINT products_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT products_updated_by_id_fk FOREIGN KEY  (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (sale_price <= price)
 );
 
 
@@ -194,9 +188,7 @@ CREATE TABLE IF NOT EXISTS products_brands (
     product_id uuid NOT NULL,
     brand_id uuid NOT NULL,
 
-    UNIQUE (product_id, brand_id),
-    CONSTRAINT products_brands_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT products_brands_brand_id_fk FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE CASCADE
+    UNIQUE (product_id, brand_id)
 );
 
 
@@ -205,9 +197,7 @@ CREATE TABLE IF NOT EXISTS products_categories (
     product_id uuid NOT NULL,
     category_id uuid NOT NULL,
 
-    UNIQUE (product_id, category_id),
-    CONSTRAINT products_categories_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT products_categories_category_id_fk FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    UNIQUE (product_id, category_id)
 );
 
 
@@ -220,11 +210,8 @@ CREATE TABLE IF NOT EXISTS product_images (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
     UNIQUE (product_id, image_url),
-    CONSTRAINT prod_imgs_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT prod_imgs_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT prod_imgs_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -242,10 +229,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 
     CHECK (updated_at >= created_at),
-    UNIQUE (product_id, user_id),
-    CONSTRAINT prod_revs_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT prod_revs_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT, 
-    CONSTRAINT prod_revs_approved_by_id_fk FOREIGN KEY (approved_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    UNIQUE (product_id, user_id)
 );
 
 
@@ -257,9 +241,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT attributes_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT attributes_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -274,10 +256,7 @@ CREATE TABLE IF NOT EXISTS attribute_values (
     updated_by_id uuid NOT NULL,
 
     CHECK (updated_at >= created_at),
-    UNIQUE (product_id, attribute_id),
-    CONSTRAINT attr_vals_product_id_fk FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT attr_vals_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT atts_vals_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    UNIQUE (product_id, attribute_id)
 );
 
 
@@ -289,23 +268,17 @@ CREATE TABLE IF NOT EXISTS catalog_managers (
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT cm_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT cm_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT cm_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
 
 
 CREATE TABLE IF NOT EXISTS customers (
-    id uudi PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id uuid NOT NULL UNIQUE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
 
-    CHECK (updated_at >= created_at),
-    CONSTRAINT customers_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT customers_created_by_id_fk FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CONSTRAINT customers_updated_by_id_fk FOREIGN KEY (updated_by_id) REFERENCES users(id) ON DELETE RESTRICT
+    CHECK (updated_at >= created_at)
 );
