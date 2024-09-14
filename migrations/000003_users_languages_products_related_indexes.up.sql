@@ -37,6 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_brands_slug ON brands(slug);
 -- categories table indexes
 CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
 CREATE INDEX IF NOT EXISTS idx_categories_slug on categories(slug);
+CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
 
 -- products table indexes
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);

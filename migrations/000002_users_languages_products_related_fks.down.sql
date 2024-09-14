@@ -26,6 +26,7 @@ ALTER TABLE brands DROP CONSTRAINT IF EXISTS brands_created_by_id_fk;
 ALTER TABLE brands DROP CONSTRAINT IF EXISTS brands_updated_by_id_fk;
 
 -- categories table fk constraints
+ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_parent_id_fk;
 ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_created_by_id_fk;
 ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_updated_by_id_fk;
 

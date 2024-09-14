@@ -72,6 +72,10 @@ REFERENCES users(id) ON DELETE RESTRICT;
 
 -- categories table fk constraints
 ALTER TABLE categories
+ADD CONSTRAINT categories_parent_id_fk FOREIGN KEY (parent_id)
+REFERENCES categories(id) ON DELETE RESTRICT;
+
+ALTER TABLE categories
 ADD CONSTRAINT categories_created_by_id_fk FOREIGN KEY (created_by_id) 
 REFERENCES users(id) ON DELETE RESTRICT;
 

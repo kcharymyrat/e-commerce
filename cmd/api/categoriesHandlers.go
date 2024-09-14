@@ -3,19 +3,21 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	var categoryInput struct {
-		NameTk   string           `json:"name_tk"`
-		NameEn   string           `json:"name_en"`
-		NameRu   string           `json:"name_ru"`
-		Parent   *data.Category   `json:"parent,omitempty"`
-		Children []*data.Category `json:"children,omitempty"`
+		Name        string    `json:"name"`
+		Parent      uuid.UUID `json:"parent,omitempty"`
+		Slug        string    `json:"slug"`
+		Description string    `json:"description,omitempty"`
+		ImageUrl    string    `json:"image_url"`
+		CreatedByID uuid.UUID `json:"created_by_id"`
+		UpdatedByID uuid.UUID `json:"updated_by_id"`
 	}
 
 	err := app.readJSON(w, r, &categoryInput)
@@ -25,11 +27,13 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	category := &data.Category{
-		NameTk:   categoryInput.NameTk,
-		NameEn:   categoryInput.NameEn,
-		NameRu:   categoryInput.NameRu,
-		Parent:   categoryInput.Parent,
-		Children: categoryInput.Children,
+		Name:        categoryInput.Name,
+		Parent:      categoryInput.Parent,
+		Slug:        categoryInput.Slug,
+		Description: categoryInput.Description,
+		ImageUrl:    categoryInput.ImageUrl,
+		CreatedByID: categoryInput.CreatedByID,
+		UpdatedByID: categoryInput.UpdatedByID,
 	}
 
 	v := validator.New()
@@ -49,18 +53,29 @@ func (app *application) getCategoryHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	category := data.Category{
-		ID:        id,
-		NameTk:    "Telewizor",
-		NameEn:    "TV",
-		NameRu:    "Телевизор",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Parent:    nil,
-		Children:  nil,
+	// category := data.Category{
+	// 	ID:        id,
+	// 	NameTk:    "Telewizor",
+	// 	NameEn:    "TV",
+	// 	NameRu:    "Телевизор",
+	// 	CreatedAt: time.Now(),
+	// 	UpdatedAt: time.Now(),
+	// 	Parent:    nil,
+	// 	Children:  nil,
+	// }
+
+	type category struct {
+		ID   uuid.UUID
+		Name string
 	}
+
+	cat := category{
+		ID:   id,
+		Name: "Example category",
+	}
+
 	envelope := envelope{
-		"category": category,
+		"category": cat,
 	}
 
 	fmt.Println("envelope =", envelope)

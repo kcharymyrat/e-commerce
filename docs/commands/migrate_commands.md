@@ -21,7 +21,24 @@ migrate -path=./migrations -database=$POSTGRES_DSN up
 migrate -path=./migrations -database="postgres://dev:dev@localhost/ecommerce" version
 ```
 
+-- **Migrate up or down to a specific version by using the goto command**:
+```bash
+migrate -path=./migrations -database=$EXAMPLE_DSN goto 1
+```
+
+-- **The down command to roll-back by a specific number of migrations.**:
+```bash
+migrate -path=./migrations -database =$EXAMPLE_DSN down 1
+```
+
 -- **Force the migration version to 1**"
 ```bash
 migrate -path=./migrations -database="postgres://dev:dev@localhost/ecommerce" force 1
+```
+
+-- **Remote migration files**:
+```bash
+migrate -source="s3://<bucket>/<path>" -database=$EXAMPLE_DSN up
+migrate -source="github://owner/repo/path#ref" -database=$EXAMPLE_DSN up
+migrate -source="github://user:personal-access-token@owner/repo/path#ref" -database=$EXAMPLE_DSN up
 ```

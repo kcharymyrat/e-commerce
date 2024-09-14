@@ -37,6 +37,7 @@ DROP INDEX IF EXISTS idx_brands_slug;
 -- categories table indexes
 DROP INDEX IF EXISTS idx_categories_name;
 DROP INDEX IF EXISTS idx_categories_slug;
+DROP INDEX IF EXISTS idx_categories_parent_id;
 
 -- products table indexes
 DROP INDEX IF EXISTS idx_products_name;

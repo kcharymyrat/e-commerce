@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS brands (
 
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    parent uuid,
+    parent_id uuid,
     name varchar(50),
     slug varchar(50),
     description text,
