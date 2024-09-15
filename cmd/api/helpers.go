@@ -6,10 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
 type envelope map[string]interface{}
@@ -101,4 +105,87 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	}
 
 	return nil
+}
+
+func (app *application) readQueryStr(qs url.Values, key string) *string {
+	s := qs.Get(key)
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func (app *application) readQueryCSStrs(qs url.Values, key string) []string {
+	s := qs.Get(key)
+	if s == "" {
+		return []string{}
+	}
+	return strings.Split(strings.TrimSpace(strings.ToLower(s)), ",")
+}
+
+func (app *application) readQueryUUID(qs url.Values, key string, v *validator.Validator) *uuid.UUID {
+	s := qs.Get(key)
+	if s == "" {
+		return nil
+	}
+
+	qsUUID, err := uuid.Parse(s)
+	if err != nil {
+		v.AddError(key, "is not in correct uuid format.")
+		return nil
+	}
+
+	return &qsUUID
+}
+
+func (app *application) readQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.UUID {
+	s := qs.Get(key)
+	if s == "" {
+		return []uuid.UUID{}
+	}
+
+	uuids := []uuid.UUID{}
+
+	for _, s := range strings.Split(s, ",") {
+		trimmedS := strings.TrimSpace(s)
+		qsUUID, err := uuid.Parse(trimmedS)
+		if err != nil {
+			v.AddError(trimmedS, "is not not in correct uuid format")
+			break
+		}
+		uuids = append(uuids, qsUUID)
+	}
+
+	return uuids
+}
+
+func (app *application) readQueryInt(qs url.Values, key string, v *validator.Validator) *int {
+	s := qs.Get(key)
+
+	if s == "" {
+		return nil
+	}
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		v.AddError(key, "must be an integer value")
+		return nil
+	}
+
+	return &i
+}
+
+func (app *application) readQueryTime(qs url.Values, key string, v *validator.Validator) *time.Time {
+	s := qs.Get(key)
+	if s == "" {
+		return nil
+	}
+
+	qsTime, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		v.AddError(key, "invalid time format, use ISO 8601 (e.g., 2023-09-13T15:04:05Z)")
+		return nil
+	}
+
+	return &qsTime
 }
