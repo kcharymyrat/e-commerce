@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
@@ -122,7 +123,7 @@ func (c CategoryModel) GetAll(
 	sorts []string,
 	sortSafeList []string,
 	page, pageSize *int,
-) ([]*Category, error) {
+) ([]*Category, common.Metadata, error) {
 	query := `
 	SELECT (
 		count(*) OVER(),
@@ -242,14 +243,17 @@ func (c CategoryModel) GetAll(
 
 	rows, err := c.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, common.Metadata{}, err
 	}
 	defer rows.Close()
 
-	var categories []*Category
+	totalRecords := 0
+	categories := []*Category{}
+
 	for rows.Next() {
 		var category Category
 		err := rows.Scan(
+			&totalRecords,
 			&category.ID,
 			&category.ParentID,
 			&category.Name,
@@ -261,12 +265,18 @@ func (c CategoryModel) GetAll(
 			&category.UpdatedByID,
 		)
 		if err != nil {
-			return nil, err
+			return nil, common.Metadata{}, err
 		}
 		categories = append(categories, &category)
 	}
 
-	return categories, nil
+	if err = rows.Err(); err != nil {
+		return nil, common.Metadata{}, err
+	}
+
+	metadata := common.CalculateMetadata(totalRecords, *page, *pageSize)
+
+	return categories, metadata, nil
 }
 
 func (c CategoryModel) Update(category *Category) error {

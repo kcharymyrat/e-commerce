@@ -55,6 +55,33 @@ func (app *application) listCategoriesHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	categories, metadata, err := app.models.Categories.GetAll(
+		input.Names,
+		input.Slugs,
+		input.ParentIDs,
+		input.Search,
+		input.CreatedAtFrom,
+		input.CreatedAtUpTo,
+		input.UpdatedAtFrom,
+		input.UpdatedAtUpTo,
+		input.CreatedByIDs,
+		input.UpdatedByIDs,
+		input.Sorts,
+		input.SortSafeList,
+		input.Page,
+		input.PageSize,
+	)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJson(w, http.StatusOK, envelope{"metadata": metadata, "results": categories}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
 
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
