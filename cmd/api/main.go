@@ -4,12 +4,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -31,11 +33,13 @@ type config struct {
 
 type application struct {
 	config config
-	logger *log.Logger
+	logger *zerolog.Logger
 	models data.Models
 }
 
 func main() {
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	var cfg config
 
@@ -65,19 +69,17 @@ func main() {
 
 	flag.Parse()
 
-	logger := log.New(log.Default().Writer(), "", log.Ldate|log.Ltime)
-
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error().Stack().Err(err).Msg("some message")
 	}
 	defer db.Close()
 
-	logger.Printf("database connection pool established")
+	log.Info().Str("env", cfg.env).Msg("database connection pool established")
 
 	app := &application{
 		config: cfg,
-		logger: logger,
+		logger: &logger,
 		models: data.NewModels(db),
 	}
 
@@ -91,10 +93,10 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
+	logger.Info().Msg(fmt.Sprintf("starting %s server on %s", cfg.env, srv.Addr))
 
 	err = srv.ListenAndServe()
-	logger.Fatal(err)
+	logger.Fatal().Stack().Err(err).Msg("other")
 
 }
 
