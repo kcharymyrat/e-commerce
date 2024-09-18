@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"encoding/json"
@@ -16,9 +16,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
-type envelope map[string]interface{}
-
-func (app *application) readUUIDParam(r *http.Request) (uuid.UUID, error) {
+func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {
 	idStr := chi.URLParamFromCtx(r.Context(), "id") // eg: c303282d-f2e6-46ca-a04a-35d3d873712d
 
 	idUUID, err := uuid.Parse(idStr)
@@ -29,7 +27,12 @@ func (app *application) readUUIDParam(r *http.Request) (uuid.UUID, error) {
 	return idUUID, nil
 }
 
-func (app *application) writeJson(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
+func WriteJson(
+	w http.ResponseWriter,
+	status int,
+	data Envelope,
+	headers http.Header,
+) error {
 	// js, err := json.Marshal(data)
 	js, err := json.MarshalIndent(data, "", "  ") // FIXME:Change this latter
 	if err != nil {
@@ -50,7 +53,7 @@ func (app *application) writeJson(w http.ResponseWriter, status int, data envelo
 	return nil
 }
 
-func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
@@ -107,7 +110,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	return nil
 }
 
-func (app *application) readQueryStr(qs url.Values, key string) *string {
+func ReadQueryStr(qs url.Values, key string) *string {
 	s := qs.Get(key)
 	if s == "" {
 		return nil
@@ -115,7 +118,7 @@ func (app *application) readQueryStr(qs url.Values, key string) *string {
 	return &s
 }
 
-func (app *application) readQueryCSStrs(qs url.Values, key string) []string {
+func ReadQueryCSStrs(qs url.Values, key string) []string {
 	s := qs.Get(key)
 	if s == "" {
 		return []string{}
@@ -123,7 +126,7 @@ func (app *application) readQueryCSStrs(qs url.Values, key string) []string {
 	return strings.Split(strings.TrimSpace(strings.ToLower(s)), ",")
 }
 
-func (app *application) readQueryUUID(qs url.Values, key string, v *validator.Validator) *uuid.UUID {
+func ReadQueryUUID(qs url.Values, key string, v *validator.Validator) *uuid.UUID {
 	s := qs.Get(key)
 	if s == "" {
 		return nil
@@ -138,7 +141,7 @@ func (app *application) readQueryUUID(qs url.Values, key string, v *validator.Va
 	return &qsUUID
 }
 
-func (app *application) readQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.UUID {
+func ReadQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.UUID {
 	s := qs.Get(key)
 	if s == "" {
 		return []uuid.UUID{}
@@ -159,7 +162,7 @@ func (app *application) readQueryCSUUIDs(qs url.Values, key string, v *validator
 	return uuids
 }
 
-func (app *application) readQueryInt(qs url.Values, key string, v *validator.Validator) *int {
+func ReadQueryInt(qs url.Values, key string, v *validator.Validator) *int {
 	s := qs.Get(key)
 
 	if s == "" {
@@ -175,7 +178,7 @@ func (app *application) readQueryInt(qs url.Values, key string, v *validator.Val
 	return &i
 }
 
-func (app *application) readQueryTime(qs url.Values, key string, v *validator.Validator) *time.Time {
+func ReadQueryTime(qs url.Values, key string, v *validator.Validator) *time.Time {
 	s := qs.Get(key)
 	if s == "" {
 		return nil

@@ -4,44 +4,35 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	stdlog "log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/internal/app"
+	"github.com/kcharymyrat/e-commerce/internal/config"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/routes"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
-const version = "v1.0.0"
-
-type config struct {
-	port int
-	env  string
-	db   struct {
-		dsn               string
-		maxConns          int32
-		minConns          int32
-		maxConnLifetime   time.Duration
-		maxConnIdleTime   time.Duration
-		healthCheckPeriod time.Duration
-		connectTimeout    time.Duration
-	}
+type loggerAdapter struct {
+	logger zerolog.Logger
 }
 
-type application struct {
-	config config
-	logger *zerolog.Logger
-	models data.Models
+func (l loggerAdapter) Write(p []byte) (n int, err error) {
+	l.logger.Error().Msg(string(p))
+	return len(p), nil
 }
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
-	var cfg config
+	cfg := config.Config{}
 
 	loadEnv()
 
@@ -56,47 +47,50 @@ func main() {
 	poolHealthCheckPeriodMinutes := viper.GetInt("POOL_HEALTH_CHECK_PERIOD_MINUTES")
 	poolConnectTimeoutSeconds := viper.GetInt("POOL_CONNECT_TIMEOUT_SECONDS")
 
-	flag.IntVar(&cfg.port, "port", port, "API server port")
-	flag.StringVar(&cfg.env, "env", env, "Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn, "db-dsn", dbDsn, "PostgreSQL DSN")
+	flag.IntVar(&cfg.Port, "port", port, "API server port")
+	flag.StringVar(&cfg.Env, "env", env, "Environment (development|staging|production)")
+	flag.StringVar(&cfg.DB.DSN, "db-dsn", dbDsn, "PostgreSQL DSN")
 
-	cfg.db.maxConns = poolMaxConns
-	cfg.db.minConns = poolMinConns
-	cfg.db.maxConnLifetime = time.Duration(poolMaxConnLifetimeHours) * time.Hour
-	cfg.db.maxConnIdleTime = time.Duration(poolMaxConnIdleTimeMinutes) * time.Minute
-	cfg.db.healthCheckPeriod = time.Duration(poolHealthCheckPeriodMinutes) * time.Minute
-	cfg.db.connectTimeout = time.Duration(poolConnectTimeoutSeconds) * time.Second
+	cfg.DB.MaxConns = poolMaxConns
+	cfg.DB.MinConns = poolMinConns
+	cfg.DB.MaxConnLifetime = time.Duration(poolMaxConnLifetimeHours) * time.Hour
+	cfg.DB.MaxConnIdleTime = time.Duration(poolMaxConnIdleTimeMinutes) * time.Minute
+	cfg.DB.HealthCheckPeriod = time.Duration(poolHealthCheckPeriodMinutes) * time.Minute
+	cfg.DB.ConnectTimeout = time.Duration(poolConnectTimeoutSeconds) * time.Second
 
 	flag.Parse()
 
-	db, err := openDB(cfg)
+	db, err := openDB(&cfg)
 	if err != nil {
-		logger.Error().Stack().Err(err).Msg("some message")
+		logger.Error().Stack().Err(err).Msg("DB connection failed")
 	}
 	defer db.Close()
 
-	log.Info().Str("env", cfg.env).Msg("database connection pool established")
+	log.Info().Str("env", cfg.Env).Msg("database connection pool established")
 
-	app := &application{
-		config: cfg,
-		logger: &logger,
-		models: data.NewModels(db),
+	app := &app.Application{
+		Config: cfg,
+		Logger: &logger,
+		Models: data.NewModels(db),
 	}
 
-	mux := app.routes()
+	mux := routes.Routes(app)
+
+	stdLog := stdlog.New(loggerAdapter{logger}, "", 0)
 
 	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Addr:         fmt.Sprintf(":%d", cfg.Port),
 		Handler:      mux,
+		ErrorLog:     stdLog,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Info().Msg(fmt.Sprintf("starting %s server on %s", cfg.env, srv.Addr))
+	logger.Info().Msg(fmt.Sprintf("starting %s server on %s", cfg.Env, srv.Addr))
 
 	err = srv.ListenAndServe()
-	logger.Fatal().Stack().Err(err).Msg("other")
+	logger.Fatal().Stack().Err(err).Msg("Server failed to start")
 
 }
 
@@ -111,19 +105,19 @@ func loadEnv() {
 	}
 }
 
-func openDB(cfg config) (*pgxpool.Pool, error) {
+func openDB(cfg *config.Config) (*pgxpool.Pool, error) {
 	// Parse the connection pool configuration
-	poolConfig, err := pgxpool.ParseConfig(cfg.db.dsn)
+	poolConfig, err := pgxpool.ParseConfig(cfg.DB.DSN)
 	if err != nil {
 		return nil, err
 	}
 
-	poolConfig.MaxConns = cfg.db.maxConns
-	poolConfig.MinConns = cfg.db.minConns
-	poolConfig.MaxConnLifetime = cfg.db.maxConnLifetime
-	poolConfig.MaxConnIdleTime = cfg.db.maxConnIdleTime
-	poolConfig.HealthCheckPeriod = cfg.db.healthCheckPeriod
-	poolConfig.ConnConfig.ConnectTimeout = cfg.db.connectTimeout
+	poolConfig.MaxConns = cfg.DB.MaxConns
+	poolConfig.MinConns = cfg.DB.MinConns
+	poolConfig.MaxConnLifetime = cfg.DB.MaxConnLifetime
+	poolConfig.MaxConnIdleTime = cfg.DB.MaxConnIdleTime
+	poolConfig.HealthCheckPeriod = cfg.DB.HealthCheckPeriod
+	poolConfig.ConnConfig.ConnectTimeout = cfg.DB.ConnectTimeout
 
 	// Create the connection pool
 	dbConnPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)

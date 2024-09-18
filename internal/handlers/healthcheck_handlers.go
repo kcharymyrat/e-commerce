@@ -1,14 +1,13 @@
-package main
+package handlers
 
 import (
 	"net/http"
 )
 
-func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"status":      "available",
-		"environment": app.config.env,
-		"version":     version,
+		"environment": app.Config.Env,
 	}
 
 	err := app.writeJson(w, http.StatusOK, envelope{"data": data}, nil)
