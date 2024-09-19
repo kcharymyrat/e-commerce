@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/rs/zerolog"
 )
 
-func (a *Application) RequestLogger(logger zerolog.Logger) func(http.Handler) http.Handler {
+func RequestLogger(app *app.Application) func(http.Handler) http.Handler {
 	// Create a sampled logger using zerolog's LevelSampler.
-	sampledLogger := logger.Sample(&zerolog.LevelSampler{
+	sampledLogger := app.Logger.Sample(&zerolog.LevelSampler{
 		DebugSampler: &zerolog.BurstSampler{
 			Burst:       5, // Allow 5 debug logs within a second before sampling kicks in
 			Period:      1 * time.Second,

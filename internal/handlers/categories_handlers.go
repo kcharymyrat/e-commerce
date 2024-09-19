@@ -148,175 +148,183 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func (app *Application) getCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	category, err := app.Models.Categories.Get(id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-
-	err = app.writeJson(w, http.StatusOK, envelope{"category": category}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-
-func (app *Application) updateCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	category, err := app.Models.Categories.Get(id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
+func GetCategoryHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.NotFoundResponse(app.Logger, w, r)
 			return
 		}
-	}
 
-	var input struct {
-		Name        string    `json:"name"`
-		Slug        string    `json:"slug"`
-		ImageUrl    string    `json:"image_url"`
-		UpdatedByID uuid.UUID `json:"created_by_id"`
-	}
-
-	err = app.readJSON(w, r, &input)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	category.Name = input.Name
-	category.Slug = input.Slug
-	category.ImageUrl = input.ImageUrl
-	category.UpdatedByID = input.UpdatedByID
-
-	v := validator.New()
-
-	if data.ValidateCategory(v, category); !v.Valid() {
-		app.failedValidationResponse(w, r, v.Errors)
-		return
-	}
-
-	err = app.Models.Categories.Update(category)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = app.writeJson(w, http.StatusOK, envelope{"category": category}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-
-func (app *Application) partialUpdateCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	category, err := app.Models.Categories.Get(id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
+		category, err := app.Models.Categories.Get(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, w, r, err)
+			}
 			return
 		}
-	}
 
-	var input struct {
-		Name        *string    `json:"name"`
-		Slug        *string    `json:"slug"`
-		ImageUrl    *string    `json:"image_url"`
-		UpdatedByID *uuid.UUID `json:"created_by_id"`
-	}
-
-	err = app.readJSON(w, r, &input)
-	if err != nil {
-		app.badRequestResponse(w, r, err)
-		return
-	}
-
-	if input.Name != nil {
-		category.Name = *input.Name
-	}
-
-	if input.Slug != nil {
-		category.Slug = *input.Slug
-	}
-
-	if input.ImageUrl != nil {
-		category.ImageUrl = *input.ImageUrl
-	}
-
-	if input.UpdatedByID != nil {
-		message := "UpdatedById must be always provided if there is an update"
-		app.errorResponse(w, r, http.StatusBadRequest, message)
-		return
-	}
-
-	category.UpdatedByID = *input.UpdatedByID
-
-	v := validator.New()
-
-	if data.ValidateCategory(v, category); !v.Valid() {
-		app.failedValidationResponse(w, r, v.Errors)
-		return
-	}
-
-	err = app.Models.Categories.Update(category)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = app.writeJson(w, http.StatusOK, envelope{"category": category}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+		}
 	}
 }
 
-func (app *Application) deleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readUUIDParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-
-	err = app.Models.Categories.Delete(id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
+func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.NotFoundResponse(app.Logger, w, r)
+			return
 		}
-		return
-	}
 
-	err = app.writeJson(w, http.StatusOK, envelope{"message": "category successfully deleted"}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		category, err := app.Models.Categories.Get(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, w, r, err)
+				return
+			}
+		}
+
+		var input struct {
+			Name        string    `json:"name"`
+			Slug        string    `json:"slug"`
+			ImageUrl    string    `json:"image_url"`
+			UpdatedByID uuid.UUID `json:"created_by_id"`
+		}
+
+		err = common.ReadJSON(w, r, &input)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, w, r, err)
+			return
+		}
+
+		category.Name = input.Name
+		category.Slug = input.Slug
+		category.ImageUrl = input.ImageUrl
+		category.UpdatedByID = input.UpdatedByID
+
+		v := validator.New()
+
+		if data.ValidateCategory(v, category); !v.Valid() {
+			common.FailedValidationResponse(app.Logger, w, r, v.Errors)
+			return
+		}
+
+		err = app.Models.Categories.Update(category)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
+
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+		}
+	}
+}
+
+func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.NotFoundResponse(app.Logger, w, r)
+			return
+		}
+
+		category, err := app.Models.Categories.Get(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, w, r, err)
+				return
+			}
+		}
+
+		var input struct {
+			Name        *string    `json:"name"`
+			Slug        *string    `json:"slug"`
+			ImageUrl    *string    `json:"image_url"`
+			UpdatedByID *uuid.UUID `json:"created_by_id"`
+		}
+
+		err = common.ReadJSON(w, r, &input)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, w, r, err)
+			return
+		}
+
+		if input.Name != nil {
+			category.Name = *input.Name
+		}
+
+		if input.Slug != nil {
+			category.Slug = *input.Slug
+		}
+
+		if input.ImageUrl != nil {
+			category.ImageUrl = *input.ImageUrl
+		}
+
+		if input.UpdatedByID != nil {
+			message := "UpdatedById must be always provided if there is an update"
+			common.ErrorResponse(app.Logger, w, r, http.StatusBadRequest, message)
+			return
+		}
+
+		category.UpdatedByID = *input.UpdatedByID
+
+		v := validator.New()
+
+		if data.ValidateCategory(v, category); !v.Valid() {
+			common.FailedValidationResponse(app.Logger, w, r, v.Errors)
+			return
+		}
+
+		err = app.Models.Categories.Update(category)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
+
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+		}
+	}
+}
+
+func DeleteCategoryHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.NotFoundResponse(app.Logger, w, r)
+			return
+		}
+
+		err = app.Models.Categories.Delete(id)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, w, r, err)
+			}
+			return
+		}
+
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "category successfully deleted"}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+		}
 	}
 }

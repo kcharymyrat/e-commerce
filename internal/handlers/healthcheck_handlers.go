@@ -2,16 +2,21 @@ package handlers
 
 import (
 	"net/http"
+
+	"github.com/kcharymyrat/e-commerce/internal/app"
+	"github.com/kcharymyrat/e-commerce/internal/common"
 )
 
-func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"status":      "available",
-		"environment": app.Config.Env,
-	}
+func HealthcheckHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]string{
+			"status":      "available",
+			"environment": app.Config.Env,
+		}
 
-	err := app.writeJson(w, http.StatusOK, envelope{"data": data}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		err := common.WriteJson(w, http.StatusOK, common.Envelope{"data": data}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+		}
 	}
 }

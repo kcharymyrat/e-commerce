@@ -18,7 +18,7 @@ func ErrorResponse(
 	status int,
 	message interface{},
 ) {
-	envel := envelope{"error": message}
+	envel := Envelope{"error": message}
 
 	err := WriteJson(w, status, envel, nil)
 	if err != nil {

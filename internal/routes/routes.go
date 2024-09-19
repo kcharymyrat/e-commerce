@@ -14,21 +14,22 @@ func Routes(app *app.Application) *chi.Mux {
 	// A good base middleware stack
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
+	r.Use(middleware.RequestLogger(app))
 	r.Use(middleware.Recoverer(app))
 
-	r.NotFound(app.notFoundResponse)
-	r.MethodNotAllowed(app.methodNotAllowedResponse)
+	r.NotFound(middleware.NotFound(app.Logger))
+	r.MethodNotAllowed(middleware.MethodNotAllowed(app.Logger))
 
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Get("/healthcheck", app.healthcheckHandler)
+		r.Get("/healthcheck", handlers.HealthcheckHandler(app))
 
 		r.Route("/categories", func(r chi.Router) {
 			r.Get("/", handlers.ListCategoriesHandler(app))
-			r.Post("/", app.createCategoryHandler)
-			r.Get("/{id}", app.getCategoryHandler)
-			r.Put("/{id}", app.updateCategoryHandler)
-			r.Patch("/{id}", app.partialUpdateCategoryHandler)
-			r.Delete("/{id}", app.deleteCategoryHandler)
+			r.Post("/", handlers.CreateCategoryHandler(app))
+			r.Get("/{id}", handlers.GetCategoryHandler(app))
+			r.Put("/{id}", handlers.UpdateCategoryHandler(app))
+			r.Patch("/{id}", handlers.PartialUpdateCategoryHandler(app))
+			r.Delete("/{id}", handlers.DeleteCategoryHandler(app))
 		})
 	})
 
