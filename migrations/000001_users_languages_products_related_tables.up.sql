@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^\+[1-9][0-9]{7,14}$'),
-    password bytea NOT NULL,
+    password_hash bytea NOT NULL,
 
     first_name varchar(50),
     last_name varchar(50),

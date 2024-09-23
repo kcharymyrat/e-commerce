@@ -1,9 +1,14 @@
 package server
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	stdlog "log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/kcharymyrat/e-commerce/internal/app"
@@ -34,7 +39,41 @@ func Serve(app *app.Application) error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	app.Logger.Info().Msg(fmt.Sprintf("starting %s server on %s", app.Config.Env, srv.Addr))
+	shutdownError := make(chan error)
 
-	return srv.ListenAndServe()
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		s := <-quit
+
+		app.Logger.Info().
+			Str("signal", s.String()).
+			Msg(fmt.Sprintf("shutting down server. Signal - %s", s.String()))
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		shutdownError <- srv.Shutdown(ctx)
+	}()
+
+	app.Logger.Info().
+		Str("addr", srv.Addr).
+		Str("env", app.Config.Env).
+		Msg(fmt.Sprintf("starting %s server on %s", app.Config.Env, srv.Addr))
+
+	err := srv.ListenAndServe()
+	if !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	err = <-shutdownError
+	if err != nil {
+		return err
+	}
+
+	app.Logger.Info().
+		Str("addr", srv.Addr).
+		Msg("server stopped")
+
+	return nil
 }
