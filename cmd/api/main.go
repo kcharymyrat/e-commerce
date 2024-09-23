@@ -4,37 +4,27 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	stdlog "log"
-	"net/http"
 	"os"
 	"time"
 
+	"github.com/go-redis/redis_rate/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/config"
 	"github.com/kcharymyrat/e-commerce/internal/data"
-	"github.com/kcharymyrat/e-commerce/internal/routes"
+	"github.com/kcharymyrat/e-commerce/internal/server"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
-type loggerAdapter struct {
-	logger zerolog.Logger
-}
-
-func (l loggerAdapter) Write(p []byte) (n int, err error) {
-	l.logger.Error().Msg(string(p))
-	return len(p), nil
-}
-
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
-
 	cfg := config.Config{}
 
-	loadEnv()
+	loadEnv(&logger)
 
 	port := viper.GetInt("APP_PORT")
 	env := viper.GetString("ENV")
@@ -46,6 +36,9 @@ func main() {
 	poolMaxConnIdleTimeMinutes := viper.GetInt("POOL_MAX_CONN_IDLE_TIME_MINUTES")
 	poolHealthCheckPeriodMinutes := viper.GetInt("POOL_HEALTH_CHECK_PERIOD_MINUTES")
 	poolConnectTimeoutSeconds := viper.GetInt("POOL_CONNECT_TIMEOUT_SECONDS")
+
+	redisAddr := viper.GetString("REDIS_ADDR")
+	redisPort := viper.GetInt("REDIS_PORT")
 
 	flag.IntVar(&cfg.Port, "port", port, "API server port")
 	flag.StringVar(&cfg.Env, "env", env, "Environment (development|staging|production)")
@@ -65,41 +58,30 @@ func main() {
 		logger.Error().Stack().Err(err).Msg("DB connection failed")
 	}
 	defer db.Close()
-
 	log.Info().Str("env", cfg.Env).Msg("database connection pool established")
 
-	app := &app.Application{
-		Config: cfg,
-		Logger: &logger,
-		Models: data.NewModels(db),
+	rdb := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%d", redisAddr, redisPort),
+	})
+	limiter := redis_rate.NewLimiter(rdb)
+	log.Info().Str("env", cfg.Env).Msg("redis connection and limiter established")
+
+	app := app.NewApplication(cfg, &logger, data.NewModels(db), rdb, limiter)
+
+	err = server.Serve(app)
+	if err != nil {
+		app.Logger.Fatal().Stack().Err(err).Msg("Server failed to start")
 	}
-
-	mux := routes.Routes(app)
-
-	stdLog := stdlog.New(loggerAdapter{logger}, "", 0)
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.Port),
-		Handler:      mux,
-		ErrorLog:     stdLog,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-
-	logger.Info().Msg(fmt.Sprintf("starting %s server on %s", cfg.Env, srv.Addr))
-
-	err = srv.ListenAndServe()
-	logger.Fatal().Stack().Err(err).Msg("Server failed to start")
-
 }
 
-func loadEnv() {
+func loadEnv(logger *zerolog.Logger) {
 	viper.SetConfigFile(".env")
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			logger.Fatal().Stack().Err(err).Msg("Config file .env not found")
 			panic(err)
 		} else {
+			logger.Fatal().Stack().Err(err).Msg("Reading .env file failed")
 			panic(err)
 		}
 	}

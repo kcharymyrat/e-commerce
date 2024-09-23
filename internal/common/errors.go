@@ -73,3 +73,12 @@ func FailedValidationResponse(
 ) {
 	ErrorResponse(logger, w, r, http.StatusUnprocessableEntity, errors)
 }
+
+func RateLimitExceedResponse(
+	logger *zerolog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	message := "rate limit exceeded"
+	ErrorResponse(logger, w, r, http.StatusTooManyRequests, message)
+}

@@ -11,10 +11,11 @@ import (
 func Routes(app *app.Application) *chi.Mux {
 	r := chi.NewRouter()
 
-	// A good base middleware stack
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
 	r.Use(middleware.RequestLogger(app))
+	r.Use(middleware.GeneralRateLimiter(app))
+	r.Use(middleware.IPBasedRateLimiter(app))
 	r.Use(middleware.Recoverer(app))
 
 	r.NotFound(middleware.NotFound(app.Logger))

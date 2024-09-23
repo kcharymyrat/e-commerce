@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"runtime/debug"
 
@@ -22,7 +23,9 @@ func Recoverer(app *app.Application) func(next http.Handler) http.Handler {
 						Str("remote_addr", r.RemoteAddr).
 						Str("user_agent", r.UserAgent()).
 						Msg("panic occurred during request")
-					common.ErrorResponse(app.Logger, w, r, http.StatusInternalServerError, err)
+
+					w.Header().Set("Connection", "closer")
+					common.ServerErrorResponse(app.Logger, w, r, fmt.Errorf("%s", err))
 				}
 			}()
 			next.ServeHTTP(w, r)
