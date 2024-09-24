@@ -2,8 +2,10 @@ package data
 
 import (
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/kcharymyrat/e-commerce/internal/validator"
 	"github.com/shopspring/decimal"
 )
 
@@ -36,4 +38,78 @@ type User struct {
 	UpdatedAt              time.Time       `json:"updated_at" db:"updated_at"`
 	CreatedById            *uuid.UUID      `json:"created_by_id,omitempty" db:"created_by_id"` // Can be NULL
 	UpdatedById            *uuid.UUID      `json:"updated_by_id,omitempty" db:"updated_by_id"` // Can be NULL
+}
+
+func IsValidPassword(passwordPlaintext string) (bool, []string) {
+	var hasUpper, hasLower, hasNumber, isAscii bool
+
+	isValid := true
+	reasons := []string{}
+
+	if len([]byte(passwordPlaintext)) <= 8 {
+		isValid = false
+		reasons = append(reasons, "must be at least 8 bytes long")
+	}
+
+	if len([]byte(passwordPlaintext)) >= 72 {
+		isValid = false
+		reasons = append(reasons, "password", "must not be more than 500 bytes long")
+	}
+
+	for _, char := range passwordPlaintext {
+		if char > unicode.MaxASCII {
+			isAscii = false
+		}
+
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsDigit(char):
+			hasNumber = true
+		}
+	}
+
+	if !isAscii {
+		isValid = false
+		reasons = append(reasons, "must not contain non ASCII character")
+	}
+
+	if !hasUpper {
+		isValid = false
+		reasons = append(reasons, "must contain upper case character")
+	}
+
+	if !hasLower {
+		isValid = false
+		reasons = append(reasons, "must contain lower case character")
+	}
+
+	if !hasNumber {
+		isValid = false
+		reasons = append(reasons, "must contain number")
+	}
+
+	return isValid, reasons
+}
+
+func ValidatePhone(v *validator.Validator, phone string) {
+	v.Check(phone != "", "phone", "must be provided")
+	v.Check(validator.Matches(phone, validator.PhoneNumberRX), "phone", "must be a valid phone number")
+}
+
+func ValidateEmail(v *validator.Validator, email string) {
+	v.Check(email != "", "email", "must be provided")
+	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
+}
+
+func ValidatePasswordPlaintext(v *validator.Validator, password string) {
+	v.Check(password != "", "password", "must be provided")
+	isValid, reasons := IsValidPassword(password)
+	if !isValid {
+		for _, reason := range reasons {
+			v.Check(false, "password", reason)
+		}
+	}
 }
