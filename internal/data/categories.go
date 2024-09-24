@@ -14,17 +14,32 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
+// CREATE TABLE IF NOT EXISTS categories (
+//     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+//     parent_id uuid,
+//     name varchar(50) NOT NULL,
+//     slug varchar(50) NOT NULL,
+//     description text,
+//     image_url text NOT NULL,
+//     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+//     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+//     created_by_id uuid NOT NULL,
+//     updated_by_id uuid NOT NULL,
+
+//     CHECK (updated_at >= created_at)
+// );
+
 type Category struct {
-	ID          uuid.UUID `json:"id"`
-	ParentID    uuid.UUID `json:"parent_id,omitempty"`
-	Name        string    `json:"name"`
-	Slug        string    `json:"slug"`
-	Description string    `json:"description,omitempty"`
-	ImageUrl    string    `json:"image_url"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
-	CreatedByID uuid.UUID `json:"created_by_id"`
-	UpdatedByID uuid.UUID `json:"updated_by_id"`
+	ID          uuid.UUID  `json:"id" db:"id"`
+	ParentID    *uuid.UUID `json:"parent_id,omitempty" db:"parent_id"`
+	Name        string     `json:"name" db:"name"`
+	Slug        string     `json:"slug" db:"slug"`
+	Description *string    `json:"description,omitempty" db:"description"`
+	ImageUrl    string     `json:"image_url" db:"image_url"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	CreatedByID uuid.UUID  `json:"created_by_id" db:"created_by_id"`
+	UpdatedByID uuid.UUID  `json:"updated_by_id" db:"updated_by_id"`
 }
 
 func ValidateCategory(v *validator.Validator, category *Category) {
@@ -34,8 +49,8 @@ func ValidateCategory(v *validator.Validator, category *Category) {
 	v.Check(category.CreatedByID != uuid.Nil, "created_by_id", "must be provided")
 	v.Check(category.UpdatedByID != uuid.Nil, "updated_by_id", "must be provided")
 
-	v.Check(len(category.Name) <= 500, "name", "must be more than 500 bytes long")
-	v.Check(len(category.Slug) <= 500, "slug", "must be more than 500 bytes long")
+	v.Check(len([]byte(category.Name)) <= 50, "name", "must be no more than 50 bytes long")
+	v.Check(len([]byte(category.Slug)) <= 50, "slug", "must be no more than 50 bytes long")
 
 	v.Check(category.UpdatedAt.After(time.Now()), "updated_at", "can not be in the future")
 	v.Check(category.CreatedAt.After(category.UpdatedAt), "created_at", "can not be later than updated_at")
@@ -332,21 +347,6 @@ func (c CategoryModel) Delete(id uuid.UUID) error {
 
 	return nil
 }
-
-// CREATE TABLE IF NOT EXISTS categories (
-//     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-//     parent_id uuid,
-//     name varchar(50),
-//     slug varchar(50),
-//     description text,
-//     image_url text NOT NULL,
-//     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     created_by_id uuid NOT NULL,
-//     updated_by_id uuid NOT NULL,
-
-//     CHECK (updated_at >= created_at)
-// );
 
 // CREATE TABLE IF NOT EXISTS products_categories (
 //     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

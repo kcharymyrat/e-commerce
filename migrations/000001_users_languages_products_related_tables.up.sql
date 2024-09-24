@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     dob date CHECK (dob BETWEEN '1900-01-01' AND CURRENT_DATE),
     email citext UNIQUE,
 
-    is_active boolean NOT NULL DEFAULT TRUE,
+    is_active boolean NOT NULL DEFAULT FALSE,
     is_banned boolean NOT NULL DEFAULT FALSE,
     is_trusted boolean NOT NULL DEFAULT FALSE,
 
@@ -132,8 +132,8 @@ CREATE TABLE IF NOT EXISTS brands (
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     parent_id uuid,
-    name varchar(50),
-    slug varchar(50),
+    name varchar(50) NOT NULL,
+    slug varchar(50) NOT NULL,
     description text,
     image_url text NOT NULL,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
