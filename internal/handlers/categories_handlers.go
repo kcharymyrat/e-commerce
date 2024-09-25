@@ -11,6 +11,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
@@ -108,15 +109,7 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category := &data.Category{
-			ParentID:    categoryInput.ParentID,
-			Name:        categoryInput.Name,
-			Slug:        categoryInput.Slug,
-			Description: categoryInput.Description,
-			ImageUrl:    categoryInput.ImageUrl,
-			CreatedByID: categoryInput.CreatedByID,
-			UpdatedByID: categoryInput.UpdatedByID,
-		}
+		category := mappers.CreateCategoryInputToCategoryMapper(&categoryInput)
 
 		v := validator.New()
 
@@ -127,7 +120,30 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 
 		err = app.Models.Categories.Insert(category)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			switch {
+			case errors.Is(err, common.ErrIntegrityConstraintViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrRestrictViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrNotNullViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrForeignKeyViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrUniqueViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrCheckViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrExclusionViolation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrStringDataTruncation):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrNumericValueOutOfRange):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			case errors.Is(err, common.ErrInvalidDatetimeFormat):
+				common.BadRequestResponse(app.Logger, w, r, err)
+			default:
+				common.ServerErrorResponse(app.Logger, w, r, err)
+			}
 			return
 		}
 

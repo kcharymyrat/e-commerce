@@ -9,26 +9,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
-
-// CREATE TABLE IF NOT EXISTS categories (
-//     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-//     parent_id uuid,
-//     name varchar(50) NOT NULL,
-//     slug varchar(50) NOT NULL,
-//     description text,
-//     image_url text NOT NULL,
-//     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     created_by_id uuid NOT NULL,
-//     updated_by_id uuid NOT NULL,
-//     version integer NOT NULL DEFAULT 1,
-
-//     CHECK (updated_at >= created_at)
-// );
 
 type Category struct {
 	ID          uuid.UUID  `json:"id" db:"id"`
@@ -87,13 +72,22 @@ func (c CategoryModel) Insert(category *Category) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	return c.DBPOOL.QueryRow(ctx, query, args...).Scan(
+	err := c.DBPOOL.QueryRow(ctx, query, args...).Scan(
 		&category.ID,
 		&category.Name,
 		&category.Slug,
 		&category.CreatedAt,
 		&category.Version,
 	)
+
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.PgErrWithCode(pgErr)
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (c CategoryModel) Get(id uuid.UUID) (*Category, error) {
