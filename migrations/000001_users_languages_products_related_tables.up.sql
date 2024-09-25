@@ -125,8 +125,8 @@ CREATE TABLE IF NOT EXISTS translations (
 
 CREATE TABLE IF NOT EXISTS brands (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    logo_url text NOT NULL UNIQUE,
-    title varchar(50) NOT NULL UNIQUE,
+    logo_url text NOT NULL,
+    name varchar(50) NOT NULL UNIQUE,
     slug varchar(50) NOT NULL UNIQUE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
@@ -141,8 +141,8 @@ CREATE TABLE IF NOT EXISTS brands (
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     parent_id uuid,
-    name varchar(50) NOT NULL,
-    slug varchar(50) NOT NULL,
+    name varchar(50) NOT NULL UNIQUE,
+    slug varchar(50) NOT NULL UNIQUE,
     description text,
     image_url text NOT NULL,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
