@@ -25,6 +25,7 @@ import (
 //     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
 //     created_by_id uuid NOT NULL,
 //     updated_by_id uuid NOT NULL,
+//     version integer NOT NULL DEFAULT 1,
 
 //     CHECK (updated_at >= created_at)
 // );
@@ -38,16 +39,17 @@ type Category struct {
 	ImageUrl    string     `json:"image_url" db:"image_url"`
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
-	CreatedByID *uuid.UUID `json:"created_by_id" db:"created_by_id"`
-	UpdatedByID *uuid.UUID `json:"updated_by_id" db:"updated_by_id"`
+	CreatedByID uuid.UUID  `json:"created_by_id" db:"created_by_id"`
+	UpdatedByID uuid.UUID  `json:"updated_by_id" db:"updated_by_id"`
+	Version     int        `json:"version" db:"version"`
 }
 
 func ValidateCategory(v *validator.Validator, category *Category) {
 	v.Check(category.Name != "", "name", "must be provided")
 	v.Check(category.Slug != "", "slug", "must be provided")
 	v.Check(category.ImageUrl != "", "image_url", "must be provided")
-	v.Check(category.CreatedByID != nil, "created_by_id", "must be provided")
-	v.Check(category.UpdatedByID != nil, "updated_by_id", "must be provided")
+	v.Check(category.CreatedByID != uuid.Nil, "created_by_id", "must be provided")
+	v.Check(category.UpdatedByID != uuid.Nil, "updated_by_id", "must be provided")
 
 	v.Check(len([]byte(category.Name)) <= 50, "name", "must not be more than 50 bytes long")
 	v.Check(len([]byte(category.Slug)) <= 50, "slug", "must not be more than 50 bytes long")
@@ -63,19 +65,19 @@ type CategoryModel struct {
 func (c CategoryModel) Insert(category *Category) error {
 	query := `
 		INSERT INTO categories (
-			name, 
 			parent_id, 
+			name, 
 			slug, 
 			description, 
 			image_url, 
 			created_by_id, 
 			updated_by_id
 		) VALUES ($1, $2, $3, $4, $5, $6, $7) 
-		RETURNING id, name, slug, created_at`
+		RETURNING id, name, slug, created_at, version`
 
 	args := []interface{}{
-		category.Name,
 		category.ParentID,
+		category.Name,
 		category.Slug,
 		category.Description,
 		category.ImageUrl,
@@ -90,6 +92,7 @@ func (c CategoryModel) Insert(category *Category) error {
 		&category.Name,
 		&category.Slug,
 		&category.CreatedAt,
+		&category.Version,
 	)
 }
 
@@ -114,6 +117,7 @@ func (c CategoryModel) Get(id uuid.UUID) (*Category, error) {
 		&category.UpdatedAt,
 		&category.CreatedByID,
 		&category.UpdatedByID,
+		&category.Version,
 	)
 	if err != nil {
 		switch {
@@ -278,6 +282,7 @@ func (c CategoryModel) GetAll(
 			&category.UpdatedAt,
 			&category.CreatedByID,
 			&category.UpdatedByID,
+			&category.Version,
 		)
 		if err != nil {
 			return nil, common.Metadata{}, err
@@ -301,28 +306,47 @@ func (c CategoryModel) Update(category *Category) error {
 			parent_id = $1,
 			name = $2,
 			slug = $3,
-			image_url = $4,
-			updated_by_id = $5
-		WHERE id = $6
-		RETURNING id, name, slug
+			description = $4
+			image_url = $5,
+			updated_by_id = $6,
+			version = version + 1
+		WHERE id = $7 AND version = $8
+		RETURNING id, parent_id, name, slug, description, image_url, updated_by_id, version
 	`
 
 	args := []interface{}{
-		category.ID,
+		category.ParentID,
 		category.Name,
 		category.Slug,
+		category.Description,
 		category.ImageUrl,
 		category.UpdatedByID,
+		category.Version,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	return c.DBPOOL.QueryRow(ctx, query, args...).Scan(
+	err := c.DBPOOL.QueryRow(ctx, query, args...).Scan(
 		&category.ID,
 		&category.Name,
 		&category.Slug,
+		&category.Description,
+		&category.ImageUrl,
+		&category.UpdatedByID,
+		&category.Version,
 	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c CategoryModel) Delete(id uuid.UUID) error {

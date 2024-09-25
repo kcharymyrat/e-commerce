@@ -1,16 +1,18 @@
 package data
 
 import (
+	"errors"
 	"time"
 	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 	"github.com/shopspring/decimal"
 )
 
 type User struct {
-	ID                     uuid.UUID       `json:"id" db:"id"`
+	ID                     uuid.UUID       `json:"id,omitempty" db:"id"`
 	Phone                  string          `json:"phone" db:"phone"`
 	PasswordHash           string          `json:"-" db:"password_hash"`                 // No need to serialize password hash
 	FirstName              *string         `json:"first_name,omitempty" db:"first_name"` // Can be NULL
@@ -39,6 +41,10 @@ type User struct {
 	CreatedById            *uuid.UUID      `json:"created_by_id,omitempty" db:"created_by_id"` // Can be NULL
 	UpdatedById            *uuid.UUID      `json:"updated_by_id,omitempty" db:"updated_by_id"` // Can be NULL
 }
+
+var (
+	ErrPhoneNumber = errors.New("can not use this phone number")
+)
 
 func IsValidPassword(passwordPlaintext string) (bool, []string) {
 	var hasUpper, hasLower, hasNumber, isAscii bool
@@ -99,11 +105,6 @@ func ValidatePhone(v *validator.Validator, phone string) {
 	v.Check(validator.Matches(phone, validator.PhoneNumberRX), "phone", "must be a valid phone number")
 }
 
-func ValidateEmail(v *validator.Validator, email string) {
-	v.Check(email != "", "email", "must be provided")
-	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
-}
-
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(password != "", "password", "must be provided")
 	isValid, reasons := IsValidPassword(password)
@@ -113,3 +114,27 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 		}
 	}
 }
+
+func ValidateEmail(v *validator.Validator, email string) {
+	v.Check(email != "", "email", "must be provided")
+	v.Check(validator.Matches(email, validator.EmailRX), "email", "must be a valid email address")
+}
+
+func ValidateUser(v *validator.Validator, user *User, passwordPlaintext string) {
+	ValidatePhone(v, user.Phone)
+	ValidatePasswordPlaintext(v, passwordPlaintext)
+	if user.Email != nil {
+		ValidateEmail(v, *user.Email)
+	}
+}
+
+type UserModel struct {
+	DBPOOL *pgxpool.Pool
+}
+
+// func (u UserModel) Insert(user *User) error {
+// 	query := `INSERT INTO users (phone, password_hash, first_name, last_name, patronymic, dob, email)
+// 		VALUES ($1, $2, $3, $4, $5, %6, $7)
+// 		RETURNING id, phone, first_name, last_name;
+// 	`
+// }

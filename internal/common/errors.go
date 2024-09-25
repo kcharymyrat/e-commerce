@@ -65,6 +65,15 @@ func BadRequestResponse(
 	ErrorResponse(logger, w, r, http.StatusBadRequest, err.Error())
 }
 
+func EditConflictResponse(
+	logger *zerolog.Logger,
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	message := "unable to update the record due to an edit conflict, please try again"
+	ErrorResponse(logger, w, r, http.StatusConflict, message)
+}
+
 func FailedValidationResponse(
 	logger *zerolog.Logger,
 	w http.ResponseWriter,

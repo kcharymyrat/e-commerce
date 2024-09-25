@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
@@ -99,15 +100,7 @@ func ListCategoriesHandler(app *app.Application) http.HandlerFunc {
 
 func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var categoryInput struct {
-			ParentId    uuid.UUID `json:"parent_id,omitempty"`
-			Name        string    `json:"name"`
-			Slug        string    `json:"slug"`
-			Description string    `json:"description,omitempty"`
-			ImageUrl    string    `json:"image_url"`
-			CreatedByID uuid.UUID `json:"created_by_id"`
-			UpdatedByID uuid.UUID `json:"updated_by_id"`
-		}
+		var categoryInput requests.CreateCategoryInput
 
 		err := common.ReadJSON(w, r, &categoryInput)
 		if err != nil {
@@ -116,7 +109,7 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		category := &data.Category{
-			ParentID:    categoryInput.ParentId,
+			ParentID:    categoryInput.ParentID,
 			Name:        categoryInput.Name,
 			Slug:        categoryInput.Slug,
 			Description: categoryInput.Description,
@@ -140,6 +133,8 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 
 		headers := make(http.Header)
 		headers.Set("Location", fmt.Sprintf("/api/v1/%d", category.ID))
+
+		// TODO: map to category response
 
 		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": category}, headers)
 		if err != nil {
@@ -194,10 +189,12 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		var input struct {
-			Name        string    `json:"name"`
-			Slug        string    `json:"slug"`
-			ImageUrl    string    `json:"image_url"`
-			UpdatedByID uuid.UUID `json:"created_by_id"`
+			ParentID    *uuid.UUID `json:"parent_id"`
+			Name        string     `json:"name"`
+			Slug        string     `json:"slug"`
+			ImageUrl    string     `json:"image_url"`
+			Description *string    `json:"description"`
+			UpdatedByID uuid.UUID  `json:"created_by_id"`
 		}
 
 		err = common.ReadJSON(w, r, &input)
@@ -206,10 +203,12 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
+		category.ParentID = input.ParentID
 		category.Name = input.Name
 		category.Slug = input.Slug
 		category.ImageUrl = input.ImageUrl
 		category.UpdatedByID = input.UpdatedByID
+		category.Description = input.Description
 
 		v := validator.New()
 
@@ -254,6 +253,7 @@ func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			Name        *string    `json:"name"`
 			Slug        *string    `json:"slug"`
 			ImageUrl    *string    `json:"image_url"`
+			Description *string    `json:""`
 			UpdatedByID *uuid.UUID `json:"created_by_id"`
 		}
 

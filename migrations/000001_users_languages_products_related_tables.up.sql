@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS users (
     created_by_id uuid,
     updated_by_id uuid,
 
+    version integer NOT NULL DEFAULT 1,
+
     CHECK (_dynamic_discount_percent >= 0.00 AND _dynamic_discount_percent <= 100.00),
     CHECK (dyn_disc_percent >= 0.00 AND dyn_disc_percent <= 10.00),
     CHECK (updated_at >= created_at)
@@ -53,6 +55,7 @@ CREATE TABLE IF NOT EXISTS user_referrals (
     code varchar(50) NOT NULL UNIQUE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at > created_at)
 );
@@ -65,6 +68,7 @@ CREATE TABLE IF NOT EXISTS user_product_referrals (
     code varchar(50) NOT NULL,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(), 
+    version integer NOT NULL DEFAULT 1,
 
     UNIQUE (user_id, product_id),
     CHECK (updated_at >= created_at)
@@ -78,6 +82,7 @@ CREATE TABLE IF NOT EXISTS user_bought_products (
     quantity integer NOT NULL DEFAULT 1,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    version integer NOT NULL DEFAULT 1,
 
     UNIQUE (user_id, product_id),
     CHECK (updated_at >= created_at)
@@ -92,6 +97,7 @@ CREATE TABLE IF NOT EXISTS languages (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
@@ -110,6 +116,8 @@ CREATE TABLE IF NOT EXISTS translations (
     created_by_id uuid NOT NULL, 
     updated_by_id uuid NOT NULL,
 
+    version integer NOT NULL DEFAULT 1,
+
     CHECK (updated_at >= created_at),
     UNIQUE (entity_id, language_code, table_name, field_name)
 );
@@ -124,6 +132,7 @@ CREATE TABLE IF NOT EXISTS brands (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
@@ -140,6 +149,7 @@ CREATE TABLE IF NOT EXISTS categories (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
@@ -176,6 +186,7 @@ CREATE TABLE IF NOT EXISTS products (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
 
     CHECK (updated_at >= created_at),
@@ -209,6 +220,7 @@ CREATE TABLE IF NOT EXISTS product_images (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     UNIQUE (product_id, image_url),
     CHECK (updated_at >= created_at)
@@ -227,6 +239,7 @@ CREATE TABLE IF NOT EXISTS product_reviews (
     is_approved boolean NOT NULL DEFAULT FALSE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at),
     UNIQUE (product_id, user_id)
@@ -240,6 +253,7 @@ CREATE TABLE IF NOT EXISTS attributes (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
@@ -254,6 +268,7 @@ CREATE TABLE IF NOT EXISTS attribute_values (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at),
     UNIQUE (product_id, attribute_id)
@@ -267,6 +282,7 @@ CREATE TABLE IF NOT EXISTS catalog_managers (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
@@ -279,6 +295,7 @@ CREATE TABLE IF NOT EXISTS customers (
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
     updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
 
     CHECK (updated_at >= created_at)
 );
