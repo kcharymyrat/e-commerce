@@ -7,57 +7,28 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
+	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
-	"github.com/kcharymyrat/e-commerce/internal/filters"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
-func ListCategoriesHandler(app *app.Application) http.HandlerFunc {
+func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var input struct {
-			Names     []string    `json:"names"`
-			Slugs     []string    `json:"slugs"`
-			ParentIDs []uuid.UUID `json:"parent_ids"`
-			filters.SearchFilters
-			filters.CreatedUpdatedAtFilters
-			filters.CreatedUpdatedByFilters
-			filters.SortListFilters
-			filters.PaginationFilters
-		}
-
+		input := requests.ListCategoriesInput{}
 		v := validator.New()
 
 		// Parse query string from the request
 		qs := r.URL.Query()
 
 		// Reading query parameters
-		input.Names = common.ReadQueryCSStrs(qs, "names")
-		input.Slugs = common.ReadQueryCSStrs(qs, "slugs")
-		input.ParentIDs = common.ReadQueryCSUUIDs(qs, "parent_ids", v)
-		input.Search = common.ReadQueryStr(qs, "search")
-		input.CreatedAtFrom = common.ReadQueryTime(qs, "created_at_from", v)
-		input.CreatedAtUpTo = common.ReadQueryTime(qs, "created_at_up_to", v)
-		input.UpdatedAtFrom = common.ReadQueryTime(qs, "updated_at_from", v)
-		input.UpdatedAtUpTo = common.ReadQueryTime(qs, "updated_at_up_to", v)
-		input.CreatedByIDs = common.ReadQueryCSUUIDs(qs, "created_by_ids", v)
-		input.UpdatedByIDs = common.ReadQueryCSUUIDs(qs, "updated_by_ids", v)
-		input.Sorts = common.ReadQueryCSStrs(qs, "sorts")
-		input.SortSafeList = []string{
-			"id", "name", "created_at", "updated_at", "-id", "-name", "-created_at", "-updated_at",
-		}
-		input.Page = common.ReadQueryInt(qs, "page", v)
-		input.PageSize = common.ReadQueryInt(qs, "page_size", v)
+		readAndValidateQueryParameters(&input, qs, v)
 
 		// Validate input using your filters
-		filters.ValidateSearchFilters(v, input.SearchFilters)
-		filters.ValidateCreatedUpdatedAtFilters(v, input.CreatedUpdatedAtFilters)
-		filters.ValidateCreatedUpdatedByFilters(v, input.CreatedUpdatedByFilters)
-		filters.ValidateSortFilters(v, input.SortListFilters)
-		filters.ValidatePaginationFilters(v, input.PaginationFilters)
+		filtersValidation(&input, v)
 
 		// If validation fails, return a validation error response
 		if !v.Valid() {
@@ -66,33 +37,23 @@ func ListCategoriesHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// Retrieve categories from your data models
-		categories, metadata, err := app.Repositories.Categories.GetAll(
-			input.Names,
-			input.Slugs,
-			input.ParentIDs,
-			input.Search,
-			input.CreatedAtFrom,
-			input.CreatedAtUpTo,
-			input.UpdatedAtFrom,
-			input.UpdatedAtUpTo,
-			input.CreatedByIDs,
-			input.UpdatedByIDs,
-			input.Sorts,
-			input.SortSafeList,
-			input.Page,
-			input.PageSize,
-		)
-
-		// Handle any error that occurs during the database query
+		categories, metadata, err := services.ListCategoriesService(app, input)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
 			return
 		}
 
+		// TODO: Map categories to category responses
+		categoryManagerResponses := make([]*responses.CategoryManagerResponse, len(categories))
+		for _, category := range categories {
+			result := mappers.CategoryToCategoryManagerResponseMapper(category)
+			categoryManagerResponses = append(categoryManagerResponses, result)
+		}
+
 		// Write the response as JSON
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{
 			"metadata": metadata,
-			"results":  categories,
+			"results":  categoryManagerResponses,
 		}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
@@ -100,7 +61,7 @@ func ListCategoriesHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
+func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var categoryInput requests.CreateCategoryInput
 
@@ -136,7 +97,7 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func GetCategoryHandler(app *app.Application) http.HandlerFunc {
+func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -144,7 +105,7 @@ func GetCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := app.Repositories.Categories.Get(id)
+		category, err := services.GetCategoryService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -155,14 +116,16 @@ func GetCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
+
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryManagerResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
 		}
 	}
 }
 
-func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
+func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -170,7 +133,7 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := app.Repositories.Categories.Get(id)
+		category, err := services.GetCategoryService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -223,7 +186,7 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
+func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -296,7 +259,7 @@ func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func DeleteCategoryHandler(app *app.Application) http.HandlerFunc {
+func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {

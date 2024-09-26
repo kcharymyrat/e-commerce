@@ -1,6 +1,20 @@
 package requests
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"github.com/kcharymyrat/e-commerce/internal/filters"
+)
+
+type ListCategoriesInput struct {
+	Names     []string    `json:"names"`
+	Slugs     []string    `json:"slugs"`
+	ParentIDs []uuid.UUID `json:"parent_ids"`
+	filters.SearchFilters
+	filters.CreatedUpdatedAtFilters
+	filters.CreatedUpdatedByFilters
+	filters.SortListFilters
+	filters.PaginationFilters
+}
 
 type CreateCategoryInput struct {
 	ParentID    *uuid.UUID `json:"parent_id"`

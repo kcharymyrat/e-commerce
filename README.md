@@ -56,3 +56,12 @@ migrate -version
     - You could download from browser
     - Make sure GOPATH Location is Correct
     - Make sure that migrate is the file and NOT the folder that has migrate file in it.
+
+
+
+Web Framework: Use Gin, Echo, or standard net/http for HTTP handling.
+Database ORM: Use GORM or sqlx for database interaction.
+Routing: Gin, Echo, or Gorilla Mux for handling routes.
+Validation: Use go-playground/validator for input validation.
+Dependency Injection: Use packages like wire for dependency injection.
+Migrations: Use golang-migrate/migrate for handling database migrations.
