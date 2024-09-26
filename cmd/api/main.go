@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/config"
-	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/repository"
 	"github.com/kcharymyrat/e-commerce/internal/server"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -66,7 +66,7 @@ func main() {
 	limiter := redis_rate.NewLimiter(rdb)
 	log.Info().Str("env", cfg.Env).Msg("redis connection and limiter established")
 
-	app := app.NewApplication(cfg, &logger, data.NewModels(db), rdb, limiter)
+	app := app.NewApplication(cfg, &logger, repository.NewRepositories(db), rdb, limiter)
 
 	err = server.Serve(app)
 	if err != nil {

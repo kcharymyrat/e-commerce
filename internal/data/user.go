@@ -6,7 +6,6 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 	"github.com/shopspring/decimal"
 )
@@ -127,14 +126,3 @@ func ValidateUser(v *validator.Validator, user *User, passwordPlaintext string) 
 		ValidateEmail(v, *user.Email)
 	}
 }
-
-type UserModel struct {
-	DBPOOL *pgxpool.Pool
-}
-
-// func (u UserModel) Insert(user *User) error {
-// 	query := `INSERT INTO users (phone, password_hash, first_name, last_name, patronymic, dob, email)
-// 		VALUES ($1, $2, $3, $4, $5, %6, $7)
-// 		RETURNING id, phone, first_name, last_name;
-// 	`
-// }

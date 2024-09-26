@@ -12,6 +12,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
+	"github.com/kcharymyrat/e-commerce/internal/services"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
@@ -65,7 +66,7 @@ func ListCategoriesHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// Retrieve categories from your data models
-		categories, metadata, err := app.Models.Categories.GetAll(
+		categories, metadata, err := app.Repositories.Categories.GetAll(
 			input.Names,
 			input.Slugs,
 			input.ParentIDs,
@@ -112,47 +113,23 @@ func CreateCategoryHandler(app *app.Application) http.HandlerFunc {
 		category := mappers.CreateCategoryInputToCategoryMapper(&categoryInput)
 
 		v := validator.New()
-
 		if data.ValidateCategory(v, category); !v.Valid() {
 			common.FailedValidationResponse(app.Logger, w, r, v.Errors)
 			return
 		}
 
-		err = app.Models.Categories.Insert(category)
+		err = services.CreateCategoryService(app, category)
 		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrIntegrityConstraintViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrRestrictViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrNotNullViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrForeignKeyViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrUniqueViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrCheckViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrExclusionViolation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrStringDataTruncation):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrNumericValueOutOfRange):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			case errors.Is(err, common.ErrInvalidDatetimeFormat):
-				common.BadRequestResponse(app.Logger, w, r, err)
-			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
-			}
+			HandleCategoryServiceErrors(w, r, app, err)
 			return
 		}
 
 		headers := make(http.Header)
 		headers.Set("Location", fmt.Sprintf("/api/v1/%d", category.ID))
 
-		// TODO: map to category response
+		categoryResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
 
-		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": category}, headers)
+		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": categoryResponse}, headers)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
 		}
@@ -167,10 +144,10 @@ func GetCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := app.Models.Categories.Get(id)
+		category, err := app.Repositories.Categories.Get(id)
 		if err != nil {
 			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
+			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, w, r, err)
@@ -193,10 +170,10 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := app.Models.Categories.Get(id)
+		category, err := app.Repositories.Categories.Get(id)
 		if err != nil {
 			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
+			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, w, r, err)
@@ -233,7 +210,7 @@ func UpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = app.Models.Categories.Update(category)
+		err = app.Repositories.Categories.Update(category)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
 			return
@@ -254,10 +231,10 @@ func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := app.Models.Categories.Get(id)
+		category, err := app.Repositories.Categories.Get(id)
 		if err != nil {
 			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
+			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, w, r, err)
@@ -306,7 +283,7 @@ func PartialUpdateCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = app.Models.Categories.Update(category)
+		err = app.Repositories.Categories.Update(category)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, w, r, err)
 			return
@@ -327,10 +304,10 @@ func DeleteCategoryHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = app.Models.Categories.Delete(id)
+		err = app.Repositories.Categories.Delete(id)
 		if err != nil {
 			switch {
-			case errors.Is(err, data.ErrRecordNotFound):
+			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, w, r, err)

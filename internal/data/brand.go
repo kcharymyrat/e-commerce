@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Brand struct {
@@ -16,10 +15,6 @@ type Brand struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 	CreatedById uuid.UUID `json:"created_by_id"`
 	UpdatedById uuid.UUID `json:"updated_by_id"`
-}
-
-type BrandModel struct {
-	DBPOOL *pgxpool.Pool
 }
 
 // CREATE TABLE IF NOT EXISTS brands (

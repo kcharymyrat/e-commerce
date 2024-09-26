@@ -1,12 +1,16 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rs/zerolog"
 )
+
+var ErrRecordNotFound = errors.New("record not found")
+var ErrEditConflict = errors.New("edit conflict")
 
 var (
 	ErrIntegrityConstraintViolation = fmt.Errorf("%s :integrity constraint violation", IntegrityConstraintViolation)
@@ -22,7 +26,7 @@ var (
 	ErrInvalidDatetimeFormat  = fmt.Errorf("%s :invalid datatime format", InvalidDatetimeFormat)
 )
 
-func PgErrWithCode(pgErr *pgconn.PgError) error {
+func TransformPgErrToCustomError(pgErr *pgconn.PgError) error {
 	switch pgErr.Code {
 	case IntegrityConstraintViolation:
 		return fmt.Errorf("%w: %s", ErrIntegrityConstraintViolation, pgErr.Detail)

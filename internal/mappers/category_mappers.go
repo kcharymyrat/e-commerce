@@ -19,6 +19,29 @@ func CreateCategoryInputToCategoryMapper(input *requests.CreateCategoryInput) *d
 }
 
 func CategoryToCategoryPublicResponseMapper(category *data.Category) *responses.CategoryPublicResponse {
-	// TODO:
-	return nil
+	return &responses.CategoryPublicResponse{
+		ID:          category.ID,
+		ParentID:    category.ParentID,
+		Name:        category.Name,
+		Slug:        category.Slug,
+		Description: category.Description,
+		ImageUrl:    category.ImageUrl,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+	}
+}
+
+func CategoryToCategoryManagerResponseMapper(category *data.Category) *responses.CategoryManagerResponse {
+	return &responses.CategoryManagerResponse{
+		ID:          category.ID,
+		ParentID:    category.ParentID,
+		Name:        category.Name,
+		Slug:        category.Slug,
+		Description: category.Description,
+		ImageUrl:    category.ImageUrl,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+		CreatedByID: category.CreatedByID,
+		UpdatedByID: category.UpdatedByID,
+	}
 }
