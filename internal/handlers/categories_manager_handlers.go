@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
@@ -13,13 +14,18 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
-	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
 func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		err := GetLangHeaderAndRegisterValTrans(r, app)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
+
 		input := requests.ListCategoriesInput{}
-		v := validator.New()
+		// v := validator.New()
 
 		// Parse query string from the request
 		qs := r.URL.Query()
@@ -63,19 +69,28 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 
 func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var categoryInput requests.CreateCategoryInput
+		err := GetLangHeaderAndRegisterValTrans(r, app)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
 
-		err := common.ReadJSON(w, r, &categoryInput)
+		var categoryInput requests.CreateCategoryInput
+		err = common.ReadJSON(w, r, &categoryInput)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, w, r, err)
 			return
 		}
 
 		category := mappers.CreateCategoryInputToCategoryMapper(&categoryInput)
-
-		v := validator.New()
-		if data.ValidateCategory(v, category); !v.Valid() {
-			common.FailedValidationResponse(app.Logger, w, r, v.Errors)
+		err = app.Validator.Struct(category)
+		if err != nil {
+			errs := err.(validator.ValidationErrors)
+			translatedErrs := make(map[string]string)
+			for _, e := range errs {
+				translatedErrs[e.Field()] = e.Translate(trans)
+			}
+			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
 			return
 		}
 

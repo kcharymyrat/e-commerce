@@ -1,6 +1,8 @@
 package app
 
 import (
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/kcharymyrat/e-commerce/internal/config"
 	"github.com/kcharymyrat/e-commerce/internal/repository"
@@ -14,6 +16,8 @@ type Application struct {
 	Repositories repository.Repositories
 	RDB          *redis.Client
 	Limiter      *redis_rate.Limiter
+	Validator    *validator.Validate
+	ValUniTrans  *ut.UniversalTranslator
 }
 
 func NewApplication(
@@ -22,6 +26,8 @@ func NewApplication(
 	repositories repository.Repositories,
 	rdb *redis.Client,
 	limiter *redis_rate.Limiter,
+	validator *validator.Validate,
+	uniTrans *ut.UniversalTranslator,
 ) *Application {
 	return &Application{
 		Config:       cfg,
@@ -29,5 +35,7 @@ func NewApplication(
 		Repositories: repositories,
 		RDB:          rdb,
 		Limiter:      limiter,
+		Validator:    validator,
+		ValUniTrans:  uniTrans,
 	}
 }

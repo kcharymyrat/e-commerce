@@ -13,7 +13,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
 
 func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {

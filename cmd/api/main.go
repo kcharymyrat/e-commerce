@@ -13,6 +13,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/config"
 	"github.com/kcharymyrat/e-commerce/internal/repository"
 	"github.com/kcharymyrat/e-commerce/internal/server"
+	"github.com/kcharymyrat/e-commerce/internal/validation"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -66,7 +67,18 @@ func main() {
 	limiter := redis_rate.NewLimiter(rdb)
 	log.Info().Str("env", cfg.Env).Msg("redis connection and limiter established")
 
-	app := app.NewApplication(cfg, &logger, repository.NewRepositories(db), rdb, limiter)
+	validator := validation.NewValidator()
+	valUniTrans := validation.NewUniversalTranslator()
+
+	app := app.NewApplication(
+		cfg,
+		&logger,
+		repository.NewRepositories(db),
+		rdb,
+		limiter,
+		validator,
+		valUniTrans,
+	)
 
 	err = server.Serve(app)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 type Category struct {
 	ID          uuid.UUID  `json:"id" db:"id" validate:"required,uuid"`
 	ParentID    *uuid.UUID `json:"parent_id,omitempty" db:"parent_id" validate:"omitempty,uuid"`
-	Name        string     `json:"name" db:"name" validate:"required,min=3,max=100"`
+	Name        string     `json:"name" db:"name" validate:"required,min=3,max=50"`
 	Slug        string     `json:"slug" db:"slug" validate:"required,slug"`
 	Description *string    `json:"description,omitempty" db:"description" validate:"omitempty,max=500"`
 	ImageUrl    string     `json:"image_url" db:"image_url" validate:"required,url"`

@@ -9,8 +9,19 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/validation"
 	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
+
+func GetLangHeaderAndRegisterValTrans(r *http.Request, app *app.Application) error {
+	lang := common.GetAcceptLanguage(r)
+
+	// Initialize the translator
+	trans, _ := app.ValUniTrans.GetTranslator(lang)
+
+	// Register translations for the selected language
+	return validation.RegisterTranslations(app, trans, lang)
+}
 
 func HandleCategoryServiceErrors(w http.ResponseWriter, r *http.Request, app *app.Application, err error) {
 	switch {
