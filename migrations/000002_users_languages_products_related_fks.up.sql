@@ -84,6 +84,16 @@ ADD CONSTRAINT categories_updated_by_id_fk FOREIGN KEY (updated_by_id)
 REFERENCES users(id) ON DELETE RESTRICT;
 
 
+-- promotions table fk constraints
+ALTER TABLE promotions
+ADD CONSTRAINT promo_created_by_id_fk FOREIGN KEY (created_by_id)
+REFERENCES users(id) ON DELETE RESTRICT;
+
+ALTER TABLE promotions
+ADD CONSTRAINT promo_updated_by_id_fk FOREIGN KEY (updated_by_id)
+REFERENCES users(id) ON DELETE RESTRICT;
+
+
 -- products table fk constraints
 ALTER TABLE products
 ADD CONSTRAINT products_created_by_id_fk FOREIGN KEY (created_by_id) 
@@ -112,6 +122,30 @@ REFERENCES products(id) ON DELETE CASCADE;
 ALTER TABLE products_categories
 ADD CONSTRAINT products_categories_category_id_fk FOREIGN KEY (category_id) 
 REFERENCES categories(id) ON DELETE CASCADE;
+
+
+-- products_promotions table fk constraints
+ALTER TABLE products_promotions
+ADD CONSTRAINT products_promotions_product_id_fk FOREIGN KEY (product_id)
+REFERENCES products(id) ON DELETE CASCADE;
+
+ALTER TABLE products_promotions
+ADD CONSTRAINT products_promotions_promotion_id_fk FOREIGN KEY (promotion_id)
+REFERENCES promotions(id) ON DELETE CASCADE;
+
+
+-- product_price_histories table fk constraints
+ALTER TABLE product_price_histories
+ADD CONSTRAINT prod_price_hist_product_id_fk FOREIGN KEY (product_id)
+REFERENCES products(id) ON DELETE CASCADE;
+
+ALTER TABLE product_price_histories
+ADD CONSTRAINT prod_price_hist_created_by_id_fk FOREIGN KEY (created_by_id)
+REFERENCES users(id) ON DELETE RESTRICT; 
+
+ALTER TABLE product_price_histories
+ADD CONSTRAINT prod_price_hist_updated_by_id_fk FOREIGN KEY (updated_by_id)
+REFERENCES users(id) ON DELETE RESTRICT; 
 
 
 -- product_images table fk constaints

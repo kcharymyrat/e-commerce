@@ -19,17 +19,3 @@ type Category struct {
 	UpdatedByID uuid.UUID  `json:"updated_by_id" db:"updated_by_id" validate:"required,uuid"`
 	Version     int        `json:"version" db:"version" validate:"gte=0"`
 }
-
-// func ValidateCategory(v *validator.Validator, category *Category) {
-// 	v.Check(category.Name != "", "name", "must be provided")
-// 	v.Check(category.Slug != "", "slug", "must be provided")
-// 	v.Check(category.ImageUrl != "", "image_url", "must be provided")
-// 	v.Check(category.CreatedByID != uuid.Nil, "created_by_id", "must be provided")
-// 	v.Check(category.UpdatedByID != uuid.Nil, "updated_by_id", "must be provided")
-
-// 	v.Check(len([]byte(category.Name)) <= 50, "name", "must not be more than 50 bytes long")
-// 	v.Check(len([]byte(category.Slug)) <= 50, "slug", "must not be more than 50 bytes long")
-
-// 	v.Check(category.UpdatedAt.After(time.Now()), "updated_at", "can not be in the future")
-// 	v.Check(category.CreatedAt.After(category.UpdatedAt), "created_at", "can not be later than updated_at")
-// }

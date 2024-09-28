@@ -39,10 +39,18 @@ DROP TRIGGER IF EXISTS categories_set_timestamps ON categories;
 DROP TRIGGER IF EXISTS categories_prevent_created_at_update ON categories;
 DROP TRIGGER IF EXISTS categories_prevent_created_by_id_change ON categories;
 
+-- promotions table triggers
+DROP TRIGGER IF EXISTS promotions_set_timestamps ON promotions;
+DROP TRIGGER IF EXISTS promotions_prevent_created_at_update ON promotions;
+DROP TRIGGER IF EXISTS promotions_prevent_created_by_id_change ON promotions;
+
 -- products table triggers
 DROP TRIGGER IF EXISTS products_set_timestamps ON products;
 DROP TRIGGER IF EXISTS products_prevent_created_at_update ON products;
 DROP TRIGGER IF EXISTS products_prevent_created_by_id_change ON products;
+
+-- product_price_histories table triggers
+DROP TRIGGER IF EXISTS prod_price_hist_prevent_created_at_update ON product_price_histories;
 
 -- product_images table triggers
 DROP TRIGGER IF EXISTS prod_imgs_set_timestamps ON product_images;

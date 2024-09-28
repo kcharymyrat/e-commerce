@@ -39,12 +39,20 @@ CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
 CREATE INDEX IF NOT EXISTS idx_categories_slug on categories(slug);
 CREATE INDEX IF NOT EXISTS idx_categories_parent_id ON categories(parent_id);
 
+-- promotions table indexes
+CREATE INDEX IF NOT EXISTS idx_promotions_type ON promotions(type);
+CREATE INDEX IF NOT EXISTS idx_promotions_sale_percent ON promotions(sale_percent);
+CREATE INDEX IF NOT EXISTS idx_promotions_start_date ON promotions(start_date);
+CREATE INDEX IF NOT EXISTS idx_promotions_end_date ON promotions(end_date);
+CREATE INDEX IF NOT EXISTS idx_promotions_is_active ON promotions(is_active);
+
 -- products table indexes
 CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
 CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
 CREATE INDEX IF NOT EXISTS idx_products_code ON products(code);
 CREATE INDEX IF NOT EXISTS idx_products_is_new ON products(is_new);
-CREATE INDEX IF NOT EXISTS idx_products_sale_percent ON products(sale_percent); 
+CREATE INDEX IF NOT EXISTS idx_products_is_active ON products(is_active);
+CREATE INDEX IF NOT EXISTS idx_products_price ON products(price); 
 
 -- products_brands table indexes
 CREATE INDEX IF NOT EXISTS idx_products_brands_product_id ON products_brands(product_id);
@@ -55,6 +63,15 @@ CREATE INDEX IF NOT EXISTS idx_products_brands_together ON products_brands(produ
 CREATE INDEX IF NOT EXISTS idx_products_categories_product_id ON products_categories(product_id);
 CREATE INDEX IF NOT EXISTS idx_products_categories_category_id ON products_categories(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_categories_together ON products_categories(product_id, category_id);
+
+-- products_promotions table indexes
+CREATE INDEX IF NOT EXISTS idx_products_promotions_product_id ON products_promotions(product_id);
+CREATE INDEX IF NOT EXISTS idx_products_promotions_promotion_id ON products_promotions(promotion_id);
+CREATE INDEX IF NOT EXISTS idx_products_promotions_together ON products_promotions(product_id, promotion_id);
+
+-- product_price_histories table indexes
+CREATE INDEX IF NOT EXISTS idx_prod_price_hist_product_id ON product_price_histories(product_id);
+CREATE INDEX IF NOT EXISTS idx_prod_price_hist_created_at ON product_price_histories(created_at);
 
 -- product_images table indexes
 CREATE INDEX IF NOT EXISTS idx_prod_imgs_product_id ON product_images(product_id);

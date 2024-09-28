@@ -39,12 +39,20 @@ DROP INDEX IF EXISTS idx_categories_name;
 DROP INDEX IF EXISTS idx_categories_slug;
 DROP INDEX IF EXISTS idx_categories_parent_id;
 
+-- promotions table indexes
+DROP INDEX IF EXISTS idx_promotions_type;
+DROP INDEX IF EXISTS idx_promotions_sale_percent;
+DROP INDEX IF EXISTS idx_promotions_start_date;
+DROP INDEX IF EXISTS idx_promotions_end_date;
+DROP INDEX IF EXISTS idx_promotions_is_active;
+
 -- products table indexes
 DROP INDEX IF EXISTS idx_products_name;
 DROP INDEX IF EXISTS idx_products_slug;
 DROP INDEX IF EXISTS idx_products_code;
 DROP INDEX IF EXISTS idx_products_is_new;
-DROP INDEX IF EXISTS idx_products_sale_percent;
+DROP INDEX IF EXISTS idx_products_is_active;
+DROP INDEX IF EXISTS idx_products_price;
 
 -- products_brands table indexes
 DROP INDEX IF EXISTS idx_products_brands_product_id;
@@ -55,6 +63,15 @@ DROP INDEX IF EXISTS idx_products_brands_together;
 DROP INDEX IF EXISTS idx_products_categories_product_id;
 DROP INDEX IF EXISTS idx_products_categories_category_id;
 DROP INDEX IF EXISTS idx_products_categories_together;
+
+-- products_promotions table indexes
+DROP INDEX IF EXISTS idx_products_promotions_product_id;
+DROP INDEX IF EXISTS idx_products_promotions_promotion_id;
+DROP INDEX IF EXISTS idx_products_promotions_together;
+
+-- product_price_histories table indexes
+DROP INDEX IF EXISTS idx_prod_price_hist_product_id;
+DROP INDEX IF EXISTS idx_prod_price_hist_created_at;
 
 -- product_images table indexes
 DROP INDEX IF EXISTS idx_prod_imgs_product_id;

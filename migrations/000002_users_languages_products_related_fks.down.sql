@@ -30,6 +30,10 @@ ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_parent_id_fk;
 ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_created_by_id_fk;
 ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_updated_by_id_fk;
 
+-- promotions table fk constraints
+ALTER TABLE promotions DROP CONSTRAINT IF EXISTS promo_created_by_id_fk;
+ALTER TABLE promotions DROP CONSTRAINT IF EXISTS promo_updated_by_id_fk;
+
 -- products table fk constraints
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_created_by_id_fk;
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_updated_by_id_fk;
@@ -37,6 +41,15 @@ ALTER TABLE products DROP CONSTRAINT IF EXISTS products_updated_by_id_fk;
 -- products_brands table fk constraints
 ALTER TABLE products_brands DROP CONSTRAINT IF EXISTS products_brands_product_id_fk;
 ALTER TABLE products_brands DROP CONSTRAINT IF EXISTS products_brands_brand_id_fk;
+
+-- products_promotions table fk constraints
+ALTER TABLE products_promotions DROP CONSTRAINT IF EXISTS products_promotions_product_id_fk;
+ALTER TABLE products_promotions DROP CONSTRAINT IF EXISTS products_promotions_promotion_id_fk;
+
+-- product_price_histories table fk constraints
+ALTER TABLE product_price_histories DROP CONSTRAINT IF EXISTS prod_price_hist_product_id_fk;
+ALTER TABLE product_price_histories DROP CONSTRAINT IF EXISTS prod_price_hist_created_by_id_fk;
+ALTER TABLE product_price_histories DROP CONSTRAINT IF EXISTS prod_price_hist_updated_by_id_fk;
 
 -- products_categories table fk constraints
 ALTER TABLE products_categories DROP CONSTRAINT IF EXISTS products_categories_product_id_fk;

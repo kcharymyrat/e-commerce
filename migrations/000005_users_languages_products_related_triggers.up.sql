@@ -138,6 +138,23 @@ FOR EACH ROW
 EXECUTE FUNCTION prevent_created_by_id_change();
 
 
+-- promotions table triggers
+CREATE TRIGGER promotions_set_timestamps
+BEFORE INSERT OR UPDATE ON promotions
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+
+CREATE TRIGGER promotions_prevent_created_at_update
+BEFORE UPDATE ON promotions
+FOR EACH ROW 
+EXECUTE FUNCTION prevent_created_at_update();
+
+CREATE TRIGGER promotions_prevent_created_by_id_change
+BEFORE UPDATE ON promotions
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_by_id_change();
+
+
 -- products table triggers
 CREATE TRIGGER products_set_timestamps
 BEFORE INSERT OR UPDATE ON products
@@ -153,6 +170,13 @@ CREATE TRIGGER products_prevent_created_by_id_change
 BEFORE UPDATE ON products
 FOR EACH ROW
 EXECUTE FUNCTION prevent_created_by_id_change();
+
+
+-- product_price_histories table triggers
+CREATE TRIGGER prod_price_hist_prevent_created_at_update
+BEFORE UPDATE ON product_price_histories
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_at_update();
 
 
 -- product_images table triggers

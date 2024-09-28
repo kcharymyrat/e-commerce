@@ -1,3 +1,15 @@
+-- TYPES 
+CREATE TYPE promotion_type AS ENUM (
+    'SALE',
+    'HOLIDAY_SALE',
+    'SEASONAL_SALE',
+    'FLASH_SALE',
+    'CLEARANCE',
+    'BOGO'
+);
+
+
+-- TABLES
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^\+[1-9][0-9]{7,14}$'),
@@ -127,7 +139,7 @@ CREATE TABLE IF NOT EXISTS brands (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     logo_url text NOT NULL,
     name varchar(50) NOT NULL UNIQUE,
-    slug varchar(50) NOT NULL UNIQUE,
+    slug varchar(50) NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
@@ -142,9 +154,28 @@ CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     parent_id uuid,
     name varchar(50) NOT NULL UNIQUE,
-    slug varchar(50) NOT NULL UNIQUE,
+    slug varchar(50) NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
     description text,
     image_url text NOT NULL,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    created_by_id uuid NOT NULL,
+    updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
+
+    CHECK (updated_at >= created_at)
+);
+
+
+CREATE TABLE IF NOT EXISTS promotions (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type promotion_type NOT NULL,
+    name varchar(50) NOT NULL,
+    description text,
+    sale_percent integer NOT NULL CHECK (sale_percent BETWEEN 1 AND 100),
+    start_date timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    end_date timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    is_active boolean NOT NULL DEFAULT FALSE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
@@ -158,14 +189,14 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS products (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     name varchar(50) NOT NULL UNIQUE,
-    slug varchar(50) NOT NULL UNIQUE,
+    slug varchar(50) NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
     description text,
     code varchar(32) NOT NULL UNIQUE,
     weight_kg decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (weight_kg >= 0.00),
     stock_amount integer NOT NULL DEFAULT 0 CHECK (stock_amount >= 0),
     is_adult boolean NOT NULL DEFAULT FALSE,
-    is_new boolean NOT NULL DEFAULT TRUE,
-    is_active boolean NOT NULL DEFAULT TRUE,
+    is_new boolean NOT NULL DEFAULT FALSE,
+    is_active boolean NOT NULL DEFAULT FALSE,
     in_stock boolean NOT NULL GENERATED ALWAYS AS (
         CASE 
             WHEN stock_amount > 0 THEN TRUE
@@ -173,13 +204,9 @@ CREATE TABLE IF NOT EXISTS products (
         END
     )STORED,
     price decimal(10, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0.00),
-    sale_percent decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (price >= 0.00 AND price <= 100.00),
-    sale_price decimal(10, 2) NOT NULL GENERATED ALWAYS AS (
-        price * (1::decimal - sale_percent / 100::decimal)
-    )STORED,
-    image text NOT NULL,
-    thumbnail text NOT NULL,
-    video text NOT NULL,
+    image_url text NOT NULL,
+    thumbnail_url text NOT NULL,
+    video_url text NOT NULL,
     average_rating decimal(3, 2) NOT NULL DEFAULT 0.00 CHECK (average_rating BETWEEN 0.00 AND 5.00),
     number_of_reviews integer DEFAULT 0 CHECK (number_of_reviews >= 0),
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
@@ -189,8 +216,7 @@ CREATE TABLE IF NOT EXISTS products (
     version integer NOT NULL DEFAULT 1,
 
 
-    CHECK (updated_at >= created_at),
-    CHECK (sale_price <= price)
+    CHECK (updated_at >= created_at)
 );
 
 
@@ -209,6 +235,33 @@ CREATE TABLE IF NOT EXISTS products_categories (
     category_id uuid NOT NULL,
 
     UNIQUE (product_id, category_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS products_promotions (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id uuid NOT NULL,
+    promotion_id uuid NOT NULL,
+
+    UNIQUE (product_id, promotion_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS product_price_histories (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id uuid NOT NULL,
+    old_price decimal(10, 2) NOT NULL CHECK (old_price >= 0.00),
+    new_price decimal(10, 2) NOT NULL CHECK (new_price >= 0.00),
+    old_sale_price decimal(10, 2) NOT NULL CHECK (old_sale_price >= 0.00),
+    new_sale_price decimal(10, 2) NOT NULL CHECK (new_sale_price >= 0.00),
+    reason text NOT NULL,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone,
+    created_by_id uuid,
+    updated_by_id uuid,
+    version integer NOT NULL DEFAULT 1,
+
+    CHECK (updated_at >= created_at)
 );
 
 
