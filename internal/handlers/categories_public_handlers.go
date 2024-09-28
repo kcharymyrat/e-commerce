@@ -4,32 +4,45 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
-	"github.com/kcharymyrat/e-commerce/internal/validator"
+	"github.com/kcharymyrat/e-commerce/internal/validation"
 )
 
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		lang := common.GetAcceptLanguage(r)
+		// Initialize the translator
+		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		// Register translations for the selected language
+		err := validation.RegisterTranslations(app, valTrans, lang)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
+
 		input := requests.ListCategoriesInput{}
-		v := validator.New()
 
 		// Parse query string from the request
 		qs := r.URL.Query()
 
 		// Reading query parameters
-		readAndValidateQueryParameters(&input, qs, v)
+		readCategoryQueryParameters(&input, qs)
 
-		// Validate input using your filters
-		filtersValidation(&input, v)
-
-		// If validation fails, return a validation error response
-		if !v.Valid() {
-			common.FailedValidationResponse(app.Logger, w, r, v.Errors)
+		// Validate input
+		err = app.Validator.Struct(input)
+		if err != nil {
+			errs := err.(validator.ValidationErrors)
+			translatedErrs := make(map[string]string)
+			for _, e := range errs {
+				translatedErrs[e.Field()] = e.Translate(valTrans)
+			}
+			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
 			return
 		}
 
@@ -60,6 +73,16 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		lang := common.GetAcceptLanguage(r)
+		// Initialize the translator
+		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		// Register translations for the selected language
+		err := validation.RegisterTranslations(app, valTrans, lang)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, w, r, err)
+			return
+		}
+
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, w, r)

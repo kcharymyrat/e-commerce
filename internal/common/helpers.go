@@ -125,7 +125,7 @@ func ReadQueryCSStrs(qs url.Values, key string) []string {
 	return strings.Split(strings.TrimSpace(strings.ToLower(s)), ",")
 }
 
-func ReadQueryUUID(qs url.Values, key string, v *validator.Validator) *uuid.UUID {
+func ReadQueryUUID(qs url.Values, key string) *uuid.UUID {
 	s := qs.Get(key)
 	if s == "" {
 		return nil
@@ -133,14 +133,13 @@ func ReadQueryUUID(qs url.Values, key string, v *validator.Validator) *uuid.UUID
 
 	qsUUID, err := uuid.Parse(s)
 	if err != nil {
-		v.AddError(key, "is not in correct uuid format.")
 		return nil
 	}
 
 	return &qsUUID
 }
 
-func ReadQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.UUID {
+func ReadQueryCSUUIDs(qs url.Values, key string) []uuid.UUID {
 	s := qs.Get(key)
 	if s == "" {
 		return []uuid.UUID{}
@@ -152,7 +151,6 @@ func ReadQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.
 		trimmedS := strings.TrimSpace(s)
 		qsUUID, err := uuid.Parse(trimmedS)
 		if err != nil {
-			v.AddError(trimmedS, "is not not in correct uuid format")
 			break
 		}
 		uuids = append(uuids, qsUUID)
@@ -161,7 +159,7 @@ func ReadQueryCSUUIDs(qs url.Values, key string, v *validator.Validator) []uuid.
 	return uuids
 }
 
-func ReadQueryInt(qs url.Values, key string, v *validator.Validator) *int {
+func ReadQueryInt(qs url.Values, key string) *int {
 	s := qs.Get(key)
 
 	if s == "" {
@@ -170,14 +168,13 @@ func ReadQueryInt(qs url.Values, key string, v *validator.Validator) *int {
 
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		v.AddError(key, "must be an integer value")
 		return nil
 	}
 
 	return &i
 }
 
-func ReadQueryTime(qs url.Values, key string, v *validator.Validator) *time.Time {
+func ReadQueryTime(qs url.Values, key string) *time.Time {
 	s := qs.Get(key)
 	if s == "" {
 		return nil
@@ -185,7 +182,6 @@ func ReadQueryTime(qs url.Values, key string, v *validator.Validator) *time.Time
 
 	qsTime, err := time.Parse(time.RFC3339, s)
 	if err != nil {
-		v.AddError(key, "invalid time format, use ISO 8601 (e.g., 2023-09-13T15:04:05Z)")
 		return nil
 	}
 

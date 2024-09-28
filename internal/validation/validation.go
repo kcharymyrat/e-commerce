@@ -19,7 +19,12 @@ var (
 )
 
 func NewValidator() *validator.Validate {
-	return validator.New()
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	// Register the custom validation for slugs
+	validate.RegisterValidation("slug", validateSlug)
+
+	return validate
 }
 
 func NewUniversalTranslator() *ut.UniversalTranslator {
@@ -46,4 +51,9 @@ func RegisterTranslations(app *app.Application, trans ut.Translator, lang string
 	default:
 		return en_translations.RegisterDefaultTranslations(app.Validator, trans)
 	}
+}
+
+func validateSlug(fl validator.FieldLevel) bool {
+	slugRegex := regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+	return slugRegex.MatchString(fl.Field().String())
 }

@@ -8,20 +8,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
-	"github.com/kcharymyrat/e-commerce/internal/filters"
-	"github.com/kcharymyrat/e-commerce/internal/validation"
-	"github.com/kcharymyrat/e-commerce/internal/validator"
 )
-
-func GetLangHeaderAndRegisterValTrans(r *http.Request, app *app.Application) error {
-	lang := common.GetAcceptLanguage(r)
-
-	// Initialize the translator
-	trans, _ := app.ValUniTrans.GetTranslator(lang)
-
-	// Register translations for the selected language
-	return validation.RegisterTranslations(app, trans, lang)
-}
 
 func HandleCategoryServiceErrors(w http.ResponseWriter, r *http.Request, app *app.Application, err error) {
 	switch {
@@ -50,29 +37,21 @@ func HandleCategoryServiceErrors(w http.ResponseWriter, r *http.Request, app *ap
 	}
 }
 
-func readAndValidateQueryParameters(input *requests.ListCategoriesInput, qs url.Values, v *validator.Validator) {
+func readCategoryQueryParameters(input *requests.ListCategoriesInput, qs url.Values) {
 	input.Names = common.ReadQueryCSStrs(qs, "names")
 	input.Slugs = common.ReadQueryCSStrs(qs, "slugs")
-	input.ParentIDs = common.ReadQueryCSUUIDs(qs, "parent_ids", v)
+	input.ParentIDs = common.ReadQueryCSUUIDs(qs, "parent_ids")
 	input.Search = common.ReadQueryStr(qs, "search")
-	input.CreatedAtFrom = common.ReadQueryTime(qs, "created_at_from", v)
-	input.CreatedAtUpTo = common.ReadQueryTime(qs, "created_at_up_to", v)
-	input.UpdatedAtFrom = common.ReadQueryTime(qs, "updated_at_from", v)
-	input.UpdatedAtUpTo = common.ReadQueryTime(qs, "updated_at_up_to", v)
-	input.CreatedByIDs = common.ReadQueryCSUUIDs(qs, "created_by_ids", v)
-	input.UpdatedByIDs = common.ReadQueryCSUUIDs(qs, "updated_by_ids", v)
+	input.CreatedAtFrom = common.ReadQueryTime(qs, "created_at_from")
+	input.CreatedAtUpTo = common.ReadQueryTime(qs, "created_at_up_to")
+	input.UpdatedAtFrom = common.ReadQueryTime(qs, "updated_at_from")
+	input.UpdatedAtUpTo = common.ReadQueryTime(qs, "updated_at_up_to")
+	input.CreatedByIDs = common.ReadQueryCSUUIDs(qs, "created_by_ids")
+	input.UpdatedByIDs = common.ReadQueryCSUUIDs(qs, "updated_by_ids")
 	input.Sorts = common.ReadQueryCSStrs(qs, "sorts")
 	input.SortSafeList = []string{
 		"id", "name", "created_at", "updated_at", "-id", "-name", "-created_at", "-updated_at",
 	}
-	input.Page = common.ReadQueryInt(qs, "page", v)
-	input.PageSize = common.ReadQueryInt(qs, "page_size", v)
-}
-
-func filtersValidation(input *requests.ListCategoriesInput, v *validator.Validator) {
-	filters.ValidateSearchFilters(v, input.SearchFilters)
-	filters.ValidateCreatedUpdatedAtFilters(v, input.CreatedUpdatedAtFilters)
-	filters.ValidateCreatedUpdatedByFilters(v, input.CreatedUpdatedByFilters)
-	filters.ValidateSortFilters(v, input.SortListFilters)
-	filters.ValidatePaginationFilters(v, input.PaginationFilters)
+	input.Page = common.ReadQueryInt(qs, "page")
+	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
