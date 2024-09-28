@@ -11,6 +11,7 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	ru_translations "github.com/go-playground/validator/v10/translations/ru"
 	"github.com/kcharymyrat/e-commerce/internal/app"
+	"github.com/shopspring/decimal"
 )
 
 var (
@@ -21,8 +22,9 @@ var (
 func NewValidator() *validator.Validate {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
-	// Register the custom validation for slugs
 	validate.RegisterValidation("slug", validateSlug)
+	validate.RegisterValidation("decimalpercent", validateDecimalPercent)
+	validate.RegisterValidation("decimalgtezero", validateDecimalGTE)
 
 	return validate
 }
@@ -56,4 +58,21 @@ func RegisterTranslations(app *app.Application, trans ut.Translator, lang string
 func validateSlug(fl validator.FieldLevel) bool {
 	slugRegex := regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
 	return slugRegex.MatchString(fl.Field().String())
+}
+
+func validateDecimalPercent(fl validator.FieldLevel) bool {
+	val := fl.Field().Interface().(decimal.Decimal)
+
+	min := decimal.NewFromInt(0)
+	max := decimal.NewFromInt(100)
+
+	return val.GreaterThanOrEqual(min) && val.LessThanOrEqual(max)
+}
+
+func validateDecimalGTE(fl validator.FieldLevel) bool {
+	val := fl.Field().Interface().(decimal.Decimal)
+
+	min := decimal.NewFromInt(0)
+
+	return val.GreaterThanOrEqual(min)
 }
