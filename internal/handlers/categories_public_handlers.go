@@ -11,7 +11,6 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
-	"github.com/kcharymyrat/e-commerce/internal/validation"
 )
 
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
@@ -19,12 +18,6 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 		lang := common.GetAcceptLanguage(r)
 		// Initialize the translator
 		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
-		// Register translations for the selected language
-		err := validation.RegisterTranslations(app, valTrans, lang)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
-			return
-		}
 
 		input := requests.ListCategoriesInput{}
 
@@ -35,7 +28,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 		readCategoryQueryParameters(&input, qs)
 
 		// Validate input
-		err = app.Validator.Struct(input)
+		err := app.Validator.Struct(input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -74,14 +67,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lang := common.GetAcceptLanguage(r)
-		// Initialize the translator
 		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
-		// Register translations for the selected language
-		err := validation.RegisterTranslations(app, valTrans, lang)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
-			return
-		}
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -97,6 +83,18 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 			default:
 				common.ServerErrorResponse(app.Logger, w, r, err)
 			}
+			return
+		}
+
+		// FIXME: Is it redundant?
+		err = app.Validator.Struct(category)
+		if err != nil {
+			errs := err.(validator.ValidationErrors)
+			translatedErrs := make(map[string]string)
+			for _, e := range errs {
+				translatedErrs[e.Field()] = e.Translate(valTrans)
+			}
+			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
 			return
 		}
 

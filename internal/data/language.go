@@ -7,14 +7,14 @@ import (
 )
 
 type Language struct {
-	ID          uuid.UUID `json:"id" db:"id"`
-	Code        string    `json:"code" db:"code"`
-	Name        string    `json:"name" db:"name"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-	CreatedById uuid.UUID `json:"created_by_id" db:"created_by_id"`
-	UpdatedById uuid.UUID `json:"updated_by_id" db:"updated_by_id"`
-	Version     int       `json:"version" db:"version"`
+	ID          uuid.UUID `json:"id" db:"id" validate:"required,uuid"`
+	Code        string    `json:"code" db:"code" validate:"required,max=10"`
+	Name        string    `json:"name" db:"name" validate:"required,max=50"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at" validate:"required"`
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at" validate:"required,gtefield=CreatedAt"`
+	CreatedById uuid.UUID `json:"created_by_id" db:"created_by_id" validate:"required,uuid"`
+	UpdatedById uuid.UUID `json:"updated_by_id" db:"updated_by_id" validate:"required,uuid"`
+	Version     int       `json:"version" db:"version" validate:"required,number,min=1"`
 }
 
 // CREATE TABLE IF NOT EXISTS languages (

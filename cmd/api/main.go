@@ -80,6 +80,32 @@ func main() {
 		valUniTrans,
 	)
 
+	// Get the translator for each language (for example, English)
+	enTrans := validation.GetTranslator(valUniTrans, "en")
+	ruTrans := validation.GetTranslator(valUniTrans, "ru_RU")
+	tkTrans := validation.GetTranslator(valUniTrans, "tk_TM")
+
+	// Register default translations for each language
+	err = validation.RegisterTranslations(app, enTrans, "en")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to register English translations")
+	}
+
+	err = validation.RegisterTranslations(app, ruTrans, "ru_RU")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to register Russian translations")
+	}
+
+	err = validation.RegisterTranslations(app, tkTrans, "tk_TM")
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to register Turkmen translations")
+	}
+
+	// Register custom translations (you can reuse the same translators)
+	validation.RegisterCustomEnTranslations(app, enTrans)
+	validation.RegisterCustomRuTranslations(app, ruTrans)
+	validation.RegisterCustomTkTranslations(app, tkTrans)
+
 	err = server.Serve(app)
 	if err != nil {
 		app.Logger.Fatal().Stack().Err(err).Msg("Server failed to start")
