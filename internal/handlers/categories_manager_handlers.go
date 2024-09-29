@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
@@ -12,12 +13,13 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.ListCategoriesInput{}
 
@@ -42,7 +44,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 		// Retrieve categories from your data models
 		categories, metadata, err := services.ListCategoriesService(app, input)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -59,20 +61,20 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			"results":  categoryManagerResponses,
 		}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		var categoryInput requests.CreateCategoryInput
 		err := common.ReadJSON(w, r, &categoryInput)
 		if err != nil {
-			common.BadRequestResponse(app.Logger, w, r, err)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -90,7 +92,7 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.CreateCategoryService(app, category)
 		if err != nil {
-			HandleCategoryServiceErrors(w, r, app, err)
+			HandleCategoryServiceErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -101,19 +103,19 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": categoryResponse}, headers)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, w, r)
+			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -121,9 +123,9 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, w, r)
+				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
 			return
 		}
@@ -144,19 +146,19 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryManagerResponse}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, w, r)
+			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -164,9 +166,9 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, w, r)
+				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 				return
 			}
 		}
@@ -175,7 +177,7 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = common.ReadJSON(w, r, &input)
 		if err != nil {
-			common.BadRequestResponse(app.Logger, w, r, err)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -199,25 +201,25 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = app.Repositories.Categories.Update(category)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, w, r)
+			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -225,9 +227,9 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, w, r)
+				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 				return
 			}
 		}
@@ -236,7 +238,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = common.ReadJSON(w, r, &input)
 		if err != nil {
-			common.BadRequestResponse(app.Logger, w, r, err)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -267,25 +269,25 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = app.Repositories.Categories.Update(category)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// lang := common.GetAcceptLanguage(r)
-		// valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, w, r)
+			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -293,16 +295,16 @@ func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, w, r)
+				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
 			return
 		}
 
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "category successfully deleted"}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }

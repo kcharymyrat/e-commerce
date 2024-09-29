@@ -6,34 +6,74 @@ import (
 	"net/url"
 
 	"github.com/kcharymyrat/e-commerce/api/requests"
-	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/rs/zerolog"
 )
 
-func HandleCategoryServiceErrors(w http.ResponseWriter, r *http.Request, app *app.Application, err error) {
+func serviceBadRequestResponse(
+	logger *zerolog.Logger,
+	localizer *i18n.Localizer,
+	w http.ResponseWriter,
+	r *http.Request,
+	messageId string,
+	err error,
+) {
+	message, e := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: messageId,
+		TemplateData: map[string]interface{}{
+			"details": err.Error(),
+		},
+	})
+
+	if e != nil {
+		common.ErrorResponse(logger, w, r, http.StatusInternalServerError, e.Error())
+		return
+	}
+
+	common.ErrorResponse(logger, w, r, http.StatusBadRequest, message)
+}
+
+func HandleCategoryServiceErrors(
+	logger *zerolog.Logger,
+	localizer *i18n.Localizer,
+	w http.ResponseWriter,
+	r *http.Request,
+	err error,
+) {
 	switch {
 	case errors.Is(err, common.ErrIntegrityConstraintViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrIntegrityConstraintViolation)
+		messageId := "integrity_constraint_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrIntegrityConstraintViolation)
 	case errors.Is(err, common.ErrRestrictViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrRestrictViolation)
+		messageId := "restrict_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrRestrictViolation)
 	case errors.Is(err, common.ErrNotNullViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrNotNullViolation)
+		messageId := "restrict_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrNotNullViolation)
 	case errors.Is(err, common.ErrForeignKeyViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrForeignKeyViolation)
+		messageId := "foreign_key_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrForeignKeyViolation)
 	case errors.Is(err, common.ErrUniqueViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrUniqueViolation)
+		messageId := "unique_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrUniqueViolation)
 	case errors.Is(err, common.ErrCheckViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrCheckViolation)
+		messageId := "check_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrCheckViolation)
 	case errors.Is(err, common.ErrExclusionViolation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrExclusionViolation)
+		messageId := "exclusion_violation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrExclusionViolation)
 	case errors.Is(err, common.ErrStringDataTruncation):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrStringDataTruncation)
+		messageId := "string_data_truncation"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrStringDataTruncation)
 	case errors.Is(err, common.ErrNumericValueOutOfRange):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrNumericValueOutOfRange)
+		messageId := "numeric_value_out_of_range"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrNumericValueOutOfRange)
 	case errors.Is(err, common.ErrInvalidDatetimeFormat):
-		common.BadRequestResponse(app.Logger, w, r, common.ErrInvalidDatetimeFormat)
+		messageId := "invalid_datetime_format"
+		serviceBadRequestResponse(logger, localizer, w, r, messageId, common.ErrInvalidDatetimeFormat)
 	default:
-		common.ServerErrorResponse(app.Logger, w, r, err)
+		common.ServerErrorResponse(logger, localizer, w, r, err)
 	}
 }
 

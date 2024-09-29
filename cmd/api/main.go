@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -14,10 +15,12 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/repository"
 	"github.com/kcharymyrat/e-commerce/internal/server"
 	"github.com/kcharymyrat/e-commerce/internal/validation"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"golang.org/x/text/language"
 )
 
 func main() {
@@ -69,6 +72,7 @@ func main() {
 
 	validator := validation.NewValidator()
 	valUniTrans := validation.NewUniversalTranslator()
+	i18nBundle := loadTranslations()
 
 	app := app.NewApplication(
 		cfg,
@@ -78,6 +82,7 @@ func main() {
 		limiter,
 		validator,
 		valUniTrans,
+		i18nBundle,
 	)
 
 	// Get the translator for each language (for example, English)
@@ -156,4 +161,16 @@ func openDB(cfg *config.Config) (*pgxpool.Pool, error) {
 
 	return dbConnPool, nil
 
+}
+
+func loadTranslations() *i18n.Bundle {
+	bundle := i18n.NewBundle(language.English)
+	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
+
+	// Load translation files
+	bundle.MustLoadMessageFile("internal/translations/en.json")
+	bundle.MustLoadMessageFile("internal/translations/ru.json")
+	bundle.MustLoadMessageFile("internal/translations/tk.json")
+
+	return bundle
 }

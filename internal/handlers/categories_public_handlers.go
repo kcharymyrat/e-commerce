@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
@@ -11,13 +12,13 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		// Initialize the translator
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.ListCategoriesInput{}
 
@@ -42,7 +43,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 		// Retrieve categories from your data models
 		categories, metadata, err := services.ListCategoriesService(app, input)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -59,19 +60,19 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 			"results":  categoryPublicResponses,
 		}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang := common.GetAcceptLanguage(r)
-		valTrans, _ := app.ValUniTrans.GetTranslator(lang)
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, w, r)
+			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -79,9 +80,9 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, w, r)
+				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.ServerErrorResponse(app.Logger, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
 			return
 		}
@@ -102,7 +103,7 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryPublicResponse}, nil)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, w, r, err)
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }

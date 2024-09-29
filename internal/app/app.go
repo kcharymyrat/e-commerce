@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/kcharymyrat/e-commerce/internal/config"
 	"github.com/kcharymyrat/e-commerce/internal/repository"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 )
@@ -18,6 +19,7 @@ type Application struct {
 	Limiter      *redis_rate.Limiter
 	Validator    *validator.Validate
 	ValUniTrans  *ut.UniversalTranslator
+	I18nBundle   *i18n.Bundle
 }
 
 func NewApplication(
@@ -28,6 +30,7 @@ func NewApplication(
 	limiter *redis_rate.Limiter,
 	validator *validator.Validate,
 	uniTrans *ut.UniversalTranslator,
+	i18nBundle *i18n.Bundle,
 ) *Application {
 	return &Application{
 		Config:       cfg,
@@ -37,5 +40,6 @@ func NewApplication(
 		Limiter:      limiter,
 		Validator:    validator,
 		ValUniTrans:  uniTrans,
+		I18nBundle:   i18nBundle,
 	}
 }

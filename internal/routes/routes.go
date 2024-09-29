@@ -14,6 +14,7 @@ func Routes(app *app.Application) *chi.Mux {
 	r.Use(chiMiddleware.RequestID)
 	r.Use(chiMiddleware.RealIP)
 	r.Use(middleware.RequestLogger(app))
+	r.Use(middleware.LocalizationMiddleware(app))
 	r.Use(middleware.GeneralRateLimiter(app))
 	r.Use(middleware.IPBasedRateLimiter(app))
 	r.Use(middleware.Recoverer(app))
