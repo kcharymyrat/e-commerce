@@ -41,14 +41,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("len-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("len-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("len-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -62,14 +54,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				}
 
 				if err = ut.AddCardinal("len-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("len-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("len-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -149,14 +133,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("min-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("min-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("min-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -168,15 +144,8 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				if err = ut.Add("min-items", "{0} iň az {1} elementden ybarat bolmaly", false); err != nil {
 					return
 				}
+
 				if err = ut.AddCardinal("min-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("min-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("min-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -256,14 +225,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("max-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("max-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("max-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -276,14 +237,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 				if err = ut.AddCardinal("max-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("max-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("max-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -393,14 +346,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("lt-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lt-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("lt-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -414,14 +359,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				}
 
 				if err = ut.AddCardinal("lt-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lt-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lt-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -530,14 +467,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("lte-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lte-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("lte-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -551,14 +480,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				}
 
 				if err = ut.AddCardinal("lte-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lte-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("lte-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -666,14 +587,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("gt-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gt-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("gt-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -687,14 +600,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				}
 
 				if err = ut.AddCardinal("gt-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gt-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gt-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
@@ -802,14 +707,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 					return
 				}
 
-				if err = ut.AddCardinal("gte-string-character", "{0} nyşan", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gte-string-character", "{0} nyşan", locales.PluralRuleMany, false); err != nil {
-					return
-				}
-
 				if err = ut.AddCardinal("gte-string-character", "{0} nyşan", locales.PluralRuleOther, false); err != nil {
 					return
 				}
@@ -823,14 +720,6 @@ func RegisterDefaultTurkmenTranslations(v *validator.Validate, trans ut.Translat
 				}
 
 				if err = ut.AddCardinal("gte-items-item", "{0} element", locales.PluralRuleOne, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gte-items-item", "{0} element", locales.PluralRuleFew, false); err != nil {
-					return
-				}
-
-				if err = ut.AddCardinal("gte-items-item", "{0} element", locales.PluralRuleMany, false); err != nil {
 					return
 				}
 
