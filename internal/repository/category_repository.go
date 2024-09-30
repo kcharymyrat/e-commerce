@@ -2,13 +2,13 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
@@ -77,7 +77,7 @@ func (r CategoryRepository) Get(id uuid.UUID) (*data.Category, error) {
 	)
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, common.ErrRecordNotFound
 		default:
 			return nil, err
@@ -295,7 +295,7 @@ func (r CategoryRepository) Update(category *data.Category) error {
 
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return common.ErrEditConflict
 		default:
 			return err
@@ -309,7 +309,7 @@ func (r CategoryRepository) Delete(id uuid.UUID) error {
 	query := `
 	DELETE FROM categories
 	WHERE id = $1
-`
+	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
@@ -321,7 +321,7 @@ func (r CategoryRepository) Delete(id uuid.UUID) error {
 
 	rowsAffected := result.RowsAffected()
 
-	if rowsAffected == 0 {
+	if rowsAffected < 1 {
 		return common.ErrRecordNotFound
 	}
 

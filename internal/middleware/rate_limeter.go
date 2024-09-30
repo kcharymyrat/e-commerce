@@ -20,7 +20,7 @@ func GeneralRateLimiter(app *app.Application) func(http.Handler) http.Handler {
 			localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 			key := "project:general"
 
-			res, err := app.Limiter.Allow(r.Context(), key, redis_rate.PerMinute(10_000))
+			res, err := app.Limiter.Allow(r.Context(), key, redis_rate.PerMinute(10_000)) // FIXME: store in env
 			if err != nil {
 				app.Logger.Error().
 					Err(err).
@@ -81,7 +81,7 @@ func IPBasedRateLimiter(app *app.Application) func(http.Handler) http.Handler {
 			}
 
 			key := fmt.Sprintf("rate_limit:%s", ip)
-			res, err := app.Limiter.Allow(r.Context(), key, redis_rate.PerMinute(100))
+			res, err := app.Limiter.Allow(r.Context(), key, redis_rate.PerMinute(100)) // FIXME: store in env
 			if err != nil {
 				app.Logger.Error().
 					Err(err).

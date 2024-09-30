@@ -165,6 +165,8 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		category, err := services.GetCategoryService(app, id)
 		if err != nil {
 			switch {
+			case errors.Is(err, common.ErrEditConflict):
+				common.EditConflictResponse(app.Logger, localizer, w, r)
 			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
@@ -226,6 +228,8 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 		category, err := app.Repositories.Categories.Get(id)
 		if err != nil {
 			switch {
+			case errors.Is(err, common.ErrEditConflict):
+				common.EditConflictResponse(app.Logger, localizer, w, r)
 			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
