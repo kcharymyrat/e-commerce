@@ -16,20 +16,20 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
+func CreateLanguageHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
-		var categoryInput requests.CreateCategoryInput
-		err := common.ReadJSON(w, r, &categoryInput)
+		input := requests.CreateLanguageInput{}
+		err := common.ReadJSON(w, r, &input)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		category := mappers.CreateCategoryInputToCategoryMapper(&categoryInput)
-		err = app.Validator.Struct(category)
+		language := mappers.CreateLanguageInputToLanguageMapper(&input)
+		err = app.Validator.Struct(language)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -40,36 +40,36 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = services.CreateCategoryService(app, category)
+		err = services.CreateLanguageService(app, language)
 		if err != nil {
 			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
 		headers := make(http.Header)
-		headers.Set("Location", fmt.Sprintf("/api/v1/%v", category.ID))
+		headers.Set("Location", fmt.Sprintf("api/v1/%s", language.ID))
 
-		categoryResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
+		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": categoryResponse}, headers)
+		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"language": languageResponse}, headers)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
+func GetLanguageHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, localizer, w, r)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		category, err := services.GetCategoryService(app, id)
+		language, err := services.GetLanguageService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -80,30 +80,25 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
+		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryManagerResponse}, nil)
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": languageResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
+func ListLanguagesHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
-		input := requests.ListCategoriesInput{}
+		input := requests.ListLanguagesInput{}
 
-		// Parse query string from the request
 		qs := r.URL.Query()
-
-		// Reading query parameters
-		readCategoryQueryParameters(&input, qs)
-
-		// Validate input
-		err := app.Validator.Struct(input)
+		readLanguageQueryParameters(&input, qs)
+		err := app.Validator.Struct(&input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -114,24 +109,21 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		// Retrieve categories from your data models
-		categories, metadata, err := services.ListCategoriesService(app, input)
+		languages, metadata, err := services.ListLanguagesService(app, input)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		// TODO: Map categories to category responses
-		categoryManagerResponses := make([]*responses.CategoryManagerResponse, len(categories))
-		for _, category := range categories {
-			result := mappers.CategoryToCategoryManagerResponseMapper(category)
-			categoryManagerResponses = append(categoryManagerResponses, result)
+		languagesResponse := make([]*responses.LanguageManagerResponse, len(languages))
+		for _, language := range languages {
+			res := mappers.LanguageToLanguageManagerResponseMapper(language)
+			languagesResponse = append(languagesResponse, res)
 		}
 
-		// Write the response as JSON
 		err = common.WriteJson(w, http.StatusOK, common.Envelope{
 			"metadata": metadata,
-			"results":  categoryManagerResponses,
+			"results":  languagesResponse,
 		}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
@@ -139,33 +131,19 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
+func UpdateLanguageHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, localizer, w, r)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		category, err := services.GetCategoryService(app, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrEditConflict):
-				common.EditConflictResponse(app.Logger, localizer, w, r)
-			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
-			default:
-				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-				return
-			}
-		}
-
-		input := requests.UpdateCategoryInput{}
-
-		err = common.ReadJSON(w, r, &input)
+		input := requests.UpdateLanguageInput{}
+		err = common.ReadJSON(w, r, input)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
@@ -174,39 +152,15 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		err = app.Validator.Struct(input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
-			translatedErrs := make(map[string]string)
+			transErrs := make(map[string]string)
 			for _, e := range errs {
-				translatedErrs[e.Field()] = e.Translate(valTrans)
+				transErrs[e.Field()] = e.Translate(valTrans)
 			}
-			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
+			common.FailedValidationResponse(app.Logger, w, r, transErrs)
 			return
 		}
 
-		err = services.UpdateCategoryService(app, &input, category)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-		}
-	}
-}
-
-func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
-
-		id, err := common.ReadUUIDParam(r)
-		if err != nil {
-			common.NotFoundResponse(app.Logger, localizer, w, r)
-			return
-		}
-
-		category, err := app.Repositories.Categories.Get(id)
+		language, err := services.GetLanguageService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrEditConflict):
@@ -219,50 +173,83 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 			}
 		}
 
-		input := requests.PartialUpdateCategoryInput{}
-
-		err = common.ReadJSON(w, r, &input)
-		if err != nil {
-			common.BadRequestResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-
-		err = app.Validator.Struct(category)
-		if err != nil {
-			errs := err.(validator.ValidationErrors)
-			translatedErrs := make(map[string]string)
-			for _, e := range errs {
-				translatedErrs[e.Field()] = e.Translate(valTrans)
-			}
-			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
-			return
-		}
-
-		err = services.PartialUpdateCategoryService(app, &input, category)
+		err = services.UpdateLanguageService(app, &input, language)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": language}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
+func PartialUpdateLanguageHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+		}
+
+		input := requests.PartialUpdateLanguageInput{}
+		err = common.ReadJSON(w, r, input)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		err = app.Validator.Struct(input)
+		if err != nil {
+			errs := err.(validator.ValidationErrors)
+			transErrs := make(map[string]string)
+			for _, e := range errs {
+				transErrs[e.Field()] = e.Translate(valTrans)
+			}
+			common.FailedValidationResponse(app.Logger, w, r, transErrs)
+			return
+		}
+
+		language, err := services.GetLanguageService(app, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, common.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, localizer, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			}
+			return
+		}
+
+		err = services.PartialUpdateLanguageService(app, &input, language)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": language}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+		}
+	}
+}
+
+func DeleteLanguageHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			common.NotFoundResponse(app.Logger, localizer, w, r)
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		err = services.DeleteCategoryService(app, id)
+		err = services.DeleteLanguageService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -274,7 +261,7 @@ func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// TODO: Needs localiztions
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "category successfully deleted"}, nil)
+		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "language successfully deleted"}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

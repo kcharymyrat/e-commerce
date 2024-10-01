@@ -6,10 +6,12 @@ import (
 
 type Repositories struct {
 	Categories CategoryRepository
+	Languages  LanguageRepository
 }
 
 func NewRepositories(dbpool *pgxpool.Pool) Repositories {
 	return Repositories{
 		Categories: CategoryRepository{DBPOOL: dbpool},
+		Languages:  LanguageRepository{DBPOOL: dbpool},
 	}
 }

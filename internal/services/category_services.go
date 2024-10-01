@@ -13,7 +13,7 @@ func ListCategoriesService(
 	app *app.Application,
 	input requests.ListCategoriesInput,
 ) ([]*data.Category, common.Metadata, error) {
-	return app.Repositories.Categories.GetAll(
+	return app.Repositories.Categories.List(
 		input.Names,
 		input.Slugs,
 		input.ParentIDs,
@@ -33,7 +33,7 @@ func ListCategoriesService(
 }
 
 func CreateCategoryService(app *app.Application, category *data.Category) error {
-	err := app.Repositories.Categories.Insert(category)
+	err := app.Repositories.Categories.Create(category)
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
 			return common.TransformPgErrToCustomError(pgErr)
@@ -45,4 +45,49 @@ func CreateCategoryService(app *app.Application, category *data.Category) error 
 
 func GetCategoryService(app *app.Application, id uuid.UUID) (*data.Category, error) {
 	return app.Repositories.Categories.Get(id)
+}
+
+func UpdateCategoryService(
+	app *app.Application,
+	input *requests.UpdateCategoryInput,
+	category *data.Category,
+) error {
+	category.ParentID = input.ParentID
+	category.Name = input.Name
+	category.Slug = input.Slug
+	category.Description = input.Description
+	category.ImageUrl = input.ImageUrl
+	category.UpdatedByID = input.UpdatedByID
+
+	return app.Repositories.Categories.Update(category)
+}
+
+func PartialUpdateCategoryService(
+	app *app.Application,
+	input *requests.PartialUpdateCategoryInput,
+	category *data.Category,
+) error {
+	if input.Name != nil {
+		category.Name = *input.Name
+	}
+
+	if input.Slug != nil {
+		category.Slug = *input.Slug
+	}
+
+	if input.Description != nil {
+		category.Description = input.Description
+	}
+
+	if input.ImageUrl != nil {
+		category.ImageUrl = *input.ImageUrl
+	}
+
+	category.UpdatedByID = input.UpdatedByID
+
+	return app.Repositories.Categories.Update(category)
+}
+
+func DeleteCategoryService(app *app.Application, id uuid.UUID) error {
+	return app.Repositories.Categories.Delete(id)
 }

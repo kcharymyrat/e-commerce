@@ -18,7 +18,7 @@ type CategoryRepository struct {
 	DBPOOL *pgxpool.Pool
 }
 
-func (r CategoryRepository) Insert(category *data.Category) error {
+func (r CategoryRepository) Create(category *data.Category) error {
 	query := `
 	INSERT INTO categories (
 		parent_id, 
@@ -87,7 +87,7 @@ func (r CategoryRepository) Get(id uuid.UUID) (*data.Category, error) {
 	return &category, nil
 }
 
-func (r CategoryRepository) GetAll(
+func (r CategoryRepository) List(
 	names, slugs []string,
 	parentIds []uuid.UUID,
 	search *string,

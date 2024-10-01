@@ -17,7 +17,7 @@ type LanguageRepository struct {
 	DBPOOL *pgxpool.Pool
 }
 
-func (r LanguageRepository) Insert(language *data.Language) error {
+func (r LanguageRepository) Create(language *data.Language) error {
 	query := `
 		INSERT INTO languages (
 			code,
@@ -31,8 +31,8 @@ func (r LanguageRepository) Insert(language *data.Language) error {
 	args := []interface{}{
 		language.Code,
 		language.Name,
-		language.CreatedById,
-		language.UpdatedById,
+		language.CreatedByID,
+		language.CreatedByID,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -64,8 +64,8 @@ func (r LanguageRepository) Get(id uuid.UUID) (*data.Language, error) {
 		&language.Name,
 		&language.CreatedAt,
 		&language.UpdatedAt,
-		&language.CreatedById,
-		&language.UpdatedById,
+		&language.CreatedByID,
+		&language.UpdatedByID,
 		&language.Version,
 	)
 
@@ -81,7 +81,7 @@ func (r LanguageRepository) Get(id uuid.UUID) (*data.Language, error) {
 	return &language, nil
 }
 
-func (r LanguageRepository) GetAll(page, pageSize *int) ([]*data.Language, common.Metadata, error) {
+func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.Metadata, error) {
 	query := `
 		SELECT *
 		FROM languages
@@ -130,8 +130,8 @@ func (r LanguageRepository) GetAll(page, pageSize *int) ([]*data.Language, commo
 			&language.Name,
 			&language.CreatedAt,
 			&language.UpdatedAt,
-			&language.CreatedById,
-			&language.UpdatedById,
+			&language.CreatedByID,
+			&language.UpdatedByID,
 			&language.Version,
 		)
 		if err != nil {
@@ -165,7 +165,7 @@ func (r LanguageRepository) Update(language *data.Language) error {
 	args := []interface{}{
 		language.Code,
 		language.Name,
-		language.UpdatedById,
+		language.UpdatedByID,
 		language.Version,
 	}
 

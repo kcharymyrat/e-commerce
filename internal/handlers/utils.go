@@ -34,7 +34,7 @@ func serviceBadRequestResponse(
 	common.ErrorResponse(logger, w, r, http.StatusBadRequest, message)
 }
 
-func HandleCategoryServiceErrors(
+func HandlePGErrors(
 	logger *zerolog.Logger,
 	localizer *i18n.Localizer,
 	w http.ResponseWriter,
@@ -92,6 +92,11 @@ func readCategoryQueryParameters(input *requests.ListCategoriesInput, qs url.Val
 	input.SortSafeList = []string{
 		"id", "name", "created_at", "updated_at", "-id", "-name", "-created_at", "-updated_at",
 	}
+	input.Page = common.ReadQueryInt(qs, "page")
+	input.PageSize = common.ReadQueryInt(qs, "page_size")
+}
+
+func readLanguageQueryParameters(input *requests.ListLanguagesInput, qs url.Values) {
 	input.Page = common.ReadQueryInt(qs, "page")
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }

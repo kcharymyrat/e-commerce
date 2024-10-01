@@ -16,10 +16,11 @@ import (
 )
 
 func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {
-	idStr := chi.URLParamFromCtx(r.Context(), "id") // eg: c303282d-f2e6-46ca-a04a-35d3d873712d
+	idStr := chi.URLParam(r, "id") // eg: c303282d-f2e6-46ca-a04a-35d3d873712d
 
 	idUUID, err := uuid.Parse(idStr)
 	if err != nil {
+		// FIXME: Maybe need localiation errors ??
 		return uuid.Nil, err
 	}
 
@@ -52,6 +53,7 @@ func WriteJson(
 	return nil
 }
 
+// TODO: Tranlate the errors
 func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
