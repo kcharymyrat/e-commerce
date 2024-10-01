@@ -10,6 +10,7 @@ import (
 	"github.com/go-redis/redis_rate/v10"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -17,7 +18,7 @@ func GeneralRateLimiter(app *app.Application) func(http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+			localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 			key := "project:general"
 
 			res, err := app.Limiter.Allow(r.Context(), key, redis_rate.PerMinute(10_000)) // FIXME: store in env
@@ -69,7 +70,7 @@ func IPBasedRateLimiter(app *app.Application) func(http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+			localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 			ip, _, err := net.SplitHostPort(r.RemoteAddr)
 			if err != nil {
 				app.Logger.Warn().

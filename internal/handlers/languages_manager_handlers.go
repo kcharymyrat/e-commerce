@@ -11,15 +11,17 @@ import (
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func CreateLanguageHandler(app *app.Application) http.HandlerFunc {
+func CreateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.CreateLanguageInput{}
 		err := common.ReadJSON(w, r, &input)
@@ -51,17 +53,17 @@ func CreateLanguageHandler(app *app.Application) http.HandlerFunc {
 
 		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"language": languageResponse}, headers)
+		err = common.WriteJson(w, http.StatusCreated, types.Envelope{"language": languageResponse}, headers)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func GetLanguageHandler(app *app.Application) http.HandlerFunc {
+func GetLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -82,17 +84,17 @@ func GetLanguageHandler(app *app.Application) http.HandlerFunc {
 
 		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": languageResponse}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": languageResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func ListLanguagesHandler(app *app.Application) http.HandlerFunc {
+func ListLanguagesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.ListLanguagesInput{}
 
@@ -121,7 +123,7 @@ func ListLanguagesHandler(app *app.Application) http.HandlerFunc {
 			languagesResponse = append(languagesResponse, res)
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{
 			"metadata": metadata,
 			"results":  languagesResponse,
 		}, nil)
@@ -131,10 +133,10 @@ func ListLanguagesHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func UpdateLanguageHandler(app *app.Application) http.HandlerFunc {
+func UpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -179,17 +181,17 @@ func UpdateLanguageHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": language}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": language}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func PartialUpdateLanguageHandler(app *app.Application) http.HandlerFunc {
+func PartialUpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -231,17 +233,17 @@ func PartialUpdateLanguageHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"language": language}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": language}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func DeleteLanguageHandler(app *app.Application) http.HandlerFunc {
+func DeleteLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -261,7 +263,7 @@ func DeleteLanguageHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// TODO: Needs localiztions
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "language successfully deleted"}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"message": "language successfully deleted"}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

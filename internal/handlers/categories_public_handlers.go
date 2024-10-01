@@ -10,15 +10,17 @@ import (
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.ListCategoriesInput{}
 
@@ -55,7 +57,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// Write the response as JSON
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{
 			"metadata": metadata,
 			"results":  categoryPublicResponses,
 		}, nil)
@@ -67,8 +69,8 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -101,7 +103,7 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 
 		categoryPublicResponse := mappers.CategoryToCategoryPublicResponseMapper(category)
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryPublicResponse}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": categoryPublicResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

@@ -30,6 +30,11 @@ func Routes(app *app.Application) *chi.Mux {
 			r.Get("/{id}", handlers.GetCategoryPublicHandler(app))
 		})
 
+		r.Route("/languages", func(r chi.Router) {
+			r.Get("/", handlers.ListLanguagesPublicHandler(app))
+			r.Get("/{id}", handlers.GetLanguagePublicHandler(app))
+		})
+
 		r.Route("/manager", func(r chi.Router) {
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
@@ -39,7 +44,17 @@ func Routes(app *app.Application) *chi.Mux {
 				r.Patch("/{id}", handlers.PartialUpdateCategoryManagerHandler(app))
 				r.Delete("/{id}", handlers.DeleteCategoryManagerHandler(app))
 			})
+
+			r.Route("/languages", func(r chi.Router) {
+				r.Get("/", handlers.ListLanguagesManagerHandler(app))
+				r.Post("/", handlers.CreateLanguageManagerHandler(app))
+				r.Get("/{id}", handlers.GetLanguageManagerHandler(app))
+				r.Put("/{id}", handlers.UpdateLanguageManagerHandler(app))
+				r.Patch("/{id}", handlers.PartialUpdateLanguageManagerHandler(app))
+				r.Delete("/{id}", handlers.DeleteLanguageManagerHandler(app))
+			})
 		})
+
 	})
 
 	// TODO: optimistic locking for the Products, Order tables

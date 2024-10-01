@@ -16,6 +16,8 @@
     "bad_request": "Bad request: {error}",
     "edit_conflict": "Unable to update the record due to an edit conflict, please try again.",
     "failed_validation": "One or more validation errors occurred.",
-    "rate_limit_exceeded": "Rate limit exceeded."
+    "rate_limit_exceeded": "Rate limit exceeded.",
+
+    "invalid_slug": "Invalid slug: {slug} for {resource}." 
   }
   

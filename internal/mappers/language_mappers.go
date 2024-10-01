@@ -26,3 +26,11 @@ func LanguageToLanguageManagerResponseMapper(input *data.Language) *responses.La
 		UpdatedByID: input.UpdatedByID,
 	}
 }
+
+func LanguageToLanguagePublicResponseMapper(input *data.Language) *responses.LanguagePublicResponse {
+	return &responses.LanguagePublicResponse{
+		ID:   input.ID,
+		Code: input.Code,
+		Name: input.Name,
+	}
+}

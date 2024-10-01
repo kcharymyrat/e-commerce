@@ -6,6 +6,7 @@ import (
 
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -18,8 +19,8 @@ func LocalizationMiddleware(app *app.Application) func(next http.Handler) http.H
 			valTrans, _ := app.ValUniTrans.GetTranslator(lang)
 
 			// Attach the localizer to the context
-			ctx := context.WithValue(r.Context(), common.LocalizerKey, localizer)
-			ctx = context.WithValue(ctx, common.ValTransKey, valTrans)
+			ctx := context.WithValue(r.Context(), constants.LocalizerKey, localizer)
+			ctx = context.WithValue(ctx, constants.ValTransKey, valTrans)
 			r = r.WithContext(ctx)
 
 			// Proceed to the next handler

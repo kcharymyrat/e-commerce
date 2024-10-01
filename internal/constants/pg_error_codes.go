@@ -1,4 +1,4 @@
-package common
+package constants
 
 // PostgreSQL common error codes
 const (

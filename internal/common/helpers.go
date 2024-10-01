@@ -7,12 +7,15 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {
@@ -27,10 +30,25 @@ func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {
 	return idUUID, nil
 }
 
+func ReadSlugParam(r *http.Request) (string, error) {
+	slug := chi.URLParam(r, "slug")
+
+	slugRegex, err := regexp.Compile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)
+	if err != nil {
+		return "", err
+	}
+
+	if !slugRegex.MatchString(slug) {
+		return "", errors.New(constants.InvalidIDErrMsg)
+	}
+
+	return slug, nil
+}
+
 func WriteJson(
 	w http.ResponseWriter,
 	status int,
-	data Envelope,
+	data types.Envelope,
 	headers http.Header,
 ) error {
 	// js, err := json.Marshal(data)

@@ -4,13 +4,15 @@ import (
 	"net/http"
 
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
 )
 
 func NotFound(logger *zerolog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 		message, err := localizer.Localize(&i18n.LocalizeConfig{
 			MessageID: "not_found",
 		})
@@ -20,7 +22,7 @@ func NotFound(logger *zerolog.Logger) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		envel := common.Envelope{"error": message}
+		envel := types.Envelope{"error": message}
 
 		err = common.WriteJson(w, http.StatusNotFound, envel, nil)
 		if err != nil {
@@ -32,7 +34,7 @@ func NotFound(logger *zerolog.Logger) http.HandlerFunc {
 
 func MethodNotAllowed(logger *zerolog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		message, err := localizer.Localize(&i18n.LocalizeConfig{
 			MessageID: "method_not_allowed",
@@ -45,7 +47,7 @@ func MethodNotAllowed(logger *zerolog.Logger) http.HandlerFunc {
 			logger.Error().Err(err).Str("url", r.URL.String()).Msg("error")
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		envel := common.Envelope{"error": message}
+		envel := types.Envelope{"error": message}
 
 		err = common.WriteJson(w, http.StatusMethodNotAllowed, envel, nil)
 		if err != nil {

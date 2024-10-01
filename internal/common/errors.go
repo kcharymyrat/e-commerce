@@ -6,48 +6,51 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rs/zerolog"
 )
 
 var ErrRecordNotFound = errors.New("record not found")
 var ErrEditConflict = errors.New("edit conflict")
+var ErrInvalidSlug = errors.New("invalid slug")
 
 var (
-	ErrIntegrityConstraintViolation = fmt.Errorf("%s :integrity constraint violation", IntegrityConstraintViolation)
-	ErrRestrictViolation            = fmt.Errorf("%s :restrict violation", RestrictViolation)
-	ErrNotNullViolation             = fmt.Errorf("%s :not null constraint violation", NotNullViolation)
-	ErrForeignKeyViolation          = fmt.Errorf("%s :foreign key violation", ForeignKeyViolation)
-	ErrUniqueViolation              = fmt.Errorf("%s :unique constraint violation", UniqueViolation)
-	ErrCheckViolation               = fmt.Errorf("%s :check constraint violation", CheckViolation)
-	ErrExclusionViolation           = fmt.Errorf("%s :exlusion violation", ExclusionViolation)
+	ErrIntegrityConstraintViolation = errors.New("integrity constraint violation")
+	ErrRestrictViolation            = errors.New("restrict violation")
+	ErrNotNullViolation             = errors.New("not null constraint violation")
+	ErrForeignKeyViolation          = errors.New("foreign key violation")
+	ErrUniqueViolation              = errors.New("unique constraint violation")
+	ErrCheckViolation               = errors.New("check constraint violation")
+	ErrExclusionViolation           = errors.New("exlusion violation")
 
-	ErrStringDataTruncation   = fmt.Errorf("%s :string data truncation", StringDataRightTruncationDataException)
-	ErrNumericValueOutOfRange = fmt.Errorf("%s :numeric value out of range", NumericValueOutOfRange)
-	ErrInvalidDatetimeFormat  = fmt.Errorf("%s :invalid datatime format", InvalidDatetimeFormat)
+	ErrStringDataTruncation   = errors.New("string data truncation")
+	ErrNumericValueOutOfRange = errors.New("numeric value out of range")
+	ErrInvalidDatetimeFormat  = errors.New("invalid datatime format")
 )
 
 func TransformPgErrToCustomError(pgErr *pgconn.PgError) error {
 	switch pgErr.Code {
-	case IntegrityConstraintViolation:
+	case constants.IntegrityConstraintViolation:
 		return fmt.Errorf("%w: %s", ErrIntegrityConstraintViolation, pgErr.Detail)
-	case RestrictViolation:
+	case constants.RestrictViolation:
 		return fmt.Errorf("%w: %s", ErrRestrictViolation, pgErr.Detail)
-	case NotNullViolation:
+	case constants.NotNullViolation:
 		return fmt.Errorf("%w: %s", ErrNotNullViolation, pgErr.Detail)
-	case ForeignKeyViolation:
+	case constants.ForeignKeyViolation:
 		return fmt.Errorf("%w: %s", ErrForeignKeyViolation, pgErr.Detail)
-	case UniqueViolation:
+	case constants.UniqueViolation:
 		return fmt.Errorf("%w: %s", ErrUniqueViolation, pgErr.Detail)
-	case ExclusionViolation:
+	case constants.ExclusionViolation:
 		return fmt.Errorf("%w: %s", ErrCheckViolation, pgErr.Detail)
-	case CheckViolation:
+	case constants.CheckViolation:
 		return fmt.Errorf("%w: %s", ErrCheckViolation, pgErr.Detail)
-	case StringDataRightTruncationDataException:
+	case constants.StringDataRightTruncationDataException:
 		return fmt.Errorf("%w: %s", ErrStringDataTruncation, pgErr.Detail)
-	case NumericValueOutOfRange:
+	case constants.NumericValueOutOfRange:
 		return fmt.Errorf("%w: %s", ErrNumericValueOutOfRange, pgErr.Detail)
-	case InvalidDatetimeFormat:
+	case constants.InvalidDatetimeFormat:
 		return fmt.Errorf("%w: %s", ErrInvalidDatetimeFormat, pgErr.Detail)
 	default:
 		return fmt.Errorf("%w: %s", pgErr, pgErr.Detail)
@@ -65,7 +68,7 @@ func ErrorResponse(
 	status int,
 	message interface{},
 ) {
-	envel := Envelope{"error": message}
+	envel := types.Envelope{"error": message}
 
 	err := WriteJson(w, status, envel, nil)
 	if err != nil {

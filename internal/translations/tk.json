@@ -16,6 +16,8 @@
     "bad_request": "Nädogry haýyş (request): {error}",
     "edit_conflict": "Üýtgetmek gapma-garşylygy sebäpli ýazgyny täzelemek başartmady, gaýtadan synanyşyň.",
     "failed_validation": "Bir ýa-da birnäçe tassyklama ýalňyşlygy ýüze çykdy.",
-    "rate_limit_exceeded": "Rate limit aşyldy."
+    "rate_limit_exceeded": "Rate limit aşyldy.",
+
+    "invalid_slug": "Nädogry slug: {slug} {resource} üçin."
   }
   

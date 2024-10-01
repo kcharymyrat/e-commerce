@@ -11,15 +11,17 @@ import (
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
+	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		var categoryInput requests.CreateCategoryInput
 		err := common.ReadJSON(w, r, &categoryInput)
@@ -51,7 +53,7 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		categoryResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
 
-		err = common.WriteJson(w, http.StatusCreated, common.Envelope{"category": categoryResponse}, headers)
+		err = common.WriteJson(w, http.StatusCreated, types.Envelope{"category": categoryResponse}, headers)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -61,7 +63,7 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -82,7 +84,7 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": categoryManagerResponse}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": categoryManagerResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -91,8 +93,8 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		input := requests.ListCategoriesInput{}
 
@@ -129,7 +131,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// Write the response as JSON
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{
 			"metadata": metadata,
 			"results":  categoryManagerResponses,
 		}, nil)
@@ -141,8 +143,8 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 
 func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -188,7 +190,7 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": category}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -197,8 +199,8 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -244,7 +246,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"category": category}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": category}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -254,7 +256,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(common.LocalizerKey).(*i18n.Localizer)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
@@ -274,7 +276,7 @@ func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		// TODO: Needs localiztions
-		err = common.WriteJson(w, http.StatusOK, common.Envelope{"message": "category successfully deleted"}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"message": "category successfully deleted"}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
