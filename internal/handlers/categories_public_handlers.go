@@ -69,16 +69,16 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		id, err := common.ReadUUIDParam(r)
+		slug, err := common.ReadSlugParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
-		category, err := services.GetCategoryService(app, id)
+		category, err := services.GetCategoryServiceBySlug(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -86,18 +86,6 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 			default:
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
-			return
-		}
-
-		// FIXME: Is it redundant?
-		err = app.Validator.Struct(category)
-		if err != nil {
-			errs := err.(validator.ValidationErrors)
-			translatedErrs := make(map[string]string)
-			for _, e := range errs {
-				translatedErrs[e.Field()] = e.Translate(valTrans)
-			}
-			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
 			return
 		}
 

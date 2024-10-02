@@ -65,13 +65,13 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		id, err := common.ReadUUIDParam(r)
+		slug, err := common.ReadSlugParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
-		category, err := services.GetCategoryService(app, id)
+		category, err := services.GetCategoryServiceBySlug(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -146,13 +146,13 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		id, err := common.ReadUUIDParam(r)
+		slug, err := common.ReadSlugParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
-		category, err := services.GetCategoryService(app, id)
+		category, err := services.GetCategoryServiceBySlug(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrEditConflict):
@@ -202,13 +202,13 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		id, err := common.ReadUUIDParam(r)
+		slug, err := common.ReadSlugParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
-		category, err := app.Repositories.Categories.Get(id)
+		category, err := services.GetCategoryServiceBySlug(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrEditConflict):
@@ -258,13 +258,13 @@ func DeleteCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		id, err := common.ReadUUIDParam(r)
+		slug, err := common.ReadSlugParam(r)
 		if err != nil {
 			common.NotFoundResponse(app.Logger, localizer, w, r)
 			return
 		}
 
-		err = services.DeleteCategoryService(app, id)
+		err = services.DeleteCategoryServiceBySlug(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):

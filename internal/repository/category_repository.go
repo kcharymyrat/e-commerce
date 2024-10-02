@@ -52,7 +52,7 @@ func (r CategoryRepository) Create(category *data.Category) error {
 	)
 }
 
-func (r CategoryRepository) Get(id uuid.UUID) (*data.Category, error) {
+func (r CategoryRepository) GetByID(id uuid.UUID) (*data.Category, error) {
 	query := `
 	SELECT * 
 	FROM categories
@@ -64,6 +64,41 @@ func (r CategoryRepository) Get(id uuid.UUID) (*data.Category, error) {
 	defer cancel()
 
 	err := r.DBPOOL.QueryRow(ctx, query, id).Scan(
+		&category.ID,
+		&category.ParentID,
+		&category.Name,
+		&category.Slug,
+		&category.ImageUrl,
+		&category.CreatedAt,
+		&category.UpdatedAt,
+		&category.CreatedByID,
+		&category.UpdatedByID,
+		&category.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, common.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &category, nil
+}
+
+func (r CategoryRepository) GetBySlug(slug string) (*data.Category, error) {
+	query := `
+	SELECT * 
+	FROM categories
+	WHERE slug = $1
+`
+	var category data.Category
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, slug).Scan(
 		&category.ID,
 		&category.ParentID,
 		&category.Name,
@@ -305,7 +340,7 @@ func (r CategoryRepository) Update(category *data.Category) error {
 	return nil
 }
 
-func (r CategoryRepository) Delete(id uuid.UUID) error {
+func (r CategoryRepository) DeleteByID(id uuid.UUID) error {
 	query := `
 	DELETE FROM categories
 	WHERE id = $1
@@ -315,6 +350,29 @@ func (r CategoryRepository) Delete(id uuid.UUID) error {
 	defer cancel()
 
 	result, err := r.DBPOOL.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+
+	if rowsAffected < 1 {
+		return common.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r CategoryRepository) DeleteBySlug(slug string) error {
+	query := `
+	DELETE FROM categories
+	WHERE slug = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	result, err := r.DBPOOL.Exec(ctx, query, slug)
 	if err != nil {
 		return err
 	}

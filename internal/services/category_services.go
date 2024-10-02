@@ -9,6 +9,25 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
 
+func CreateCategoryService(app *app.Application, category *data.Category) error {
+	err := app.Repositories.Categories.Create(category)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
+}
+
+func GetCategoryServiceByID(app *app.Application, id uuid.UUID) (*data.Category, error) {
+	return app.Repositories.Categories.GetByID(id)
+}
+
+func GetCategoryServiceBySlug(app *app.Application, slug string) (*data.Category, error) {
+	return app.Repositories.Categories.GetBySlug(slug)
+}
+
 func ListCategoriesService(
 	app *app.Application,
 	input requests.ListCategoriesInput,
@@ -30,21 +49,6 @@ func ListCategoriesService(
 		input.PageSize,
 	)
 
-}
-
-func CreateCategoryService(app *app.Application, category *data.Category) error {
-	err := app.Repositories.Categories.Create(category)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
-}
-
-func GetCategoryService(app *app.Application, id uuid.UUID) (*data.Category, error) {
-	return app.Repositories.Categories.Get(id)
 }
 
 func UpdateCategoryService(
@@ -88,6 +92,10 @@ func PartialUpdateCategoryService(
 	return app.Repositories.Categories.Update(category)
 }
 
-func DeleteCategoryService(app *app.Application, id uuid.UUID) error {
-	return app.Repositories.Categories.Delete(id)
+func DeleteCategoryServiceById(app *app.Application, id uuid.UUID) error {
+	return app.Repositories.Categories.DeleteByID(id)
+}
+
+func DeleteCategoryServiceBySlug(app *app.Application, slug string) error {
+	return app.Repositories.Categories.DeleteBySlug(slug)
 }

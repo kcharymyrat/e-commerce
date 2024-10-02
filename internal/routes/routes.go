@@ -27,7 +27,7 @@ func Routes(app *app.Application) *chi.Mux {
 
 		r.Route("/categories", func(r chi.Router) {
 			r.Get("/", handlers.ListCategoriesPublicHandler(app))
-			r.Get("/{id}", handlers.GetCategoryPublicHandler(app))
+			r.Get("/{slug}", handlers.GetCategoryPublicHandler(app))
 		})
 
 		r.Route("/languages", func(r chi.Router) {
@@ -39,10 +39,10 @@ func Routes(app *app.Application) *chi.Mux {
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
 				r.Post("/", handlers.CreateCategoryManagerHandler(app))
-				r.Get("/{id}", handlers.GetCategoryManagerHandler(app))
-				r.Put("/{id}", handlers.UpdateCategoryManagerHandler(app))
-				r.Patch("/{id}", handlers.PartialUpdateCategoryManagerHandler(app))
-				r.Delete("/{id}", handlers.DeleteCategoryManagerHandler(app))
+				r.Get("/{slug}", handlers.GetCategoryManagerHandler(app))
+				r.Put("/{slug}", handlers.UpdateCategoryManagerHandler(app))
+				r.Patch("/{slug}", handlers.PartialUpdateCategoryManagerHandler(app))
+				r.Delete("/{slug}", handlers.DeleteCategoryManagerHandler(app))
 			})
 
 			r.Route("/languages", func(r chi.Router) {
