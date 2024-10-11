@@ -135,41 +135,57 @@ func (r CategoryRepository) List(
 	page, pageSize *int,
 ) ([]*data.Category, common.Metadata, error) {
 	query := `
-SELECT (
-	count(*) OVER(),
-	id, 
-	name, 
-	parent_id, 
-	slug, 
-	description, 
-	image_url, 
-	created_at,
-	updated_at,
-	created_by_id, 
-	updated_by_id
-)
-FROM categories
-WHERE 1=1`
+		SELECT (
+			count(*) OVER(),
+			id, 
+			name, 
+			parent_id, 
+			slug, 
+			description, 
+			image_url, 
+			created_at,
+			updated_at,
+			created_by_id, 
+			updated_by_id
+		)
+		FROM categories
+		WHERE 1=1
+	`
 
 	args := []interface{}{}
 	argCounter := 1
 
+	// TODO: Check slices query addution
+
 	if len(names) > 0 {
-		query += fmt.Sprintf(" AND LOWER(name) = ANY($%d)", argCounter)
-		args = append(args, names)
-		argCounter++
+		query += fmt.Sprint(" AND (1=1")
+		for _, name := range names {
+			query += fmt.Sprintf(" OR LOWER(name) = $%d", argCounter)
+			args = append(args, name)
+			argCounter++
+		}
+		query += fmt.Sprint(") ")
 	}
 
 	if len(slugs) > 0 {
-		query += fmt.Sprintf(" AND LOWER(slug) = ANY($%d)", argCounter)
+		query += fmt.Sprint(" AND (1=1")
+		for _, slug := range slugs {
+			fmt.Println(slug)
+			query += fmt.Sprintf(" OR LOWER(slug) = $%d", argCounter)
+			argCounter++
+		}
 		args = append(args, slugs)
-		argCounter++
+		query += fmt.Sprint(") ")
 	}
 
 	if len(parentIds) > 0 {
-		query += fmt.Sprintf(" AND parent_id = ANY($%d)", argCounter)
-		args = append(args, parentIds)
-		argCounter++
+		query += fmt.Sprint(" AND (1=1")
+		for _, parentId := range parentIds {
+			query += fmt.Sprintf(" OR parent_id = %d", argCounter)
+			args = append(args, parentId)
+			argCounter++
+		}
+		query += fmt.Sprint(") ")
 	}
 
 	if search != nil {

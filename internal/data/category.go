@@ -14,8 +14,8 @@ type Category struct {
 	Description *string    `json:"description,omitempty" db:"description" validate:"omitempty,max=500"`
 	ImageUrl    string     `json:"image_url" db:"image_url" validate:"required,url"`
 	CreatedAt   time.Time  `json:"created_at" db:"created_at" validate:"required"`
-	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at" validate:"required"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at" validate:"required,gtefield=CreatedAt"`
 	CreatedByID uuid.UUID  `json:"created_by_id" db:"created_by_id" validate:"required,uuid"`
 	UpdatedByID uuid.UUID  `json:"updated_by_id" db:"updated_by_id" validate:"required,uuid"`
-	Version     int        `json:"version" db:"version" validate:"gte=0"`
+	Version     int        `json:"version" db:"version" validate:"required,number,min=1"`
 }
