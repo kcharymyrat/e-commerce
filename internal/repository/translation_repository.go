@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -101,7 +103,8 @@ func (r TranslationRepository) List(
 	sorts []string,
 	sortSafeList []string,
 	page, pageSize *int,
-) ([]*data.Category, common.Metadata, error) {
+) ([]*data.Translation, common.Metadata, error) {
+
 	query := `
 		SELECT COUNT(*) OVER(), * 
 		FROM translations
@@ -112,6 +115,139 @@ func (r TranslationRepository) List(
 	argCounter := 1
 
 	if len(langCodes) > 0 {
-		query := ` AND `
+		query += fmt.Sprintf(" AND language_code = ANY($%d)", argCounter)
+		args = append(args, langCodes)
+		argCounter++
 	}
+
+	if len(tableNames) > 0 {
+		query += fmt.Sprintf(" AND table_names = ANY($%d)", argCounter)
+		args = append(args, tableNames)
+		argCounter++
+	}
+
+	if len(fieldNames) > 0 {
+		query += fmt.Sprintf(" AND field_name = ANY($%d)", argCounter)
+		args = append(args, fieldNames)
+		argCounter++
+	}
+
+	if len(entityIDs) > 0 {
+		query += fmt.Sprintf(" AND entity_id = ANY($%d)", argCounter)
+		args = append(args, entityIDs)
+		argCounter++
+	}
+
+	if createdAtFrom != nil {
+		query += fmt.Sprintf(" AND created_at >= $%d", argCounter)
+		args = append(args, createdAtFrom)
+		argCounter++
+	}
+
+	if createdAtUpTo != nil {
+		query += fmt.Sprintf(" AND created_at <= $%d", argCounter)
+		args = append(args, createdAtFrom)
+		argCounter++
+	}
+
+	if updatedAtFrom != nil {
+		query += fmt.Sprintf(" AND updated_at >= $%d", argCounter)
+		args = append(args, *updatedAtFrom)
+		argCounter++
+	}
+
+	if updatedAtUpTo != nil {
+		query += fmt.Sprintf(" AND updated_at <= $%d", argCounter)
+		args = append(args, *updatedAtUpTo)
+		argCounter++
+	}
+
+	if len(createdByIDs) > 0 {
+		query += fmt.Sprintf(" AND created_by = ANY($%d)", argCounter)
+		args = append(args, createdByIDs)
+		argCounter++
+	}
+
+	if len(updatedByIDs) > 0 {
+		query += fmt.Sprintf(" AND updated_by_id = ANY($%d)", argCounter)
+		args = append(args, updatedByIDs)
+		argCounter++
+	}
+
+	if len(sorts) > 0 {
+		query += " ORDER BY"
+		for _, sort := range sorts {
+			direction := "ASC"
+			sortField := strings.TrimSpace(strings.ToLower(sort))
+			if strings.HasPrefix(sort, "-") {
+				direction = "DESC"
+				sortField = strings.TrimPrefix(sort, "-")
+			}
+			query += fmt.Sprintf(" %s %s,", sortField, direction)
+		}
+		query += " id ASC"
+	}
+
+	fallbackPageSize := 20 // FIXME: make a constant number
+	if pageSize != nil {
+		query += fmt.Sprintf(" LIMIT $%d", argCounter)
+		args = append(args, *pageSize)
+		argCounter++
+		fallbackPageSize = *pageSize
+	} else {
+		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
+	}
+
+	defaultPage := 1 // FIXME: make a constant number
+	if page != nil {
+		offset := fallbackPageSize * (*page - 1)
+		query += fmt.Sprintf(" OFFSET $%d", argCounter)
+		args = append(args, offset)
+		argCounter++
+	} else {
+		query += fmt.Sprintf(" LIMIT %d", defaultPage)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := r.DBPOOL.Query(ctx, query, args)
+	if err != nil {
+		return nil, common.Metadata{}, err
+	}
+	defer rows.Close()
+
+	totalRecords := 0
+	trs := []*data.Translation{}
+
+	for rows.Next() {
+		var tr data.Translation
+		err := rows.Scan(
+			&totalRecords,
+			&tr.ID,
+			&tr.LanguageCode,
+			&tr.EntityID,
+			&tr.TableName,
+			&tr.FieldName,
+			&tr.TranslatedValue,
+			&tr.CreatedAt,
+			&tr.UpdatedAt,
+			&tr.CreatedByID,
+			&tr.UpdatedByID,
+			&tr.Version,
+		)
+		if err != nil {
+			return nil, common.Metadata{}, err
+		}
+		trs = append(trs, &tr)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, common.Metadata{}, err
+	}
+
+	metadata := common.CalculateMetadata(totalRecords, *page, *pageSize)
+
+	return trs, metadata, nil
+
 }

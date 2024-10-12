@@ -156,7 +156,7 @@ func (r CategoryRepository) List(
 	argCounter := 1
 
 	if len(names) > 0 {
-		query += fmt.Sprintf(" AND LOWER(name) = ANY($%d)", argCounter)
+		query += fmt.Sprintf(" AND name = ANY($%d)", argCounter)
 		args = append(args, names)
 		argCounter++
 	}
@@ -168,7 +168,7 @@ func (r CategoryRepository) List(
 	}
 
 	if len(parentIds) > 0 {
-		query += fmt.Sprintf(" AND LOWER(slug) = ANY($%d)", argCounter)
+		query += fmt.Sprintf(" AND parent_id = ANY($%d)", argCounter)
 		args = append(args, parentIds)
 		argCounter++
 	}
@@ -216,7 +216,7 @@ func (r CategoryRepository) List(
 	}
 
 	if len(sorts) > 0 {
-		query += "ORDER BY"
+		query += " ORDER BY"
 		for _, sort := range sorts {
 			direction := "ASC"
 			sortField := strings.TrimSpace(strings.ToLower(sort))
