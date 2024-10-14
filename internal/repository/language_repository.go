@@ -46,7 +46,7 @@ func (r LanguageRepository) Create(language *data.Language) error {
 	)
 }
 
-func (r LanguageRepository) Get(id uuid.UUID) (*data.Language, error) {
+func (r LanguageRepository) GetByID(id uuid.UUID) (*data.Language, error) {
 	query := `
 		SELECT * 
 		FROM languages
@@ -59,6 +59,41 @@ func (r LanguageRepository) Get(id uuid.UUID) (*data.Language, error) {
 	language := data.Language{}
 
 	err := r.DBPOOL.QueryRow(ctx, query, id).Scan(
+		&language.ID,
+		&language.Code,
+		&language.Name,
+		&language.CreatedAt,
+		&language.UpdatedAt,
+		&language.CreatedByID,
+		&language.UpdatedByID,
+		&language.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, common.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &language, nil
+}
+
+func (r LanguageRepository) GetByCode(code string) (*data.Language, error) {
+	query := `
+		SELECT * 
+		FROM languages
+		WHERE code = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	language := data.Language{}
+
+	err := r.DBPOOL.QueryRow(ctx, query, code).Scan(
 		&language.ID,
 		&language.Code,
 		&language.Name,

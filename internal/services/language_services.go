@@ -28,7 +28,7 @@ func ListLanguagesService(
 }
 
 func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, error) {
-	return app.Repositories.Languages.Get(id)
+	return app.Repositories.Languages.GetByID(id)
 }
 
 func UpdateLanguageService(

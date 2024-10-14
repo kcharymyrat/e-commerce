@@ -251,3 +251,76 @@ func (r TranslationRepository) List(
 	return trs, metadata, nil
 
 }
+
+func (r TranslationRepository) Update(tr *data.Translation) error {
+	query := `
+		UPDATE translations
+		SET
+			language_code = $1,
+			entity_id = $2,
+			table_name = $3,
+			field_name = $4,
+			translated_values = $5
+			updated_by_id = $6,
+			version = version + 1
+		WHERE id = $7 AND version = $8
+		RETURNING id, language_code, version
+	`
+
+	args := []interface{}{
+		&tr.LanguageCode,
+		&tr.EntityID,
+		&tr.TableName,
+		&tr.FieldName,
+		&tr.TranslatedValue,
+		&tr.UpdatedByID,
+		&tr.ID,
+		&tr.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, args).Scan(
+		&tr.LanguageCode,
+		&tr.EntityID,
+		&tr.TableName,
+		&tr.FieldName,
+		&tr.TranslatedValue,
+		&tr.UpdatedByID,
+		&tr.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return common.ErrRecordNotFound
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r TranslationRepository) Delete(id uuid.UUID) error {
+	query := `
+		DELETE FROM translations
+		WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := r.DBPOOL.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected < 1 {
+		return common.ErrRecordNotFound
+	}
+
+	return nil
+}
