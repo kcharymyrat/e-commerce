@@ -35,7 +35,7 @@ func Routes(app *app.Application) *chi.Mux {
 			r.Get("/{id}", handlers.GetLanguagePublicHandler(app))
 		})
 
-		r.Route("/manager", func(r chi.Router) {
+		r.Route("/admin", func(r chi.Router) {
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
 				r.Post("/", handlers.CreateCategoryManagerHandler(app))

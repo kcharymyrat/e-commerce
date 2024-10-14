@@ -49,7 +49,7 @@ func CreateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		headers := make(http.Header)
-		headers.Set("Location", fmt.Sprintf("api/v1/%s", language.ID))
+		headers.Set("Location", fmt.Sprintf("api/v1/languages/%s", language.ID))
 
 		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 

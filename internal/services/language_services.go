@@ -20,15 +20,15 @@ func CreateLanguageService(app *app.Application, language *data.Language) error 
 	return nil
 }
 
+func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, error) {
+	return app.Repositories.Languages.GetByID(id)
+}
+
 func ListLanguagesService(
 	app *app.Application,
 	input requests.ListLanguagesInput,
 ) ([]*data.Language, common.Metadata, error) {
 	return app.Repositories.Languages.List(input.Page, input.PageSize)
-}
-
-func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, error) {
-	return app.Repositories.Languages.GetByID(id)
 }
 
 func UpdateLanguageService(

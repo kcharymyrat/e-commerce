@@ -20,11 +20,11 @@ func CreateCategoryService(app *app.Application, category *data.Category) error 
 	return nil
 }
 
-func GetCategoryServiceByID(app *app.Application, id uuid.UUID) (*data.Category, error) {
+func GetCategoryByIDService(app *app.Application, id uuid.UUID) (*data.Category, error) {
 	return app.Repositories.Categories.GetByID(id)
 }
 
-func GetCategoryServiceBySlug(app *app.Application, slug string) (*data.Category, error) {
+func GetCategoryBySlugService(app *app.Application, slug string) (*data.Category, error) {
 	return app.Repositories.Categories.GetBySlug(slug)
 }
 

@@ -29,7 +29,8 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 			created_by_id,
 			updated_by_id,
 		) VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, language_code, table_name, field_name, translated_value, version`
+		RETURNING id, language_code, table_name, field_name, translated_value, version
+	`
 
 	args := []interface{}{
 		&translation.LanguageCode,
@@ -54,19 +55,18 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 	)
 }
 
-// TODO: put the index on DB for entityID uuid.UUID, languageCode, fieldName string
-func (r TranslationRepository) Get(entityID uuid.UUID, languageCode, fieldName string) (*data.Translation, error) {
+func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) {
 	query := `
 		SELECT *
 		FROM translations
-		WHERE entity_id = $1 AND language_code = $2 AND field_name = $4`
+		WHERE id = $1`
 
 	var translation data.Translation
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := r.DBPOOL.QueryRow(ctx, query, entityID, languageCode, fieldName).Scan(
+	err := r.DBPOOL.QueryRow(ctx, query, id).Scan(
 		&translation.ID,
 		&translation.LanguageCode,
 		&translation.EntityID,
@@ -323,4 +323,41 @@ func (r TranslationRepository) Delete(id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+func (r TranslationRepository) GetByEntityIDLangCodeFieldName(entityID uuid.UUID, languageCode, fieldName string) (*data.Translation, error) {
+	query := `
+		SELECT *
+		FROM translations
+		WHERE entity_id = $1 AND language_code = $2 AND field_name = $4`
+
+	var translation data.Translation
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, entityID, languageCode, fieldName).Scan(
+		&translation.ID,
+		&translation.LanguageCode,
+		&translation.EntityID,
+		&translation.TableName,
+		&translation.FieldName,
+		&translation.TranslatedValue,
+		&translation.CreatedAt,
+		&translation.UpdatedAt,
+		&translation.CreatedByID,
+		&translation.UpdatedByID,
+		&translation.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, common.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &translation, nil
 }

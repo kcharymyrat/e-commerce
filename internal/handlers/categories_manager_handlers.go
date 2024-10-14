@@ -71,7 +71,7 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := services.GetCategoryServiceBySlug(app, slug)
+		category, err := services.GetCategoryBySlugService(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -152,7 +152,7 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := services.GetCategoryServiceBySlug(app, slug)
+		category, err := services.GetCategoryBySlugService(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrEditConflict):
@@ -208,7 +208,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 			return
 		}
 
-		category, err := services.GetCategoryServiceBySlug(app, slug)
+		category, err := services.GetCategoryBySlugService(app, slug)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrEditConflict):

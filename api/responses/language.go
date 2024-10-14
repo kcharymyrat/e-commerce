@@ -6,12 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type LanguagePublicResponse struct {
-	ID   uuid.UUID `json:"id"`
-	Code string    `json:"code"`
-	Name string    `json:"name"`
-}
-
 type LanguageManagerResponse struct {
 	ID          uuid.UUID `json:"id"`
 	Code        string    `json:"code"`
@@ -21,4 +15,10 @@ type LanguageManagerResponse struct {
 	CreatedByID uuid.UUID `json:"created_by_id"`
 	UpdatedByID uuid.UUID `json:"updated_by_id"`
 	Version     int       `json:"version"`
+}
+
+type LanguagePublicResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Code string    `json:"code"`
+	Name string    `json:"name"`
 }
