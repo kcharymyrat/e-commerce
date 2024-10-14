@@ -54,19 +54,19 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 	)
 }
 
-// TODO: put the index on DB for entityID uuid.UUID, languageCode, tableName, fieldName string
-func (r TranslationRepository) Get(entityID uuid.UUID, languageCode, tableName, fieldName string) (*data.Translation, error) {
+// TODO: put the index on DB for entityID uuid.UUID, languageCode, fieldName string
+func (r TranslationRepository) Get(entityID uuid.UUID, languageCode, fieldName string) (*data.Translation, error) {
 	query := `
 		SELECT *
 		FROM translations
-		WHERE entity_id = $1 AND language_code = $2 AND table_name = $3 AND field_name = $4`
+		WHERE entity_id = $1 AND language_code = $2 AND field_name = $4`
 
 	var translation data.Translation
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := r.DBPOOL.QueryRow(ctx, query, entityID, languageCode, tableName, fieldName).Scan(
+	err := r.DBPOOL.QueryRow(ctx, query, entityID, languageCode, fieldName).Scan(
 		&translation.ID,
 		&translation.LanguageCode,
 		&translation.EntityID,

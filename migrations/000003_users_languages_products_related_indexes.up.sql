@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_translations_table_name ON translations(table_nam
 CREATE INDEX IF NOT EXISTS idx_translations_field_name ON translations(field_name);
 CREATE INDEX IF NOT EXISTS idx_translations_entity_id ON translations(entity_id);
 CREATE INDEX IF NOT EXISTS idx_translations_entity_language ON translations(entity_id, language_code);
+CREATE INDEX IF NOT EXISTS idx_translations_entity_language_field ON translations(entity_id, language_code, field_name);
 
 -- brands table indexes
 CREATE INDEX IF NOT EXISTS idx_brands_name ON brands(name);

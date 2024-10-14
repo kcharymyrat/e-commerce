@@ -29,6 +29,7 @@ DROP INDEX IF EXISTS idx_translations_table_name;
 DROP INDEX IF EXISTS idx_translations_field_name;
 DROP INDEX IF EXISTS idx_translations_entity_id;
 DROP INDEX IF EXISTS idx_translations_entity_language;
+DROP INDEX IF EXISTS idx_translations_entity_language_field;
 
 -- brands table indexes
 DROP INDEX IF EXISTS idx_brands_title;
