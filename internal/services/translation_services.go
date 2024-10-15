@@ -46,3 +46,14 @@ func ListTranslationsService(
 		listTr.PageSize,
 	)
 }
+
+func UpdateTranslationService(
+	app *app.Application,
+	tr *data.Translation,
+) error {
+	return app.Repositories.Translations.Update(tr)
+}
+
+func DeleteTranslationService(app *app.Application, id uuid.UUID) error {
+	return app.Repositories.Translations.Delete(id)
+}

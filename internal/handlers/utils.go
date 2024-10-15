@@ -100,3 +100,23 @@ func readLanguageQueryParameters(input *requests.ListLanguagesInput, qs url.Valu
 	input.Page = common.ReadQueryInt(qs, "page")
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
+
+func readTranslationQueryParameters(input *requests.ListTranslationsInput, qs url.Values) {
+	input.LanguageCodes = common.ReadQueryCSStrs(qs, "language_codes")
+	input.TableNames = common.ReadQueryCSStrs(qs, "table_names")
+	input.FieldNames = common.ReadQueryCSStrs(qs, "field_names")
+	input.EntityIDs = common.ReadQueryCSUUIDs(qs, "entity_ids")
+	input.Search = common.ReadQueryStr(qs, "search")
+	input.CreatedAtFrom = common.ReadQueryTime(qs, "created_at_from")
+	input.CreatedAtUpTo = common.ReadQueryTime(qs, "created_at_up_to")
+	input.UpdatedAtFrom = common.ReadQueryTime(qs, "updated_at_from")
+	input.UpdatedAtUpTo = common.ReadQueryTime(qs, "updated_at_up_to")
+	input.CreatedByIDs = common.ReadQueryCSUUIDs(qs, "created_by_ids")
+	input.UpdatedByIDs = common.ReadQueryCSUUIDs(qs, "updated_by_ids")
+	input.Sorts = common.ReadQueryCSStrs(qs, "sorts")
+	input.SortSafeList = []string{
+		"id", "language_code", "entity_id", "table_name", "-id", "-language_code", "-entity_ids", "-table_name",
+	}
+	input.Page = common.ReadQueryInt(qs, "page")
+	input.PageSize = common.ReadQueryInt(qs, "page_size")
+}
