@@ -228,16 +228,18 @@ func (r CategoryRepository) List(
 		}
 		query += " id ASC"
 	}
-
+	fmt.Println("query =", query)
 	fallbackPageSize := 20 // FIXME: make a constant number
 	if pageSize != nil {
 		query += fmt.Sprintf(" LIMIT $%d", argCounter)
+		fmt.Println("query =", query)
 		args = append(args, *pageSize)
 		argCounter++
 		fallbackPageSize = *pageSize
 	} else {
 		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
 	}
+	fmt.Println("query =", query)
 
 	defaultPage := 1 // FIXME: make a constant number
 	if page != nil {
@@ -246,8 +248,9 @@ func (r CategoryRepository) List(
 		args = append(args, offset)
 		argCounter++
 	} else {
-		query += fmt.Sprintf(" LIMIT %d", defaultPage)
+		query += fmt.Sprintf(" OFFSET %d", defaultPage)
 	}
+	fmt.Println("query =", query)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

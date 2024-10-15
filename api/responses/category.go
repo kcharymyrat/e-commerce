@@ -6,6 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type CategoryWithTranslationsMangerResponse struct {
+	Category     CategoryManagerResponse      `json:"category"`
+	Translations map[string]map[string]string `json:"translations"`
+}
+
+type CategoryWithTranslationsPublicResponse struct {
+	Category     CategoryPublicResponse       `json:"category"`
+	Translations map[string]map[string]string `json:"translations"`
+}
+
 type CategoryManagerResponse struct {
 	ID          uuid.UUID  `json:"id"`
 	ParentID    *uuid.UUID `json:"parent_id,omitempty"`
