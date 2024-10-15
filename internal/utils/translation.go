@@ -9,14 +9,14 @@ func GetTranslationMap(
 	app *app.Application,
 	entityID uuid.UUID,
 	languageCode, fieldName string,
-) (string, error) {
+) (field_name_tr string, field_value_tr string, err error) {
 	tr, err := app.Repositories.Translations.GetByEntityIDLangCodeFieldName(
 		entityID, languageCode, fieldName,
 	)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return tr.TranslatedValue, nil
+	return tr.TranslatedFieldName, tr.TranslatedValue, nil
 }

@@ -87,19 +87,32 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
 
-		trMap := make(map[string]string)
-		name_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-		description_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
+		trMapWrapper := make(map[string]map[string]string)
 
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": categoryManagerResponse}, nil)
+		nameFieldTrMap := make(map[string]string)
+		name_field_tr, name_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+		nameFieldTrMap["field_name"] = name_field_tr
+		nameFieldTrMap["field_value"] = name_value_tr
+		trMapWrapper["name"] = nameFieldTrMap
+
+		descFieldTrMap := make(map[string]string)
+		desc_field_tr, desc_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+		descFieldTrMap["field_name"] = desc_field_tr
+		descFieldTrMap["field_value"] = desc_value_tr
+		trMapWrapper["description"] = nameFieldTrMap
+
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{
+			"category":     categoryManagerResponse,
+			"translations": trMapWrapper,
+		}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
