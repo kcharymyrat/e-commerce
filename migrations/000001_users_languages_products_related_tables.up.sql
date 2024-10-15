@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS translations (
     entity_id uuid NOT NULL,
     table_name varchar(50) NOT NULL,
     field_name varchar(50) NOT NULL,
+    translated_field_name varchar(50) NOT NULL,
     translated_value text NOT NULL,
 
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),

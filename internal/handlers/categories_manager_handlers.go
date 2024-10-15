@@ -62,6 +62,8 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		lang_code := common.GetAcceptLanguage(r)
+
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
@@ -83,6 +85,18 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
+
+		// trMap := make(map[string]string)
+		// name_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
+		// if err != nil {
+		// 	common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+		// 	return
+		// }
+		// description_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
+		// if err != nil {
+		// 	common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+		// 	return
+		// }
 
 		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": categoryManagerResponse}, nil)
 		if err != nil {

@@ -19,22 +19,3 @@ type Translation struct {
 	UpdatedByID     uuid.UUID `json:"updated_by_id" db:"updated_by_id" validate:"required,uuid"`
 	Version         int       `json:"version" db:"version" validate:"required,number,min=1"`
 }
-
-// CREATE TABLE IF NOT EXISTS translations (
-//     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-//     language_code varchar(10) NOT NULL,
-//     entity_id uuid NOT NULL,
-//     table_name varchar(50) NOT NULL,
-//     field_name varchar(50) NOT NULL,
-//     translated_value text NOT NULL,
-
-//     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
-//     created_by_id uuid NOT NULL,
-//     updated_by_id uuid NOT NULL,
-
-//     version integer NOT NULL DEFAULT 1,
-
-//     CHECK (updated_at >= created_at),
-//     UNIQUE (entity_id, language_code, table_name, field_name)
-// );
