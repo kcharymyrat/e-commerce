@@ -162,6 +162,7 @@ func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 		tr.EntityID = input.EntityID
 		tr.TableName = input.TableName
 		tr.FieldName = input.FieldName
+		tr.TranslatedFieldName = input.TranslatedFieldName
 		tr.TranslatedValue = input.TranslatedValue
 		tr.UpdatedByID = input.UpdatedByID
 
@@ -232,6 +233,9 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 		}
 		if input.FieldName != nil {
 			tr.FieldName = *input.FieldName
+		}
+		if input.TranslatedFieldName != nil {
+			tr.TranslatedFieldName = *input.TranslatedFieldName
 		}
 		if input.TranslatedValue != nil {
 			tr.TranslatedValue = *input.TranslatedValue

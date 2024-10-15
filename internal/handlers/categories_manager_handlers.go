@@ -15,6 +15,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
 	"github.com/kcharymyrat/e-commerce/internal/types"
+	"github.com/kcharymyrat/e-commerce/internal/utils"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -86,17 +87,17 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		categoryManagerResponse := mappers.CategoryToCategoryManagerResponseMapper(category)
 
-		// trMap := make(map[string]string)
-		// name_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
-		// if err != nil {
-		// 	common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-		// 	return
-		// }
-		// description_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
-		// if err != nil {
-		// 	common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-		// 	return
-		// }
+		trMap := make(map[string]string)
+		name_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+		description_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
 
 		err = common.WriteJson(w, http.StatusOK, types.Envelope{"category": categoryManagerResponse}, nil)
 		if err != nil {

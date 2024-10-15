@@ -8,23 +8,25 @@ import (
 
 func CreateTranslationInputToTranslationMapper(input *requests.CreateTranslationInput) *data.Translation {
 	return &data.Translation{
-		LanguageCode:    input.LanguageCode,
-		EntityID:        input.EntityID,
-		TableName:       input.TableName,
-		FieldName:       input.FieldName,
-		TranslatedValue: input.TranslatedValue,
-		CreatedByID:     input.CreatedByID,
-		UpdatedByID:     input.UpdatedByID,
+		LanguageCode:        input.LanguageCode,
+		EntityID:            input.EntityID,
+		TableName:           input.TableName,
+		FieldName:           input.FieldName,
+		TranslatedFieldName: input.TranslatedFieldName,
+		TranslatedValue:     input.TranslatedValue,
+		CreatedByID:         input.CreatedByID,
+		UpdatedByID:         input.UpdatedByID,
 	}
 }
 
 func TranslationToTranslationManagerResponseMappper(tr *data.Translation) *responses.TranslationManagerResponse {
 	return &responses.TranslationManagerResponse{
-		ID:              tr.ID,
-		LanguageCode:    tr.LanguageCode,
-		EntityID:        tr.EntityID,
-		TableName:       tr.TableName,
-		FieldName:       tr.FieldName,
-		TranslatedValue: tr.TranslatedValue,
+		ID:                  tr.ID,
+		LanguageCode:        tr.LanguageCode,
+		EntityID:            tr.EntityID,
+		TableName:           tr.TableName,
+		FieldName:           tr.FieldName,
+		TranslatedFieldName: tr.TranslatedFieldName,
+		TranslatedValue:     tr.TranslatedValue,
 	}
 }

@@ -25,11 +25,12 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 			entity_id,
 			table_name,
 			field_name,
+			translated_field_name,
 			translated_value,
 			created_by_id,
 			updated_by_id,
-		) VALUES ($1, $2, $3, $4, $5, $6, $7)
-		RETURNING id, language_code, table_name, field_name, translated_value, version
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING id, language_code, table_name, field_name, translated_field_name, translated_value, version
 	`
 
 	args := []interface{}{
@@ -37,6 +38,7 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 		&translation.EntityID,
 		&translation.TableName,
 		&translation.FieldName,
+		&translation.TranslatedFieldName,
 		&translation.TranslatedValue,
 		&translation.CreatedByID,
 		&translation.UpdatedByID,
@@ -50,6 +52,7 @@ func (r TranslationRepository) Create(translation *data.Translation) error {
 		&translation.LanguageCode,
 		&translation.TableName,
 		&translation.FieldName,
+		&translation.TranslatedFieldName,
 		&translation.TranslatedValue,
 		&translation.Version,
 	)
@@ -72,6 +75,7 @@ func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) 
 		&translation.EntityID,
 		&translation.TableName,
 		&translation.FieldName,
+		&translation.TranslatedFieldName,
 		&translation.TranslatedValue,
 		&translation.CreatedAt,
 		&translation.UpdatedAt,
@@ -229,6 +233,7 @@ func (r TranslationRepository) List(
 			&tr.EntityID,
 			&tr.TableName,
 			&tr.FieldName,
+			&tr.TranslatedFieldName,
 			&tr.TranslatedValue,
 			&tr.CreatedAt,
 			&tr.UpdatedAt,
@@ -260,10 +265,11 @@ func (r TranslationRepository) Update(tr *data.Translation) error {
 			entity_id = $2,
 			table_name = $3,
 			field_name = $4,
-			translated_values = $5
-			updated_by_id = $6,
+			translated_field_name = $5,
+			translated_values = $6
+			updated_by_id = $7,
 			version = version + 1
-		WHERE id = $7 AND version = $8
+		WHERE id = $8 AND version = $9
 		RETURNING id, language_code, version
 	`
 
@@ -272,6 +278,7 @@ func (r TranslationRepository) Update(tr *data.Translation) error {
 		&tr.EntityID,
 		&tr.TableName,
 		&tr.FieldName,
+		&tr.TranslatedFieldName,
 		&tr.TranslatedValue,
 		&tr.UpdatedByID,
 		&tr.ID,
@@ -286,6 +293,7 @@ func (r TranslationRepository) Update(tr *data.Translation) error {
 		&tr.EntityID,
 		&tr.TableName,
 		&tr.FieldName,
+		&tr.TranslatedFieldName,
 		&tr.TranslatedValue,
 		&tr.UpdatedByID,
 		&tr.Version,
@@ -342,6 +350,7 @@ func (r TranslationRepository) GetByEntityIDLangCodeFieldName(entityID uuid.UUID
 		&translation.EntityID,
 		&translation.TableName,
 		&translation.FieldName,
+		&translation.TranslatedFieldName,
 		&translation.TranslatedValue,
 		&translation.CreatedAt,
 		&translation.UpdatedAt,
