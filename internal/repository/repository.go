@@ -8,6 +8,7 @@ type Repositories struct {
 	Categories   CategoryRepository
 	Languages    LanguageRepository
 	Translations TranslationRepository
+	Users        UserRepository
 }
 
 func NewRepositories(dbpool *pgxpool.Pool) Repositories {
@@ -15,5 +16,6 @@ func NewRepositories(dbpool *pgxpool.Pool) Repositories {
 		Categories:   CategoryRepository{DBPOOL: dbpool},
 		Languages:    LanguageRepository{DBPOOL: dbpool},
 		Translations: TranslationRepository{DBPOOL: dbpool},
+		Users:        UserRepository{DBPOOL: dbpool},
 	}
 }

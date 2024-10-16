@@ -2,6 +2,7 @@ package validation
 
 import (
 	"regexp"
+	"unicode"
 
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/ru_RU"
@@ -25,6 +26,7 @@ func NewValidator() *validator.Validate {
 	validate.RegisterValidation("slug", validateSlug)
 	validate.RegisterValidation("decimalpercent", validateDecimalPercent)
 	validate.RegisterValidation("decimalgtezero", validateDecimalGTE)
+	validate.RegisterValidation("password", validatePlainPassword)
 
 	return validate
 }
@@ -75,4 +77,35 @@ func validateDecimalGTE(fl validator.FieldLevel) bool {
 	min := decimal.NewFromInt(0)
 
 	return val.GreaterThanOrEqual(min)
+}
+
+func validatePlainPassword(fl validator.FieldLevel) bool {
+	passwordPlaintext := fl.Field().String()
+
+	if len(passwordPlaintext) < 8 {
+		return false
+	}
+
+	if len(passwordPlaintext) > 72 {
+		return false
+	}
+
+	hasUpper, hasLower, hasNumber, isAscii := false, false, false, true
+	for _, char := range passwordPlaintext {
+		if char > unicode.MaxASCII {
+			isAscii = false
+			break
+		}
+
+		switch {
+		case unicode.IsUpper(char):
+			hasUpper = true
+		case unicode.IsLower(char):
+			hasLower = true
+		case unicode.IsDigit(char):
+			hasNumber = true
+		}
+	}
+
+	return isAscii && hasUpper && hasLower && hasNumber
 }
