@@ -132,6 +132,7 @@ func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.
 		argCounter++
 		fallbackPageSize = *pageSize
 	} else {
+		pageSize = &fallbackPageSize
 		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
 	}
 
@@ -142,7 +143,8 @@ func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.
 		args = append(args, offset)
 		argCounter++
 	} else {
-		query += fmt.Sprintf(" LIMIT %d", defaultPage)
+		page = &defaultPage
+		query += fmt.Sprintf(" OFFSET %d", defaultPage)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

@@ -1,23 +1,23 @@
 {
-    "integrity_constraint_violation": "Integrity constraint violation: {details}.",
-    "restrict_violation": "Restrict violation: {details}.",
-    "not_null_violation": "Not null constraint violation: {details}.",
-    "foreign_key_violation": "Foreign key violation: {details}.",
-    "unique_violation": "Unique constraint violation: {details}.",
-    "check_violation": "Check constraint violation: {details}.",
-    "exclusion_violation": "Exclusion violation: {details}.",
-    "string_data_truncation": "String data truncation: {details}.",
-    "numeric_value_out_of_range": "Numeric value out of range: {details}.",
-    "invalid_datetime_format": "Invalid datetime format: {details}.",
+    "integrity_constraint_violation": "Integrity constraint violation: {{.details}}.",
+    "restrict_violation": "Restrict violation: {{.details}}.",
+    "not_null_violation": "Not null constraint violation: {{.details}}.",
+    "foreign_key_violation": "Foreign key violation: {{.details}}.",
+    "unique_violation": "Unique constraint violation: {{.details}}.",
+    "check_violation": "Check constraint violation: {{.details}}.",
+    "exclusion_violation": "Exclusion violation: {{.details}}.",
+    "string_data_truncation": "String data truncation: {{.details}}.",
+    "numeric_value_out_of_range": "Numeric value out of range: {{.details}}.",
+    "invalid_datetime_format": "Invalid datetime format: {{.details}}.",
 
     "server_error": "The server encountered a problem and could not process your request.",
     "not_found": "The requested resource could not be found.",
-    "method_not_allowed": "The {method} method is not supported for this resource.",
-    "bad_request": "Bad request: {error}",
+    "method_not_allowed": "The {{.method}} method is not supported for this resource.",
+    "bad_request": "Bad request: {{.error}}",
     "edit_conflict": "Unable to update the record due to an edit conflict, please try again.",
     "failed_validation": "One or more validation errors occurred.",
     "rate_limit_exceeded": "Rate limit exceeded.",
 
-    "invalid_slug": "Invalid slug: {slug} for {resource}." 
+    "invalid_slug": "Invalid slug: {{.slug}} for {{.resource}}." 
   }
   

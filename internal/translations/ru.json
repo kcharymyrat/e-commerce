@@ -1,23 +1,23 @@
 {
-    "integrity_constraint_violation": "Нарушение ограничения Integrity: {details}.",
-    "restrict_violation": "Нарушение ограничения RESTRICT: {details}.",
-    "not_null_violation": "Нарушение ограничения NOT NULL: {details}.",
-    "foreign_key_violation": "Нарушение ограничения FOREIGN KEY: {details}.",
-    "unique_violation": "Нарушение уникальности (UNIQUE): {details}.",
-    "check_violation": "Нарушение проверки (CHECK): {details}.",
-    "exclusion_violation": "Нарушение ограничения EXCLUSION: {details}.",
-    "string_data_truncation": "Обрезка строковых данных: {details}.",
-    "numeric_value_out_of_range": "Числовое значение вне допустимого диапазона: {details}.",
-    "invalid_datetime_format": "Неверный формат даты и времени: {details}.",
+    "integrity_constraint_violation": "Нарушение ограничения Integrity: {{.details}}.",
+    "restrict_violation": "Нарушение ограничения RESTRICT: {{.details}}.",
+    "not_null_violation": "Нарушение ограничения NOT NULL: {{.details}}.",
+    "foreign_key_violation": "Нарушение ограничения FOREIGN KEY: {{.details}}.",
+    "unique_violation": "Нарушение уникальности (UNIQUE): {{.details}}.",
+    "check_violation": "Нарушение проверки (CHECK): {{.details}}.",
+    "exclusion_violation": "Нарушение ограничения EXCLUSION: {{.details}}.",
+    "string_data_truncation": "Обрезка строковых данных: {{.details}}.",
+    "numeric_value_out_of_range": "Числовое значение вне допустимого диапазона: {{.details}}.",
+    "invalid_datetime_format": "Неверный формат даты и времени: {{.details}}.",
     
     "server_error": "На сервере произошла ошибка, и он не смог обработать ваш запрос.",
     "not_found": "Запрашиваемый ресурс не найден.",
-    "method_not_allowed": "Метод {method} не поддерживается для этого ресурса.",
-    "bad_request": "Неправильный запрос: {error}",
+    "method_not_allowed": "Метод {{.method}} не поддерживается для этого ресурса.",
+    "bad_request": "Неправильный запрос: {{.error}}",
     "edit_conflict": "Не удалось обновить запись из-за конфликта редактирования, пожалуйста, попробуйте еще раз.",
     "failed_validation": "Произошла одна или несколько ошибок валидации.",
     "rate_limit_exceeded": "Превышен лимит запросов.",
 
-    "invalid_slug": "Недопустимый slug: {slug} для {resource}."
+    "invalid_slug": "Недопустимый slug: {{.slug}} для {{.resource}}."
 }
   

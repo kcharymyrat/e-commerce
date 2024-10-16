@@ -146,7 +146,8 @@ func (r CategoryRepository) List(
 			created_at,
 			updated_at,
 			created_by_id, 
-			updated_by_id
+			updated_by_id,
+			version
 		)
 		FROM categories
 		WHERE 1=1
@@ -228,18 +229,16 @@ func (r CategoryRepository) List(
 		}
 		query += " id ASC"
 	}
-	fmt.Println("query =", query)
 	fallbackPageSize := 20 // FIXME: make a constant number
 	if pageSize != nil {
 		query += fmt.Sprintf(" LIMIT $%d", argCounter)
-		fmt.Println("query =", query)
 		args = append(args, *pageSize)
 		argCounter++
 		fallbackPageSize = *pageSize
 	} else {
+		pageSize = &fallbackPageSize
 		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
 	}
-	fmt.Println("query =", query)
 
 	defaultPage := 1 // FIXME: make a constant number
 	if page != nil {
@@ -248,9 +247,9 @@ func (r CategoryRepository) List(
 		args = append(args, offset)
 		argCounter++
 	} else {
-		query += fmt.Sprintf(" OFFSET %d", defaultPage)
+		page = &defaultPage
+		query += fmt.Sprintf(" OFFSET %d", *page)
 	}
-	fmt.Println("query =", query)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -269,9 +268,10 @@ func (r CategoryRepository) List(
 		err := rows.Scan(
 			&totalRecords,
 			&category.ID,
-			&category.ParentID,
 			&category.Name,
+			&category.ParentID,
 			&category.Slug,
+			&category.Description,
 			&category.ImageUrl,
 			&category.CreatedAt,
 			&category.UpdatedAt,

@@ -1,23 +1,23 @@
 {
-    "integrity_constraint_violation": "Data Integrity çäklendirmesiniň bozulmagy: {details}.",
-    "restrict_violation": "RESTRICT çäklendirme bozuldy: {details}.",
-    "not_null_violation": "NOT NULL çäklendirmesiniň bozulmagy: {details}.",
-    "foreign_key_violation": "FOREIGN KEY çäklendirme bozuldy: {details}.",
-    "unique_violation": "Ýeke-täk (UNIQUE) çäklendirme bozuldy: {details}.",
-    "check_violation": "CHECK çäklendirmesi bozuldy: {details}.",
-    "exclusion_violation": "EXCLUSION çäklendirmesi bozuldy: {details}.",
-    "string_data_truncation": "Setir maglumaty kesildi: {details}.",
-    "numeric_value_out_of_range": "San bahasy rugsat berlen aralykdan çykdy: {details}.",
-    "invalid_datetime_format": "Nädogry sene we wagtyň formaty: {details}.",
+    "integrity_constraint_violation": "Data Integrity çäklendirmesiniň bozulmagy: {{.details}}.",
+    "restrict_violation": "RESTRICT çäklendirme bozuldy: {{.details}}.",
+    "not_null_violation": "NOT NULL çäklendirmesiniň bozulmagy: {{.details}}.",
+    "foreign_key_violation": "FOREIGN KEY çäklendirme bozuldy: {{.details}}.",
+    "unique_violation": "Ýeke-täk (UNIQUE) çäklendirme bozuldy: {{.details}}.",
+    "check_violation": "CHECK çäklendirmesi bozuldy: {{.details}}.",
+    "exclusion_violation": "EXCLUSION çäklendirmesi bozuldy: {{.details}}.",
+    "string_data_truncation": "Setir maglumaty kesildi: {{.details}}.",
+    "numeric_value_out_of_range": "San bahasy rugsat berlen aralykdan çykdy: {{.details}}.",
+    "invalid_datetime_format": "Nädogry sene we wagtyň formaty: {{.details}}.",
 
     "server_error": "Serwerde näsazlyk ýüze çykdy we haýyşy ýerine ýetirip bilmedi.",
     "not_found": "Talap edilen resurs tapylmady.",
-    "method_not_allowed": "{method} usuly bu resurs üçin goldanylmaýar.",
-    "bad_request": "Nädogry haýyş (request): {error}",
+    "method_not_allowed": "{{.method}} usuly bu resurs üçin goldanylmaýar.",
+    "bad_request": "Nädogry haýyş (request): {{.error}}",
     "edit_conflict": "Üýtgetmek gapma-garşylygy sebäpli ýazgyny täzelemek başartmady, gaýtadan synanyşyň.",
     "failed_validation": "Bir ýa-da birnäçe tassyklama ýalňyşlygy ýüze çykdy.",
     "rate_limit_exceeded": "Rate limit aşyldy.",
 
-    "invalid_slug": "Nädogry slug: {slug} {resource} üçin."
+    "invalid_slug": "Nädogry slug: {{.slug}} {{.resource}} üçin."
   }
   

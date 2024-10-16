@@ -53,6 +53,15 @@ func Routes(app *app.Application) *chi.Mux {
 				r.Patch("/{id}", handlers.PartialUpdateLanguageManagerHandler(app))
 				r.Delete("/{id}", handlers.DeleteLanguageManagerHandler(app))
 			})
+
+			r.Route("/translations", func(r chi.Router) {
+				r.Get("/", handlers.ListTranslationsHandler(app))
+				r.Post("/", handlers.CreateTranslationMangerHandler(app))
+				r.Get("/{id}", handlers.GetTranslationHandler(app))
+				r.Put("/{id}", handlers.UpdateTranslationHandler(app))
+				r.Patch("/{id}", handlers.PartialUpdateTranslationHandler(app))
+				r.Delete("/{id}", handlers.DeleteTranslationHandler(app))
+			})
 		})
 
 	})

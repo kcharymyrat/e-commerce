@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	ut "github.com/go-playground/universal-translator"
@@ -66,6 +67,7 @@ func GetTranslationHandler(app *app.Application) http.HandlerFunc {
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
+			fmt.Println("err =", err, err.Error())
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
@@ -97,6 +99,7 @@ func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
 
 		input := requests.ListTranslationsInput{}
 		readTranslationQueryParameters(&input, r.URL.Query())
+
 		err := app.Validator.Struct(input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
@@ -271,7 +274,7 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func DeleteTranslationMapper(app *app.Application) http.HandlerFunc {
+func DeleteTranslationHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)

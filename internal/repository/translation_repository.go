@@ -199,6 +199,7 @@ func (r TranslationRepository) List(
 		argCounter++
 		fallbackPageSize = *pageSize
 	} else {
+		pageSize = &fallbackPageSize
 		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
 	}
 
@@ -209,13 +210,14 @@ func (r TranslationRepository) List(
 		args = append(args, offset)
 		argCounter++
 	} else {
-		query += fmt.Sprintf(" LIMIT %d", defaultPage)
+		page = &defaultPage
+		query += fmt.Sprintf(" OFFSET %d", defaultPage)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := r.DBPOOL.Query(ctx, query, args)
+	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
 		return nil, common.Metadata{}, err
 	}
