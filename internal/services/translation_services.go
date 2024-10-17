@@ -49,9 +49,60 @@ func ListTranslationsService(
 
 func UpdateTranslationService(
 	app *app.Application,
+	input *requests.UpdateTranslationInput,
 	tr *data.Translation,
 ) error {
-	return app.Repositories.Translations.Update(tr)
+	tr.LanguageCode = input.LanguageCode
+	tr.EntityID = input.EntityID
+	tr.TableName = input.TableName
+	tr.FieldName = input.FieldName
+	tr.TranslatedFieldName = input.TranslatedFieldName
+	tr.TranslatedValue = input.TranslatedValue
+	tr.UpdatedByID = input.UpdatedByID
+
+	err := app.Repositories.Translations.Update(tr)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
+}
+
+func PartialUpdateTranslationService(
+	app *app.Application,
+	input *requests.PartialUpdateTranslationInput,
+	tr *data.Translation,
+) error {
+	if input.LanguageCode != nil {
+		tr.LanguageCode = *input.LanguageCode
+	}
+	if input.EntityID != nil {
+		tr.EntityID = *input.EntityID
+	}
+	if input.TableName != nil {
+		tr.TableName = *input.TableName
+	}
+	if input.FieldName != nil {
+		tr.FieldName = *input.FieldName
+	}
+	if input.TranslatedFieldName != nil {
+		tr.TranslatedFieldName = *input.TranslatedFieldName
+	}
+	if input.TranslatedValue != nil {
+		tr.TranslatedValue = *input.TranslatedValue
+	}
+	tr.UpdatedByID = input.UpdatedByID
+
+	err := app.Repositories.Translations.Update(tr)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
 }
 
 func DeleteTranslationService(app *app.Application, id uuid.UUID) error {

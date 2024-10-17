@@ -152,24 +152,7 @@ func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		tr, err := services.GetTranslationService(app, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
-				return
-			}
-		}
-
-		tr.LanguageCode = input.LanguageCode
-		tr.EntityID = input.EntityID
-		tr.TableName = input.TableName
-		tr.FieldName = input.FieldName
-		tr.TranslatedFieldName = input.TranslatedFieldName
-		tr.TranslatedValue = input.TranslatedValue
-		tr.UpdatedByID = input.UpdatedByID
-
-		err = app.Validator.Struct(tr)
+		err = app.Validator.Struct(input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -180,14 +163,18 @@ func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = services.UpdateTranslationService(app, tr)
+		tr, err := services.GetTranslationService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, localizer, w, r)
-			default:
-				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+				return
 			}
+		}
+
+		err = services.UpdateTranslationService(app, &input, tr)
+		if err != nil {
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -225,45 +212,20 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			}
 		}
 
-		if input.LanguageCode != nil {
-			tr.LanguageCode = *input.LanguageCode
-		}
-		if input.EntityID != nil {
-			tr.EntityID = *input.EntityID
-		}
-		if input.TableName != nil {
-			tr.TableName = *input.TableName
-		}
-		if input.FieldName != nil {
-			tr.FieldName = *input.FieldName
-		}
-		if input.TranslatedFieldName != nil {
-			tr.TranslatedFieldName = *input.TranslatedFieldName
-		}
-		if input.TranslatedValue != nil {
-			tr.TranslatedValue = *input.TranslatedValue
-		}
-		tr.UpdatedByID = input.UpdatedByID
-
-		err = app.Validator.Struct(tr)
+		err = app.Validator.Struct(input)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
-			translatedErrs := make(map[string]string)
+			transErrs := make(map[string]string)
 			for _, e := range errs {
-				translatedErrs[e.Field()] = e.Translate(valTrans)
+				transErrs[e.Field()] = e.Translate(valTrans)
 			}
-			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
+			common.FailedValidationResponse(app.Logger, w, r, transErrs)
 			return
 		}
 
-		err = services.UpdateTranslationService(app, tr)
+		err = services.PartialUpdateTranslationService(app, &input, tr)
 		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
-			default:
-				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			}
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 

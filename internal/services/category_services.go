@@ -63,7 +63,14 @@ func UpdateCategoryService(
 	category.ImageUrl = input.ImageUrl
 	category.UpdatedByID = input.UpdatedByID
 
-	return app.Repositories.Categories.Update(category)
+	err := app.Repositories.Categories.Update(category)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
 }
 
 func PartialUpdateCategoryService(
@@ -89,7 +96,14 @@ func PartialUpdateCategoryService(
 
 	category.UpdatedByID = input.UpdatedByID
 
-	return app.Repositories.Categories.Update(category)
+	err := app.Repositories.Categories.Update(category)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
 }
 
 func DeleteCategoryServiceById(app *app.Application, id uuid.UUID) error {

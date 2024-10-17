@@ -130,6 +130,3 @@ func (r UserRepository) Get(id uuid.UUID) (*data.User, error) {
 
 	return &user, nil
 }
-
-
-func 

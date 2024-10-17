@@ -40,7 +40,14 @@ func UpdateLanguageService(
 	language.Code = input.Code
 	language.UpdatedByID = input.UpdatedByID
 
-	return app.Repositories.Languages.Update(language)
+	err := app.Repositories.Languages.Update(language)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
 }
 
 func PartialUpdateLanguageService(
@@ -56,7 +63,14 @@ func PartialUpdateLanguageService(
 	}
 	language.UpdatedByID = input.UpdatedByID
 
-	return app.Repositories.Languages.Update(language)
+	err := app.Repositories.Languages.Update(language)
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return common.TransformPgErrToCustomError(pgErr)
+		}
+		return err
+	}
+	return nil
 }
 
 func DeleteLanguageService(app *app.Application, id uuid.UUID) error {

@@ -210,8 +210,8 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-				return
 			}
+			return
 		}
 
 		input := requests.UpdateCategoryInput{}
@@ -235,7 +235,7 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.UpdateCategoryService(app, &input, category)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -266,8 +266,8 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-				return
 			}
+			return
 		}
 
 		input := requests.PartialUpdateCategoryInput{}
@@ -291,7 +291,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = services.PartialUpdateCategoryService(app, &input, category)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 

@@ -177,7 +177,7 @@ func UpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.UpdateLanguageService(app, &input, language)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -229,7 +229,7 @@ func PartialUpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = services.PartialUpdateLanguageService(app, &input, language)
 		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			HandlePGErrors(app.Logger, localizer, w, r, err)
 			return
 		}
 
