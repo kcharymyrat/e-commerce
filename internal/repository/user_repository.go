@@ -2,9 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
 
@@ -72,3 +76,60 @@ func (r UserRepository) Create(user *data.User) error {
 	// TODO: add error handling - pgErrs
 	return err
 }
+
+func (r UserRepository) Get(id uuid.UUID) (*data.User, error) {
+	query := `
+	SELECT * 
+	FROM users
+	WHERE id = $1
+	`
+	var user data.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, id).Scan(
+		&user.ID,
+		&user.Phone,
+		&user.FirstName,
+		&user.LastName,
+		&user.Patronomic,
+		&user.DOB,
+		&user.Email,
+		&user.IsActive,
+		&user.IsBanned,
+		&user.IsTrusted,
+		&user.InvitedByID,
+		&user.InvRefID,
+		&user.InvProdRefID,
+		&user.RefSignups,
+		&user.ProdRefSignups,
+		&user.ProdRefBought,
+		&user.TotalRefferals,
+		&user.WholeDynDiscPercent,
+		&user.DynDiscPercent,
+		&user.BonusPoints,
+		&user.IsStaff,
+		&user.IsAdmin,
+		&user.IsSuperuser,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.CreatedByID,
+		&user.UpdatedByID,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, common.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
+
+func 

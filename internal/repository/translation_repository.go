@@ -125,7 +125,7 @@ func (r TranslationRepository) List(
 	}
 
 	if len(tableNames) > 0 {
-		query += fmt.Sprintf(" AND table_names = ANY($%d)", argCounter)
+		query += fmt.Sprintf(" AND table_name = ANY($%d)", argCounter)
 		args = append(args, tableNames)
 		argCounter++
 	}
@@ -139,6 +139,19 @@ func (r TranslationRepository) List(
 	if len(entityIDs) > 0 {
 		query += fmt.Sprintf(" AND entity_id = ANY($%d)", argCounter)
 		args = append(args, entityIDs)
+		argCounter++
+	}
+
+	if search != nil {
+		query += fmt.Sprintf(` 
+		AND (
+			to_tsvector('simple', id) @@ plainto_tsquery('simple', $%d) OR 
+			to_tsvector('simple', table_name) @@ plainto_tsquery('simple', $%d) OR 
+			to_tsvector('simple', field_name) @@ plainto_tsquery('simple', $%d) OR  
+			to_tsvector('simple', translated_field_name) @@ plainto_tsquery('simple', $%d) OR 
+			to_tsvector('simple', translated_value) @@ plainto_tsquery('simple', $%d)
+		)`, argCounter, argCounter, argCounter, argCounter, argCounter)
+		args = append(args, *search)
 		argCounter++
 	}
 

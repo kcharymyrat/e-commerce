@@ -22,7 +22,7 @@ type CreateTranslationInput struct {
 	EntityID            uuid.UUID `json:"entity_id" validate:"uuid"`
 	TableName           string    `json:"table_name" validate:"min=1,max=50"`
 	FieldName           string    `json:"field_name" validate:"min=1,max=50"`
-	TranslatedFieldName string    `json:"field_name" validate:"min=1,max=50"`
+	TranslatedFieldName string    `json:"translated_field_name" validate:"min=1,max=50"`
 	TranslatedValue     string    `json:"translated_value" validate:"min=1"`
 	CreatedByID         uuid.UUID `json:"created_by_id" validate:"required,uuid"`
 	UpdatedByID         uuid.UUID `json:"updated_by_id" validate:"required,uuid"`

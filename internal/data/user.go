@@ -26,7 +26,7 @@ type User struct {
 	ProdRefSignups      int             `json:"prod_ref_signups" db:"prod_ref_signups" validate:"gte=0"`
 	ProdRefBought       int             `json:"prod_ref_bought" db:"prod_ref_bought" validate:"gte=0"`
 	TotalRefferals      int             `json:"total_referrals" db:"total_referrals" validate:"gte=0"`
-	WholeDynDiscPercent decimal.Decimal `json:"whole" db:"_dynamic_discount_percent" validate:"decimalpercent"`
+	WholeDynDiscPercent decimal.Decimal `json:"whole_dyn_disc_percent" db:"_dynamic_discount_percent" validate:"decimalpercent"`
 	DynDiscPercent      decimal.Decimal `json:"dyn_disc_percent" db:"dyn_disc_percent" validate:"decimalpercent"`
 	BonusPoints         decimal.Decimal `json:"bonus_points" db:"bonus_points" validate:"decimalgtezero"`
 	IsStaff             bool            `json:"is_staff" db:"is_staff" validate:"required"`
