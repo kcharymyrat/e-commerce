@@ -196,7 +196,7 @@ func (r LanguageRepository) Update(language *data.Language) error {
 			name = $2,
 			updated_by_id = $3,
 			version = version + 1
-		WHERE version = $4
+		WHERE id = $4 AND version = $5
 		RETURNING id, code, name, version	
 	`
 
@@ -204,6 +204,7 @@ func (r LanguageRepository) Update(language *data.Language) error {
 		language.Code,
 		language.Name,
 		language.UpdatedByID,
+		language.ID,
 		language.Version,
 	}
 

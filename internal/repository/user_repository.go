@@ -220,6 +220,97 @@ func (r UserRepository) List(f *requests.ListUsersFilters) ([]*data.User, common
 	return users, metadata, nil
 }
 
+func (r UserRepository) Update(user *data.User) error {
+	query := `UPDATE users
+	SET 
+		phone = $1,
+		password = $2,
+		first_name = $3,
+		last_name = $4,
+		patronomic = $5,
+		email = $6
+		is_active = $7,
+		updated_by_id = $8,
+		version = version + 1,
+	WHERE id = $9 AND version = $10
+	`
+
+	args := []interface{}{
+		user.Phone,
+		user.PasswordHash,
+		user.FirstName,
+		user.LastName,
+		user.Patronomic,
+		user.Email,
+		user.IsActive,
+		user.UpdatedByID,
+		user.ID,
+		user.Version,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, args...).Scan(
+		&user.ID,
+		&user.Phone,
+		&user.FirstName,
+		&user.LastName,
+		&user.Patronomic,
+		&user.DOB,
+		&user.Email,
+		&user.IsActive,
+		&user.IsBanned,
+		&user.IsTrusted,
+		&user.InvitedByID,
+		&user.InvRefID,
+		&user.InvProdRefID,
+		&user.RefSignups,
+		&user.ProdRefSignups,
+		&user.ProdRefBought,
+		&user.TotalRefferals,
+		&user.WholeDynDiscPercent,
+		&user.DynDiscPercent,
+		&user.BonusPoints,
+		&user.IsStaff,
+		&user.IsAdmin,
+		&user.IsSuperuser,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.CreatedByID,
+		&user.UpdatedByID,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return common.ErrEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
+}
+
+func (r UserRepository) Delete(id uuid.UUID) error {
+	query := `DELETE FROM users WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := r.DBPOOL.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() < 1 {
+		return common.ErrRecordNotFound
+	}
+
+	return nil
+}
+
 func addUserSpecificFiltersToSQL(
 	f *requests.ListUsersFilters, query *string, argCounter *int, args []interface{},
 ) {
@@ -368,4 +459,6 @@ func addUserSpecificFiltersToSQL(
 		args = append(args, *f.IsSuperuser)
 		*argCounter++
 	}
+
+	fmt.Println(args)
 }
