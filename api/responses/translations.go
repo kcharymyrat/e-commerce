@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type TranslationManagerResponse struct {
+type TranslationAdminResponse struct {
 	ID                  uuid.UUID `json:"id" validate:"uuid"`
 	LanguageCode        string    `json:"language_code" validate:"min=2,max=10"`
 	EntityID            uuid.UUID `json:"entity_id" validate:"uuid"`

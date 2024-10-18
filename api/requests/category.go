@@ -5,7 +5,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
-type ListCategoriesFilters struct {
+type CategoriesAdminFilters struct {
 	Names     []string    `json:"names" validate:"omitempty,dive,max=50"`
 	Slugs     []string    `json:"slugs" validate:"omitempty,dive,max=50,slug"`
 	ParentIDs []uuid.UUID `json:"parent_ids" validate:"omitempty,dive,uuid"`
@@ -16,7 +16,7 @@ type ListCategoriesFilters struct {
 	filters.PaginationFilter
 }
 
-type CreateCategoryInput struct {
+type CategoryAdminCreate struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty" validate:"omitempty,uuid"`
 	Name        string     `json:"name" validate:"required,min=3,max=50"`
 	Slug        string     `json:"slug" validate:"required,slug"`
@@ -26,7 +26,7 @@ type CreateCategoryInput struct {
 	UpdatedByID uuid.UUID  `json:"updated_by_id" validate:"required,uuid"`
 }
 
-type UpdateCategoryInput struct {
+type CategoryAdminUpdate struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty" validate:"omitempty,uuid"`
 	Name        string     `json:"name" validate:"required,min=3,max=50"`
 	Slug        string     `json:"slug" validate:"required,slug"`
@@ -35,7 +35,7 @@ type UpdateCategoryInput struct {
 	UpdatedByID uuid.UUID  `json:"updated_by_id" validate:"required,uuid"`
 }
 
-type PartialUpdateCategoryInput struct {
+type CategoryAdminPartialUpdate struct {
 	ParentID    *uuid.UUID `json:"parent_id,omitempty"  validate:"omitempty,uuid"`
 	Name        *string    `json:"name,omitempty" validate:"omitempty,min=3,max=50"`
 	Slug        *string    `json:"slug,omitempty" validate:"omitempty,slug"`

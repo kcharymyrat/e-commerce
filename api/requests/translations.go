@@ -5,7 +5,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
-type ListTranslationsFilters struct {
+type TranslationsAdminFilters struct {
 	LanguageCodes []string    `json:"language_codes" validate:"omitempty,dive,max=10"`
 	TableNames    []string    `json:"table_names" validate:"omitempty,dive,max=255"`
 	FieldNames    []string    `json:"field_names" validate:"omitempty,dive,max=255"`
@@ -17,7 +17,7 @@ type ListTranslationsFilters struct {
 	filters.PaginationFilter
 }
 
-type CreateTranslationInput struct {
+type TranslationAdminCreate struct {
 	LanguageCode        string    `json:"language_code" validate:"min=2,max=10"`
 	EntityID            uuid.UUID `json:"entity_id" validate:"uuid"`
 	TableName           string    `json:"table_name" validate:"min=1,max=50"`
@@ -28,7 +28,7 @@ type CreateTranslationInput struct {
 	UpdatedByID         uuid.UUID `json:"updated_by_id" validate:"required,uuid"`
 }
 
-type UpdateTranslationInput struct {
+type TranslationAdminUpdate struct {
 	LanguageCode        string    `json:"language_code" validate:"min=2,max=10"`
 	EntityID            uuid.UUID `json:"entity_id" validate:"uuid"`
 	TableName           string    `json:"table_name" validate:"min=1,max=50"`
@@ -38,7 +38,7 @@ type UpdateTranslationInput struct {
 	UpdatedByID         uuid.UUID `json:"updated_by_id" validate:"required,uuid"`
 }
 
-type PartialUpdateTranslationInput struct {
+type TranslationAdminPartialUpdate struct {
 	LanguageCode        *string    `json:"language_code,omitempty" validate:"omitempty,min=2,max=10"`
 	EntityID            *uuid.UUID `json:"entity_id,omitempty" validate:"omitempty,uuid"`
 	TableName           *string    `json:"table_name,omitempty" validate:"omitempty,min=1,max=50"`

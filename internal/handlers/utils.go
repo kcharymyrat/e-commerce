@@ -77,7 +77,7 @@ func HandlePGErrors(
 	}
 }
 
-func readCategoryQueryParameters(input *requests.ListCategoriesFilters, qs url.Values) {
+func readCategoryQueryParameters(input *requests.CategoriesAdminFilters, qs url.Values) {
 	input.Names = common.ReadQueryCSStrs(qs, "names")
 	input.Slugs = common.ReadQueryCSStrs(qs, "slugs")
 	input.ParentIDs = common.ReadQueryCSUUIDs(qs, "parent_ids")
@@ -96,12 +96,12 @@ func readCategoryQueryParameters(input *requests.ListCategoriesFilters, qs url.V
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
 
-func readLanguageQueryParameters(input *requests.ListLanguagesFilters, qs url.Values) {
+func readLanguageQueryParameters(input *requests.LanguagesAdminFilters, qs url.Values) {
 	input.Page = common.ReadQueryInt(qs, "page")
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
 
-func readTranslationQueryParameters(input *requests.ListTranslationsFilters, qs url.Values) {
+func readTranslationQueryParameters(input *requests.TranslationsAdminFilters, qs url.Values) {
 	input.LanguageCodes = common.ReadQueryCSStrs(qs, "language_codes")
 	input.TableNames = common.ReadQueryCSStrs(qs, "table_names")
 	input.FieldNames = common.ReadQueryCSStrs(qs, "field_names")

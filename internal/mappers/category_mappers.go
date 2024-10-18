@@ -6,7 +6,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
 
-func CreateCategoryInputToCategoryMapper(input *requests.CreateCategoryInput) *data.Category {
+func CreateCategoryInputToCategoryMapper(input *requests.CategoryAdminCreate) *data.Category {
 	return &data.Category{
 		ParentID:    input.ParentID,
 		Name:        input.Name,
@@ -31,8 +31,8 @@ func CategoryToCategoryPublicResponseMapper(category *data.Category) *responses.
 	}
 }
 
-func CategoryToCategoryManagerResponseMapper(category *data.Category) *responses.CategoryManagerResponse {
-	return &responses.CategoryManagerResponse{
+func CategoryToCategoryManagerResponseMapper(category *data.Category) *responses.CategoryAdminResponse {
+	return &responses.CategoryAdminResponse{
 		ID:          category.ID,
 		ParentID:    category.ParentID,
 		Name:        category.Name,

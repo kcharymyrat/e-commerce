@@ -117,7 +117,7 @@ func (r LanguageRepository) GetByCode(code string) (*data.Language, error) {
 	return &language, nil
 }
 
-func (r LanguageRepository) List(f *requests.ListLanguagesFilters) ([]*data.Language, common.Metadata, error) {
+func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Language, common.Metadata, error) {
 	query := `
 		SELECT *
 		FROM languages

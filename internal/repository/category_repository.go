@@ -123,7 +123,7 @@ func (r CategoryRepository) GetBySlug(slug string) (*data.Category, error) {
 	return &category, nil
 }
 
-func (r CategoryRepository) List(f *requests.ListCategoriesFilters) ([]*data.Category, common.Metadata, error) {
+func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Category, common.Metadata, error) {
 	query := `
 		SELECT (
 			count(*) OVER(),

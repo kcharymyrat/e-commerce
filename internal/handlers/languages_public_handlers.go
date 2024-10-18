@@ -53,7 +53,7 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		filters := requests.ListLanguagesFilters{}
+		filters := requests.LanguagesAdminFilters{}
 
 		qs := r.URL.Query()
 		readLanguageQueryParameters(&filters, qs)

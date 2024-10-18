@@ -6,7 +6,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
 
-func CreateTranslationInputToTranslationMapper(input *requests.CreateTranslationInput) *data.Translation {
+func CreateTranslationInputToTranslationMapper(input *requests.TranslationAdminCreate) *data.Translation {
 	return &data.Translation{
 		LanguageCode:        input.LanguageCode,
 		EntityID:            input.EntityID,
@@ -19,8 +19,8 @@ func CreateTranslationInputToTranslationMapper(input *requests.CreateTranslation
 	}
 }
 
-func TranslationToTranslationManagerResponseMappper(tr *data.Translation) *responses.TranslationManagerResponse {
-	return &responses.TranslationManagerResponse{
+func TranslationToTranslationManagerResponseMappper(tr *data.Translation) *responses.TranslationAdminResponse {
+	return &responses.TranslationAdminResponse{
 		ID:                  tr.ID,
 		LanguageCode:        tr.LanguageCode,
 		EntityID:            tr.EntityID,

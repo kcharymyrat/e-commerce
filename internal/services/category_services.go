@@ -22,14 +22,14 @@ func GetCategoryBySlugService(app *app.Application, slug string) (*data.Category
 
 func ListCategoriesService(
 	app *app.Application,
-	filters *requests.ListCategoriesFilters,
+	filters *requests.CategoriesAdminFilters,
 ) ([]*data.Category, common.Metadata, error) {
 	return app.Repositories.Categories.List(filters)
 }
 
 func UpdateCategoryService(
 	app *app.Application,
-	input *requests.UpdateCategoryInput,
+	input *requests.CategoryAdminUpdate,
 	category *data.Category,
 ) error {
 	category.ParentID = input.ParentID
@@ -44,7 +44,7 @@ func UpdateCategoryService(
 
 func PartialUpdateCategoryService(
 	app *app.Application,
-	input *requests.PartialUpdateCategoryInput,
+	input *requests.CategoryAdminPartialUpdate,
 	category *data.Category,
 ) error {
 	if input.Name != nil {

@@ -10,10 +10,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kcharymyrat/e-commerce/api/requests"
+	"github.com/kcharymyrat/e-commerce/internal/auth"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
-	"github.com/kcharymyrat/e-commerce/internal/utils"
 )
 
 type UserRepository struct {
@@ -21,7 +21,7 @@ type UserRepository struct {
 }
 
 func (r UserRepository) Create(user *data.User) error {
-	passwordHashBytes, err := utils.GeneratePasswordHash(user.Password)
+	passwordHashBytes, err := auth.GeneratePasswordHash(user.Password)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (r UserRepository) Get(id uuid.UUID) (*data.User, error) {
 	return &user, nil
 }
 
-func (r UserRepository) List(f *requests.ListUsersFilters) ([]*data.User, common.Metadata, error) {
+func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, common.Metadata, error) {
 	query := `SELECT *
 	FROM users
 	WHERE 1=1`
@@ -227,7 +227,7 @@ func (r UserRepository) List(f *requests.ListUsersFilters) ([]*data.User, common
 }
 
 func (r UserRepository) Update(user *data.User) error {
-	passwordHashBytes, err := utils.GeneratePasswordHash(user.Password)
+	passwordHashBytes, err := auth.GeneratePasswordHash(user.Password)
 	if err != nil {
 		return err
 	}
@@ -323,7 +323,7 @@ func (r UserRepository) Delete(id uuid.UUID) error {
 }
 
 func addUserSpecificFiltersToSQL(
-	f *requests.ListUsersFilters, query *string, argCounter *int, args []interface{},
+	f *requests.UsersAdminFilters, query *string, argCounter *int, args []interface{},
 ) {
 	if f.ID != nil {
 		*query += fmt.Sprintf(" AND id = $%d", *argCounter)

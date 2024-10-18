@@ -83,7 +83,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		filters := requests.ListCategoriesFilters{}
+		filters := requests.CategoriesAdminFilters{}
 
 		readCategoryQueryParameters(&filters, r.URL.Query())
 

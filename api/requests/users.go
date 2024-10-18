@@ -8,7 +8,7 @@ import (
 
 // TODO: UpdateUserInput - For Superusers and Admin - IsAdmin, IsStaff, IsSuperuser fields should be required
 
-type ListUsersFilters struct {
+type UsersAdminFilters struct {
 	ID                      *uuid.UUID       `json:"id,omitempty" validate:"omitempty,uuid"`
 	Phone                   *string          `json:"phone,omitempty" validate:"omitempty,e164"`
 	Email                   *string          `json:"email,omitempty" validate:"omitempty,email"`
@@ -38,25 +38,35 @@ type ListUsersFilters struct {
 	filters.PaginationFilter
 }
 
-type CreateUserInput struct {
+type UserAdminCreate struct {
 	Phone       string     `json:"phone" validate:"required,e164"`
 	Password    string     `json:"password" validate:"required,min=8,max=72,password"`
-	FirstName   string     `json:"first_name" validate:"omitempty,max=50,alpha"`
-	LastName    string     `json:"last_name" validate:"omitempty,max=50,alpha"`
-	Patronomic  string     `json:"patronomic" validate:"omitempty,max=50,alpha"`
-	Email       string     `json:"email" validate:"omitempty,email"`
+	FirstName   *string    `json:"first_name" validate:"omitempty,max=50,alpha"`
+	LastName    *string    `json:"last_name" validate:"omitempty,max=50,alpha"`
+	Patronomic  *string    `json:"patronomic" validate:"omitempty,max=50,alpha"`
+	Email       *string    `json:"email" validate:"omitempty,email"`
 	IsActive    bool       `json:"is_active" validate:"required"`
 	CreatedByID *uuid.UUID `json:"created_by_id,omitempty" validate:"omitempty,uuid"`
 }
 
-type UpdateUserInput struct {
+type UserAdminUpdate struct {
 	Phone       string    `json:"phone" validate:"required,e164"`
 	Password    string    `json:"password" validate:"required,min=8,max=72,password"`
-	FirstName   string    `json:"first_name" validate:"omitempty,max=50,alpha"`
-	LastName    string    `json:"last_name" validate:"omitempty,max=50,alpha"`
-	Patronomic  string    `json:"patronomic" validate:"omitempty,max=50,alpha"`
-	Email       string    `json:"email" validate:"omitempty,email"`
+	FirstName   *string   `json:"first_name" validate:"omitempty,max=50,alpha"`
+	LastName    *string   `json:"last_name" validate:"omitempty,max=50,alpha"`
+	Patronomic  *string   `json:"patronomic" validate:"omitempty,max=50,alpha"`
+	Email       *string   `json:"email" validate:"omitempty,email"`
 	IsActive    bool      `json:"is_active" validate:"required"`
 	UpdatedByID uuid.UUID `json:"updated_by_id" validate:"uuid"`
-	Version     int       `json:"version" validate:"min=1"`
+}
+
+type UserAdminPartialUpdate struct {
+	Phone       *string   `json:"phone" validate:"required,e164"`
+	Password    *string   `json:"password" validate:"required,min=8,max=72,password"`
+	FirstName   *string   `json:"first_name" validate:"omitempty,max=50,alpha"`
+	LastName    *string   `json:"last_name" validate:"omitempty,max=50,alpha"`
+	Patronomic  *string   `json:"patronomic" validate:"omitempty,max=50,alpha"`
+	Email       *string   `json:"email" validate:"omitempty,email"`
+	IsActive    *bool     `json:"is_active" validate:"required"`
+	UpdatedByID uuid.UUID `json:"updated_by_id" validate:"uuid"`
 }

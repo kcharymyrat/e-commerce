@@ -18,14 +18,14 @@ func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, err
 
 func ListLanguagesService(
 	app *app.Application,
-	filters *requests.ListLanguagesFilters,
+	filters *requests.LanguagesAdminFilters,
 ) ([]*data.Language, common.Metadata, error) {
 	return app.Repositories.Languages.List(filters)
 }
 
 func UpdateLanguageService(
 	app *app.Application,
-	input *requests.UpdateLanguageInput,
+	input *requests.LanguageAdminUpdate,
 	language *data.Language,
 ) error {
 	language.Name = input.Name
@@ -37,7 +37,7 @@ func UpdateLanguageService(
 
 func PartialUpdateLanguageService(
 	app *app.Application,
-	input *requests.PartialUpdateLanguageInput,
+	input *requests.LanguageAdminPartialUpdate,
 	language *data.Language,
 ) error {
 	if input.Name != nil {

@@ -25,7 +25,7 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		var categoryInput requests.CreateCategoryInput
+		var categoryInput requests.CategoryAdminCreate
 		err := common.ReadJSON(w, r, &categoryInput)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
@@ -132,7 +132,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		filters := requests.ListCategoriesFilters{}
+		filters := requests.CategoriesAdminFilters{}
 
 		readCategoryQueryParameters(&filters, r.URL.Query())
 
@@ -153,7 +153,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		catWithTransResponses := make([]*responses.CategoryWithTranslationsMangerResponse, len(categories))
+		catWithTransResponses := make([]*responses.CategoryWithTranslationsAdminResponse, len(categories))
 		for _, category := range categories {
 			cat := mappers.CategoryToCategoryManagerResponseMapper(category)
 
@@ -178,7 +178,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			descFieldTrMap["field_value"] = desc_value_tr
 			trans["description"] = nameFieldTrMap
 
-			catWithTrans := responses.CategoryWithTranslationsMangerResponse{
+			catWithTrans := responses.CategoryWithTranslationsAdminResponse{
 				Category:     *cat,
 				Translations: trans,
 			}
@@ -220,7 +220,7 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		input := requests.UpdateCategoryInput{}
+		input := requests.CategoryAdminUpdate{}
 
 		err = common.ReadJSON(w, r, &input)
 		if err != nil {
@@ -281,7 +281,7 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 			return
 		}
 
-		input := requests.PartialUpdateCategoryInput{}
+		input := requests.CategoryAdminPartialUpdate{}
 
 		err = common.ReadJSON(w, r, &input)
 		if err != nil {

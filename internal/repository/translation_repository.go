@@ -97,7 +97,7 @@ func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) 
 	return &translation, nil
 }
 
-func (r TranslationRepository) List(f *requests.ListTranslationsFilters) ([]*data.Translation, common.Metadata, error) {
+func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*data.Translation, common.Metadata, error) {
 
 	query := `
 		SELECT COUNT(*) OVER(), * 

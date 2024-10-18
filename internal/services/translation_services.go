@@ -18,14 +18,14 @@ func GetTranslationService(app *app.Application, id uuid.UUID) (*data.Translatio
 
 func ListTranslationsService(
 	app *app.Application,
-	filters *requests.ListTranslationsFilters,
+	filters *requests.TranslationsAdminFilters,
 ) ([]*data.Translation, common.Metadata, error) {
 	return app.Repositories.Translations.List(filters)
 }
 
 func UpdateTranslationService(
 	app *app.Application,
-	input *requests.UpdateTranslationInput,
+	input *requests.TranslationAdminUpdate,
 	tr *data.Translation,
 ) error {
 	tr.LanguageCode = input.LanguageCode
@@ -41,7 +41,7 @@ func UpdateTranslationService(
 
 func PartialUpdateTranslationService(
 	app *app.Application,
-	input *requests.PartialUpdateTranslationInput,
+	input *requests.TranslationAdminPartialUpdate,
 	tr *data.Translation,
 ) error {
 	if input.LanguageCode != nil {

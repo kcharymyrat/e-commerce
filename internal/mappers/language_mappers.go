@@ -6,7 +6,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
 
-func CreateLanguageInputToLanguageMapper(input *requests.CreateLanguageInput) *data.Language {
+func CreateLanguageInputToLanguageMapper(input *requests.LanguageAdminCreate) *data.Language {
 	return &data.Language{
 		Name:        input.Name,
 		Code:        input.Code,
@@ -15,8 +15,8 @@ func CreateLanguageInputToLanguageMapper(input *requests.CreateLanguageInput) *d
 	}
 }
 
-func LanguageToLanguageManagerResponseMapper(input *data.Language) *responses.LanguageManagerResponse {
-	return &responses.LanguageManagerResponse{
+func LanguageToLanguageManagerResponseMapper(input *data.Language) *responses.LanguageAdminResponse {
+	return &responses.LanguageAdminResponse{
 		ID:          input.ID,
 		Code:        input.Code,
 		Name:        input.Name,

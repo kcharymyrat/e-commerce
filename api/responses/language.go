@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type LanguageManagerResponse struct {
+type LanguageAdminResponse struct {
 	ID          uuid.UUID `json:"id"`
 	Code        string    `json:"code"`
 	Name        string    `json:"name"`

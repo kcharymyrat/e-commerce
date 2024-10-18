@@ -19,20 +19,20 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func CreateTranslationMangerHandler(app *app.Application) http.HandlerFunc {
+func CreateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		var input requests.CreateTranslationInput
+		input := requests.LanguageAdminCreate{}
 		err := common.ReadJSON(w, r, &input)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		tr := mappers.CreateTranslationInputToTranslationMapper(&input)
-		err = app.Validator.Struct(tr)
+		language := mappers.CreateLanguageInputToLanguageMapper(&input)
+		err = app.Validator.Struct(language)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -43,7 +43,7 @@ func CreateTranslationMangerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = services.CreateTranslationService(app, tr)
+		err = services.CreateLanguageService(app, language)
 		if err != nil {
 			if pgErr, ok := err.(*pgconn.PgError); ok {
 				err = common.TransformPgErrToCustomError(pgErr)
@@ -55,58 +55,58 @@ func CreateTranslationMangerHandler(app *app.Application) http.HandlerFunc {
 		}
 
 		headers := make(http.Header)
-		headers.Set("Location", "api/v1/translations/%s")
+		headers.Set("Location", fmt.Sprintf("api/v1/languages/%s", language.ID))
 
-		trResponse := mappers.TranslationToTranslationManagerResponseMappper(tr)
+		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusCreated, types.Envelope{"translation": trResponse}, headers)
+		err = common.WriteJson(w, http.StatusCreated, types.Envelope{"language": languageResponse}, headers)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func GetTranslationHandler(app *app.Application) http.HandlerFunc {
+func GetLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
-			fmt.Println("err =", err, err.Error())
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		tr, err := services.GetTranslationService(app, id)
+		language, err := services.GetLanguageService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
 				common.NotFoundResponse(app.Logger, localizer, w, r)
 			default:
-				common.BadRequestResponse(app.Logger, localizer, w, r, err)
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
 			return
 		}
 
-		trResponse := mappers.TranslationToTranslationManagerResponseMappper(tr)
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"translation": trResponse}, nil)
+		languageResponse := mappers.LanguageToLanguageManagerResponseMapper(language)
+
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": languageResponse}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
 		}
 	}
 }
 
-func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
+func ListLanguagesManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		filters := requests.ListTranslationsFilters{}
-		readTranslationQueryParameters(&filters, r.URL.Query())
+		filters := requests.LanguagesAdminFilters{}
 
-		err := app.Validator.Struct(filters)
+		qs := r.URL.Query()
+		readLanguageQueryParameters(&filters, qs)
+		err := app.Validator.Struct(&filters)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -117,30 +117,29 @@ func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		trList, metadata, err := services.ListTranslationsService(app, &filters)
+		languages, metadata, err := services.ListLanguagesService(app, &filters)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		trListRes := make([]*responses.TranslationManagerResponse, len(trList))
-		for _, tr := range trList {
-			trRes := mappers.TranslationToTranslationManagerResponseMappper(tr)
-			trListRes = append(trListRes, trRes)
+		languagesResponse := make([]*responses.LanguageAdminResponse, len(languages))
+		for _, language := range languages {
+			res := mappers.LanguageToLanguageManagerResponseMapper(language)
+			languagesResponse = append(languagesResponse, res)
 		}
 
 		err = common.WriteJson(w, http.StatusOK, types.Envelope{
 			"metadata": metadata,
-			"results":  trListRes,
+			"results":  languagesResponse,
 		}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
 		}
 	}
 }
 
-func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
+func UpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
@@ -151,76 +150,11 @@ func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		input := requests.UpdateTranslationInput{}
+		input := requests.LanguageAdminUpdate{}
 		err = common.ReadJSON(w, r, input)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
-		}
-
-		err = app.Validator.Struct(input)
-		if err != nil {
-			errs := err.(validator.ValidationErrors)
-			translatedErrs := make(map[string]string)
-			for _, e := range errs {
-				translatedErrs[e.Field()] = e.Translate(valTrans)
-			}
-			common.FailedValidationResponse(app.Logger, w, r, translatedErrs)
-			return
-		}
-
-		tr, err := services.GetTranslationService(app, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
-				return
-			}
-		}
-
-		err = services.UpdateTranslationService(app, &input, tr)
-		if err != nil {
-			if pgErr, ok := err.(*pgconn.PgError); ok {
-				err = common.TransformPgErrToCustomError(pgErr)
-				HandlePGErrors(app.Logger, localizer, w, r, err)
-				return
-			}
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"translation": tr}, nil)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-		}
-	}
-}
-
-func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
-		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
-
-		id, err := common.ReadUUIDParam(r)
-		if err != nil {
-			common.BadRequestResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-
-		input := requests.PartialUpdateTranslationInput{}
-		err = common.ReadJSON(w, r, input)
-		if err != nil {
-			common.BadRequestResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-
-		tr, err := services.GetTranslationService(app, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
-				return
-			}
 		}
 
 		err = app.Validator.Struct(input)
@@ -234,7 +168,20 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = services.PartialUpdateTranslationService(app, &input, tr)
+		language, err := services.GetLanguageService(app, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, common.ErrEditConflict):
+				common.EditConflictResponse(app.Logger, localizer, w, r)
+			case errors.Is(err, common.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, localizer, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+				return
+			}
+		}
+
+		err = services.UpdateLanguageService(app, &input, language)
 		if err != nil {
 			if pgErr, ok := err.(*pgconn.PgError); ok {
 				err = common.TransformPgErrToCustomError(pgErr)
@@ -245,25 +192,42 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"translation": tr}, nil)
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": language}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
 	}
 }
 
-func DeleteTranslationHandler(app *app.Application) http.HandlerFunc {
+func PartialUpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
+		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+		}
+
+		input := requests.LanguageAdminPartialUpdate{}
+		err = common.ReadJSON(w, r, input)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		err = services.DeleteTranslationService(app, id)
+		err = app.Validator.Struct(input)
+		if err != nil {
+			errs := err.(validator.ValidationErrors)
+			transErrs := make(map[string]string)
+			for _, e := range errs {
+				transErrs[e.Field()] = e.Translate(valTrans)
+			}
+			common.FailedValidationResponse(app.Logger, w, r, transErrs)
+			return
+		}
+
+		language, err := services.GetLanguageService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -274,7 +238,48 @@ func DeleteTranslationHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"message": "translation successfully deleted"}, nil)
+		err = services.PartialUpdateLanguageService(app, &input, language)
+		if err != nil {
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": language}, nil)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+		}
+	}
+}
+
+func DeleteLanguageManagerHandler(app *app.Application) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
+		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
+
+		id, err := common.ReadUUIDParam(r)
+		if err != nil {
+			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		err = services.DeleteLanguageService(app, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, common.ErrRecordNotFound):
+				common.NotFoundResponse(app.Logger, localizer, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			}
+			return
+		}
+
+		// TODO: Needs localiztions
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"message": "language successfully deleted"}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
