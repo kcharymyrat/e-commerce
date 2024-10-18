@@ -26,25 +26,9 @@ func GetTranslationService(app *app.Application, id uuid.UUID) (*data.Translatio
 
 func ListTranslationsService(
 	app *app.Application,
-	listTr *requests.ListTranslationsInput,
+	filters *requests.ListTranslationsFilters,
 ) ([]*data.Translation, common.Metadata, error) {
-	return app.Repositories.Translations.List(
-		listTr.LanguageCodes,
-		listTr.TableNames,
-		listTr.FieldNames,
-		listTr.EntityIDs,
-		listTr.Search,
-		listTr.CreatedAtFrom,
-		listTr.CreatedAtUpTo,
-		listTr.UpdatedAtFrom,
-		listTr.UpdatedAtUpTo,
-		listTr.CreatedByIDs,
-		listTr.UpdatedByIDs,
-		listTr.Sorts,
-		listTr.SortSafeList,
-		listTr.Page,
-		listTr.PageSize,
-	)
+	return app.Repositories.Translations.List(filters)
 }
 
 func UpdateTranslationService(

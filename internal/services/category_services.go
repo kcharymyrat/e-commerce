@@ -30,25 +30,9 @@ func GetCategoryBySlugService(app *app.Application, slug string) (*data.Category
 
 func ListCategoriesService(
 	app *app.Application,
-	input requests.ListCategoriesInput,
+	filters *requests.ListCategoriesFilters,
 ) ([]*data.Category, common.Metadata, error) {
-	return app.Repositories.Categories.List(
-		input.Names,
-		input.Slugs,
-		input.ParentIDs,
-		input.Search,
-		input.CreatedAtFrom,
-		input.CreatedAtUpTo,
-		input.UpdatedAtFrom,
-		input.UpdatedAtUpTo,
-		input.CreatedByIDs,
-		input.UpdatedByIDs,
-		input.Sorts,
-		input.SortSafeList,
-		input.Page,
-		input.PageSize,
-	)
-
+	return app.Repositories.Categories.List(filters)
 }
 
 func UpdateCategoryService(

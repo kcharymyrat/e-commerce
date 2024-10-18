@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
 type CategoryRepository struct {
@@ -122,18 +123,7 @@ func (r CategoryRepository) GetBySlug(slug string) (*data.Category, error) {
 	return &category, nil
 }
 
-func (r CategoryRepository) List(
-	names, slugs []string,
-	parentIds []uuid.UUID,
-	search *string,
-	createdAtFrom, createdAtUpTo *time.Time,
-	updatedAtFrom, updatedAtUpTo *time.Time,
-	createdByIDs []uuid.UUID,
-	updatedByIDs []uuid.UUID,
-	sorts []string,
-	sortSafeList []string,
-	page, pageSize *int,
-) ([]*data.Category, common.Metadata, error) {
+func (r CategoryRepository) List(f *requests.ListCategoriesFilters) ([]*data.Category, common.Metadata, error) {
 	query := `
 		SELECT (
 			count(*) OVER(),
@@ -156,100 +146,34 @@ func (r CategoryRepository) List(
 	args := []interface{}{}
 	argCounter := 1
 
-	if len(names) > 0 {
+	if len(f.Names) > 0 {
 		query += fmt.Sprintf(" AND name = ANY($%d)", argCounter)
-		args = append(args, names)
+		args = append(args, f.Names)
 		argCounter++
 	}
 
-	if len(slugs) > 0 {
+	if len(f.Slugs) > 0 {
 		query += fmt.Sprintf(" AND LOWER(slug) = ANY($%d)", argCounter)
-		args = append(args, slugs)
+		args = append(args, f.Slugs)
 		argCounter++
 	}
 
-	if len(parentIds) > 0 {
+	if len(f.ParentIDs) > 0 {
 		query += fmt.Sprintf(" AND parent_id = ANY($%d)", argCounter)
-		args = append(args, parentIds)
+		args = append(args, f.ParentIDs)
 		argCounter++
 	}
 
-	if search != nil {
+	if f.Search != nil {
 		query += fmt.Sprintf(" AND to_tsvector('simple', name) @@ plainto_tsquery('simple', $%d)", argCounter)
-		args = append(args, *search)
+		args = append(args, *f.Search)
 		argCounter++
 	}
 
-	if createdAtFrom != nil {
-		query += fmt.Sprintf(" AND created_at >= $%d", argCounter)
-		args = append(args, *createdAtFrom)
-		argCounter++
-	}
-
-	if createdAtUpTo != nil {
-		query += fmt.Sprintf(" AND created_at <= $%d", argCounter)
-		args = append(args, *createdAtUpTo)
-		argCounter++
-	}
-
-	if updatedAtFrom != nil {
-		query += fmt.Sprintf(" AND updated_at >= $%d", argCounter)
-		args = append(args, *updatedAtFrom)
-		argCounter++
-	}
-
-	if updatedAtUpTo != nil {
-		query += fmt.Sprintf(" AND updated_at <= $%d", argCounter)
-		args = append(args, *updatedAtUpTo)
-		argCounter++
-	}
-
-	if len(createdByIDs) > 0 {
-		query += fmt.Sprintf(" AND created_by = ANY($%d)", argCounter)
-		args = append(args, createdByIDs)
-		argCounter++
-	}
-
-	if len(updatedByIDs) > 0 {
-		query += fmt.Sprintf(" AND updated_by_id = ANY($%d)", argCounter)
-		args = append(args, updatedByIDs)
-		argCounter++
-	}
-
-	if len(sorts) > 0 {
-		query += " ORDER BY"
-		for _, sort := range sorts {
-			direction := "ASC"
-			sortField := strings.TrimSpace(strings.ToLower(sort))
-			if strings.HasPrefix(sort, "-") {
-				direction = "DESC"
-				sortField = strings.TrimPrefix(sort, "-")
-			}
-			query += fmt.Sprintf(" %s %s,", sortField, direction)
-		}
-		query += " id ASC"
-	}
-	fallbackPageSize := 20 // FIXME: make a constant number
-	if pageSize != nil {
-		query += fmt.Sprintf(" LIMIT $%d", argCounter)
-		args = append(args, *pageSize)
-		argCounter++
-		fallbackPageSize = *pageSize
-	} else {
-		pageSize = &fallbackPageSize
-		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
-	}
-
-	defaultPage := 1 // FIXME: make a constant number
-	if page != nil {
-		offset := fallbackPageSize * (*page - 1)
-		query += fmt.Sprintf(" OFFSET $%d", argCounter)
-		args = append(args, offset)
-		argCounter++
-	} else {
-		page = &defaultPage
-		query += fmt.Sprintf(" OFFSET %d", *page)
-	}
+	filters.AddCreatedUpdateAtFilterToSQL(&f.CreatedUpdatedAtFilter, &query, &argCounter, args)
+	filters.AddCreatedUpdateByFilterToSQL(&f.CreatedUpdatedByFilter, &query, &argCounter, args)
+	filters.AddSortListFilterToSQL(&f.SortListFilter, &query)
+	filters.AddPaginationFilterToSQL(&f.PaginationFilter, &query, &argCounter, args)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -289,7 +213,7 @@ func (r CategoryRepository) List(
 		return nil, common.Metadata{}, err
 	}
 
-	metadata := common.CalculateMetadata(totalRecords, *page, *pageSize)
+	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)
 
 	return categories, metadata, nil
 }

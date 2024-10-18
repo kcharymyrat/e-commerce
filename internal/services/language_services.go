@@ -26,9 +26,9 @@ func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, err
 
 func ListLanguagesService(
 	app *app.Application,
-	input requests.ListLanguagesInput,
+	filters *requests.ListLanguagesFilters,
 ) ([]*data.Language, common.Metadata, error) {
-	return app.Repositories.Languages.List(input.Page, input.PageSize)
+	return app.Repositories.Languages.List(filters)
 }
 
 func UpdateLanguageService(

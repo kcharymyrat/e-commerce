@@ -1,5 +1,5 @@
 package filters
 
-type SearchFilters struct {
+type SearchFilter struct {
 	Search *string `json:"search" validate:"omitempty,max=50"`
 }

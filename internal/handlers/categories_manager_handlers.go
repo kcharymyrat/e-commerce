@@ -126,11 +126,11 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		input := requests.ListCategoriesInput{}
+		filters := requests.ListCategoriesFilters{}
 
-		readCategoryQueryParameters(&input, r.URL.Query())
+		readCategoryQueryParameters(&filters, r.URL.Query())
 
-		err := app.Validator.Struct(input)
+		err := app.Validator.Struct(filters)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -141,7 +141,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		categories, metadata, err := services.ListCategoriesService(app, input)
+		categories, metadata, err := services.ListCategoriesService(app, &filters)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return

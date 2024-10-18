@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 )
@@ -116,7 +117,7 @@ func (r LanguageRepository) GetByCode(code string) (*data.Language, error) {
 	return &language, nil
 }
 
-func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.Metadata, error) {
+func (r LanguageRepository) List(f *requests.ListLanguagesFilters) ([]*data.Language, common.Metadata, error) {
 	query := `
 		SELECT *
 		FROM languages
@@ -126,24 +127,24 @@ func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.
 	args := []interface{}{}
 
 	fallbackPageSize := 20 // FIXME: make a constant number
-	if pageSize != nil {
+	if f.PageSize != nil {
 		query += fmt.Sprintf(" LIMIT $%d", argCounter)
-		args = append(args, *pageSize)
+		args = append(args, *f.PageSize)
 		argCounter++
-		fallbackPageSize = *pageSize
+		fallbackPageSize = *f.PageSize
 	} else {
-		pageSize = &fallbackPageSize
+		f.PageSize = &fallbackPageSize
 		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
 	}
 
 	defaultPage := 1 // FIXME: make a constant number
-	if page != nil {
-		offset := fallbackPageSize * (*page - 1)
+	if f.Page != nil {
+		offset := fallbackPageSize * (*f.Page - 1)
 		query += fmt.Sprintf(" OFFSET $%d", argCounter)
 		args = append(args, offset)
 		argCounter++
 	} else {
-		page = &defaultPage
+		f.Page = &defaultPage
 		query += fmt.Sprintf(" OFFSET %d", defaultPage)
 	}
 
@@ -182,7 +183,7 @@ func (r LanguageRepository) List(page, pageSize *int) ([]*data.Language, common.
 		return nil, common.Metadata{}, err
 	}
 
-	metadata := common.CalculateMetadata(totalRecords, *page, *pageSize)
+	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)
 
 	return languages, metadata, nil
 }

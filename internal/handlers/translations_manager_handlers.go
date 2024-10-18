@@ -97,10 +97,10 @@ func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		input := requests.ListTranslationsInput{}
-		readTranslationQueryParameters(&input, r.URL.Query())
+		filters := requests.ListTranslationsFilters{}
+		readTranslationQueryParameters(&filters, r.URL.Query())
 
-		err := app.Validator.Struct(input)
+		err := app.Validator.Struct(filters)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -111,7 +111,7 @@ func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		trList, metadata, err := services.ListTranslationsService(app, &input)
+		trList, metadata, err := services.ListTranslationsService(app, &filters)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return

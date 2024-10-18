@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
 type TranslationRepository struct {
@@ -96,18 +97,7 @@ func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) 
 	return &translation, nil
 }
 
-func (r TranslationRepository) List(
-	langCodes, tableNames, fieldNames []string,
-	entityIDs []uuid.UUID,
-	search *string,
-	createdAtFrom, createdAtUpTo *time.Time,
-	updatedAtFrom, updatedAtUpTo *time.Time,
-	createdByIDs []uuid.UUID,
-	updatedByIDs []uuid.UUID,
-	sorts []string,
-	sortSafeList []string,
-	page, pageSize *int,
-) ([]*data.Translation, common.Metadata, error) {
+func (r TranslationRepository) List(f *requests.ListTranslationsFilters) ([]*data.Translation, common.Metadata, error) {
 
 	query := `
 		SELECT COUNT(*) OVER(), * 
@@ -118,31 +108,31 @@ func (r TranslationRepository) List(
 	args := []interface{}{}
 	argCounter := 1
 
-	if len(langCodes) > 0 {
+	if len(f.LanguageCodes) > 0 {
 		query += fmt.Sprintf(" AND language_code = ANY($%d)", argCounter)
-		args = append(args, langCodes)
+		args = append(args, f.LanguageCodes)
 		argCounter++
 	}
 
-	if len(tableNames) > 0 {
+	if len(f.TableNames) > 0 {
 		query += fmt.Sprintf(" AND table_name = ANY($%d)", argCounter)
-		args = append(args, tableNames)
+		args = append(args, f.TableNames)
 		argCounter++
 	}
 
-	if len(fieldNames) > 0 {
+	if len(f.FieldNames) > 0 {
 		query += fmt.Sprintf(" AND field_name = ANY($%d)", argCounter)
-		args = append(args, fieldNames)
+		args = append(args, f.FieldNames)
 		argCounter++
 	}
 
-	if len(entityIDs) > 0 {
+	if len(f.EntityIDs) > 0 {
 		query += fmt.Sprintf(" AND entity_id = ANY($%d)", argCounter)
-		args = append(args, entityIDs)
+		args = append(args, f.EntityIDs)
 		argCounter++
 	}
 
-	if search != nil {
+	if f.Search != nil {
 		query += fmt.Sprintf(` 
 		AND (
 			to_tsvector('simple', id) @@ plainto_tsquery('simple', $%d) OR 
@@ -151,81 +141,14 @@ func (r TranslationRepository) List(
 			to_tsvector('simple', translated_field_name) @@ plainto_tsquery('simple', $%d) OR 
 			to_tsvector('simple', translated_value) @@ plainto_tsquery('simple', $%d)
 		)`, argCounter, argCounter, argCounter, argCounter, argCounter)
-		args = append(args, *search)
+		args = append(args, *f.Search)
 		argCounter++
 	}
 
-	if createdAtFrom != nil {
-		query += fmt.Sprintf(" AND created_at >= $%d", argCounter)
-		args = append(args, createdAtFrom)
-		argCounter++
-	}
-
-	if createdAtUpTo != nil {
-		query += fmt.Sprintf(" AND created_at <= $%d", argCounter)
-		args = append(args, createdAtFrom)
-		argCounter++
-	}
-
-	if updatedAtFrom != nil {
-		query += fmt.Sprintf(" AND updated_at >= $%d", argCounter)
-		args = append(args, *updatedAtFrom)
-		argCounter++
-	}
-
-	if updatedAtUpTo != nil {
-		query += fmt.Sprintf(" AND updated_at <= $%d", argCounter)
-		args = append(args, *updatedAtUpTo)
-		argCounter++
-	}
-
-	if len(createdByIDs) > 0 {
-		query += fmt.Sprintf(" AND created_by = ANY($%d)", argCounter)
-		args = append(args, createdByIDs)
-		argCounter++
-	}
-
-	if len(updatedByIDs) > 0 {
-		query += fmt.Sprintf(" AND updated_by_id = ANY($%d)", argCounter)
-		args = append(args, updatedByIDs)
-		argCounter++
-	}
-
-	if len(sorts) > 0 {
-		query += " ORDER BY"
-		for _, sort := range sorts {
-			direction := "ASC"
-			sortField := strings.TrimSpace(strings.ToLower(sort))
-			if strings.HasPrefix(sort, "-") {
-				direction = "DESC"
-				sortField = strings.TrimPrefix(sort, "-")
-			}
-			query += fmt.Sprintf(" %s %s,", sortField, direction)
-		}
-		query += " id ASC"
-	}
-
-	fallbackPageSize := 20 // FIXME: make a constant number
-	if pageSize != nil {
-		query += fmt.Sprintf(" LIMIT $%d", argCounter)
-		args = append(args, *pageSize)
-		argCounter++
-		fallbackPageSize = *pageSize
-	} else {
-		pageSize = &fallbackPageSize
-		query += fmt.Sprintf(" LIMIT %d", fallbackPageSize)
-	}
-
-	defaultPage := 1 // FIXME: make a constant number
-	if page != nil {
-		offset := fallbackPageSize * (*page - 1)
-		query += fmt.Sprintf(" OFFSET $%d", argCounter)
-		args = append(args, offset)
-		argCounter++
-	} else {
-		page = &defaultPage
-		query += fmt.Sprintf(" OFFSET %d", defaultPage)
-	}
+	filters.AddCreatedUpdateAtFilterToSQL(&f.CreatedUpdatedAtFilter, &query, &argCounter, args)
+	filters.AddCreatedUpdateByFilterToSQL(&f.CreatedUpdatedByFilter, &query, &argCounter, args)
+	filters.AddSortListFilterToSQL(&f.SortListFilter, &query)
+	filters.AddPaginationFilterToSQL(&f.PaginationFilter, &query, &argCounter, args)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -266,7 +189,7 @@ func (r TranslationRepository) List(
 		return nil, common.Metadata{}, err
 	}
 
-	metadata := common.CalculateMetadata(totalRecords, *page, *pageSize)
+	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)
 
 	return trs, metadata, nil
 

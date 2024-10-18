@@ -53,11 +53,11 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		input := requests.ListLanguagesInput{}
+		filters := requests.ListLanguagesFilters{}
 
 		qs := r.URL.Query()
-		readLanguageQueryParameters(&input, qs)
-		err := app.Validator.Struct(&input)
+		readLanguageQueryParameters(&filters, qs)
+		err := app.Validator.Struct(&filters)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)
 			translatedErrs := make(map[string]string)
@@ -68,7 +68,7 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		languages, metadata, err := services.ListLanguagesService(app, input)
+		languages, metadata, err := services.ListLanguagesService(app, &filters)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return

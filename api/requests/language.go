@@ -5,8 +5,8 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
-type ListLanguagesInput struct {
-	filters.PaginationFilters
+type ListLanguagesFilters struct {
+	filters.PaginationFilter
 }
 
 type CreateLanguageInput struct {

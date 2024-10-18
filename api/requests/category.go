@@ -5,15 +5,15 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
-type ListCategoriesInput struct {
+type ListCategoriesFilters struct {
 	Names     []string    `json:"names" validate:"omitempty,dive,max=50"`
 	Slugs     []string    `json:"slugs" validate:"omitempty,dive,max=50,slug"`
 	ParentIDs []uuid.UUID `json:"parent_ids" validate:"omitempty,dive,uuid"`
-	filters.SearchFilters
+	filters.SearchFilter
 	filters.CreatedUpdatedAtFilter
-	filters.CreatedUpdatedByFilters
-	filters.SortListFilters
-	filters.PaginationFilters
+	filters.CreatedUpdatedByFilter
+	filters.SortListFilter
+	filters.PaginationFilter
 }
 
 type CreateCategoryInput struct {

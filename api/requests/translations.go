@@ -5,16 +5,16 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/filters"
 )
 
-type ListTranslationsInput struct {
+type ListTranslationsFilters struct {
 	LanguageCodes []string    `json:"language_codes" validate:"omitempty,dive,max=10"`
 	TableNames    []string    `json:"table_names" validate:"omitempty,dive,max=255"`
 	FieldNames    []string    `json:"field_names" validate:"omitempty,dive,max=255"`
 	EntityIDs     []uuid.UUID `json:"entity_ids" validate:"omitempty,dive,uuid"`
-	filters.SearchFilters
+	filters.SearchFilter
 	filters.CreatedUpdatedAtFilter
-	filters.CreatedUpdatedByFilters
-	filters.SortListFilters
-	filters.PaginationFilters
+	filters.CreatedUpdatedByFilter
+	filters.SortListFilter
+	filters.PaginationFilter
 }
 
 type CreateTranslationInput struct {
