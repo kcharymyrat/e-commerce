@@ -13,6 +13,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/utils"
 )
 
 type UserRepository struct {
@@ -20,9 +21,14 @@ type UserRepository struct {
 }
 
 func (r UserRepository) Create(user *data.User) error {
+	passwordHashBytes, err := utils.GeneratePasswordHash(user.Password)
+	if err != nil {
+		return err
+	}
+
 	args := []interface{}{
 		user.Phone,
-		user.PasswordHash,
+		passwordHashBytes,
 		user.FirstName,
 		user.LastName,
 		user.Patronomic,
@@ -65,7 +71,7 @@ func (r UserRepository) Create(user *data.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := r.DBPOOL.QueryRow(ctx, query, args...).Scan(
+	err = r.DBPOOL.QueryRow(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Phone,
 		&user.FirstName,
@@ -221,6 +227,11 @@ func (r UserRepository) List(f *requests.ListUsersFilters) ([]*data.User, common
 }
 
 func (r UserRepository) Update(user *data.User) error {
+	passwordHashBytes, err := utils.GeneratePasswordHash(user.Password)
+	if err != nil {
+		return err
+	}
+
 	query := `UPDATE users
 	SET 
 		phone = $1,
@@ -237,7 +248,7 @@ func (r UserRepository) Update(user *data.User) error {
 
 	args := []interface{}{
 		user.Phone,
-		user.PasswordHash,
+		passwordHashBytes,
 		user.FirstName,
 		user.LastName,
 		user.Patronomic,
@@ -251,7 +262,7 @@ func (r UserRepository) Update(user *data.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := r.DBPOOL.QueryRow(ctx, query, args...).Scan(
+	err = r.DBPOOL.QueryRow(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Phone,
 		&user.FirstName,

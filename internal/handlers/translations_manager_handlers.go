@@ -7,6 +7,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
@@ -44,7 +45,12 @@ func CreateTranslationMangerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.CreateTranslationService(app, tr)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -174,7 +180,12 @@ func UpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.UpdateTranslationService(app, &input, tr)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -225,7 +236,12 @@ func PartialUpdateTranslationHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.PartialUpdateTranslationService(app, &input, tr)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 

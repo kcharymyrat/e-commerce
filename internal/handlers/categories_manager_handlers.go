@@ -7,6 +7,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
@@ -45,7 +46,12 @@ func CreateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.CreateCategoryService(app, category)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -235,7 +241,12 @@ func UpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.UpdateCategoryService(app, &input, category)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -291,7 +302,12 @@ func PartialUpdateCategoryManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = services.PartialUpdateCategoryService(app, &input, category)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 

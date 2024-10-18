@@ -7,6 +7,7 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/api/responses"
 	"github.com/kcharymyrat/e-commerce/internal/app"
@@ -44,7 +45,12 @@ func CreateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.CreateLanguageService(app, language)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -177,7 +183,12 @@ func UpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc {
 
 		err = services.UpdateLanguageService(app, &input, language)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
@@ -229,7 +240,12 @@ func PartialUpdateLanguageManagerHandler(app *app.Application) http.HandlerFunc 
 
 		err = services.PartialUpdateLanguageService(app, &input, language)
 		if err != nil {
-			HandlePGErrors(app.Logger, localizer, w, r, err)
+			if pgErr, ok := err.(*pgconn.PgError); ok {
+				err = common.TransformPgErrToCustomError(pgErr)
+				HandlePGErrors(app.Logger, localizer, w, r, err)
+				return
+			}
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 

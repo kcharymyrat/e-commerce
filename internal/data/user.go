@@ -10,7 +10,7 @@ import (
 type User struct {
 	ID                  uuid.UUID       `json:"id" db:"id" validate:"required,uuid"`
 	Phone               string          `json:"phone" db:"phone" validate:"required,e164"`
-	PasswordHash        string          `json:"-" db:"password_hash" validate:"required,min=8"`
+	Password            string          `json:"-" validate:"required,min=8,max=50"`
 	FirstName           *string         `json:"first_name,omitempty" db:"first_name" validate:"omitempty,max=50,alpha"`
 	LastName            *string         `json:"last_name,omitempty"  db:"last_name" validate:"omitempty,max=50,alpha"`
 	Patronomic          *string         `json:"patronomic,omitempty"  db:"patronomic" validate:"omitempty,max=50,alpha"`

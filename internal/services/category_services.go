@@ -2,7 +2,6 @@ package services
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
@@ -10,14 +9,7 @@ import (
 )
 
 func CreateCategoryService(app *app.Application, category *data.Category) error {
-	err := app.Repositories.Categories.Create(category)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Categories.Create(category)
 }
 
 func GetCategoryByIDService(app *app.Application, id uuid.UUID) (*data.Category, error) {
@@ -47,14 +39,7 @@ func UpdateCategoryService(
 	category.ImageUrl = input.ImageUrl
 	category.UpdatedByID = input.UpdatedByID
 
-	err := app.Repositories.Categories.Update(category)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Categories.Update(category)
 }
 
 func PartialUpdateCategoryService(
@@ -80,14 +65,7 @@ func PartialUpdateCategoryService(
 
 	category.UpdatedByID = input.UpdatedByID
 
-	err := app.Repositories.Categories.Update(category)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Categories.Update(category)
 }
 
 func DeleteCategoryServiceById(app *app.Application, id uuid.UUID) error {

@@ -2,7 +2,6 @@ package services
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/common"
@@ -10,14 +9,7 @@ import (
 )
 
 func CreateLanguageService(app *app.Application, language *data.Language) error {
-	err := app.Repositories.Languages.Create(language)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Languages.Create(language)
 }
 
 func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, error) {
@@ -40,14 +32,7 @@ func UpdateLanguageService(
 	language.Code = input.Code
 	language.UpdatedByID = input.UpdatedByID
 
-	err := app.Repositories.Languages.Update(language)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Languages.Update(language)
 }
 
 func PartialUpdateLanguageService(
@@ -63,14 +48,7 @@ func PartialUpdateLanguageService(
 	}
 	language.UpdatedByID = input.UpdatedByID
 
-	err := app.Repositories.Languages.Update(language)
-	if err != nil {
-		if pgErr, ok := err.(*pgconn.PgError); ok {
-			return common.TransformPgErrToCustomError(pgErr)
-		}
-		return err
-	}
-	return nil
+	return app.Repositories.Languages.Update(language)
 }
 
 func DeleteLanguageService(app *app.Application, id uuid.UUID) error {
