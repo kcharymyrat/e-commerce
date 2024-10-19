@@ -85,7 +85,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 
 		filters := requests.CategoriesAdminFilters{}
 
-		readCategoryQueryParameters(&filters, r.URL.Query())
+		readCategoryAdminQueryParams(&filters, r.URL.Query())
 
 		err := app.Validator.Struct(filters)
 		if err != nil {

@@ -104,7 +104,7 @@ func ListTranslationsHandler(app *app.Application) http.HandlerFunc {
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
 		filters := requests.TranslationsAdminFilters{}
-		readTranslationQueryParameters(&filters, r.URL.Query())
+		readTranslationAdminQueryParams(&filters, r.URL.Query())
 
 		err := app.Validator.Struct(filters)
 		if err != nil {

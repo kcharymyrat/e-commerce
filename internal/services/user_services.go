@@ -20,7 +20,7 @@ func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*d
 	return app.Repositories.Users.List(f)
 }
 
-func UpdateUsersService(
+func UpdateUsersAdminService(
 	app *app.Application,
 	input *requests.UserAdminUpdate,
 	user *data.User,
@@ -37,7 +37,7 @@ func UpdateUsersService(
 	return app.Repositories.Users.Update(user)
 }
 
-func PartialUpdateUsersService(
+func PartialUpdateUsersAdminService(
 	app *app.Application,
 	input *requests.UserAdminPartialUpdate,
 	user *data.User,
@@ -70,4 +70,48 @@ func PartialUpdateUsersService(
 
 func DeleteUserService(app *app.Application, id uuid.UUID) error {
 	return app.Repositories.Users.Delete(id)
+}
+
+func UpdateUsersSelfService(
+	app *app.Application,
+	input *requests.UserSelfUpdate,
+	user *data.User,
+) error {
+	user.Phone = input.Phone
+	user.Password = input.Password
+	user.FirstName = input.FirstName
+	user.LastName = input.LastName
+	user.Patronomic = input.Patronomic
+	user.Email = input.Email
+	user.UpdatedByID = &input.UpdatedByID
+
+	return app.Repositories.Users.Update(user)
+}
+
+func PartialUpdateUsersSelfService(
+	app *app.Application,
+	input *requests.UserSelfPartialUpdate,
+	user *data.User,
+) error {
+	if input.Phone != nil {
+		user.Phone = *input.Phone
+	}
+	if input.Password != nil {
+		user.Password = *input.Password
+	}
+	if input.FirstName != nil {
+		user.FirstName = input.FirstName
+	}
+	if input.LastName != nil {
+		user.LastName = input.LastName
+	}
+	if input.Patronomic != nil {
+		user.Patronomic = input.Patronomic
+	}
+	if input.Email != nil {
+		user.Email = input.Email
+	}
+	user.UpdatedByID = &input.UpdatedByID
+
+	return app.Repositories.Users.Update(user)
 }

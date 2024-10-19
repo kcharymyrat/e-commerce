@@ -35,6 +35,10 @@ func Routes(app *app.Application) *chi.Mux {
 			r.Get("/{id}", handlers.GetLanguagePublicHandler(app))
 		})
 
+		r.Route("/users", func(r chi.Router) {
+			r.Get("/{id}", handlers.GetUsePublicHandler(app))
+		})
+
 		r.Route("/admin", func(r chi.Router) {
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
@@ -61,6 +65,24 @@ func Routes(app *app.Application) *chi.Mux {
 				r.Put("/{id}", handlers.UpdateTranslationHandler(app))
 				r.Patch("/{id}", handlers.PartialUpdateTranslationHandler(app))
 				r.Delete("/{id}", handlers.DeleteTranslationHandler(app))
+			})
+
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/", handlers.ListUsersAdminHandler(app))
+				r.Post("/", handlers.CreateUserAdminHandler(app))
+				r.Get("/{id}", handlers.GetUsersAdminHandler(app))
+				r.Put("/{id}", handlers.UpdateUserAdminHandler(app))
+				r.Patch("/{id}", handlers.PartialUpdateUserAdminHandler(app))
+				r.Delete("/{id}", handlers.DeleteUserAdminHandler(app))
+			})
+		})
+
+		r.Route("/me", func(r chi.Router) {
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/{id}", handlers.GetUserSelfHandler(app))
+				r.Put("/{id}", handlers.UpdateUserSelfHandler(app))
+				r.Patch("/{id}", handlers.PartialUpdateUserSelfHandler(app))
+				r.Delete("/{id}", handlers.DeleteUserSelfHandler(app))
 			})
 		})
 

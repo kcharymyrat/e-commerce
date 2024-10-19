@@ -77,7 +77,7 @@ func HandlePGErrors(
 	}
 }
 
-func readCategoryQueryParameters(input *requests.CategoriesAdminFilters, qs url.Values) {
+func readCategoryAdminQueryParams(input *requests.CategoriesAdminFilters, qs url.Values) {
 	input.Names = common.ReadQueryCSStrs(qs, "names")
 	input.Slugs = common.ReadQueryCSStrs(qs, "slugs")
 	input.ParentIDs = common.ReadQueryCSUUIDs(qs, "parent_ids")
@@ -96,12 +96,12 @@ func readCategoryQueryParameters(input *requests.CategoriesAdminFilters, qs url.
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
 
-func readLanguageQueryParameters(input *requests.LanguagesAdminFilters, qs url.Values) {
+func readLanguageAdminQueryParams(input *requests.LanguagesAdminFilters, qs url.Values) {
 	input.Page = common.ReadQueryInt(qs, "page")
 	input.PageSize = common.ReadQueryInt(qs, "page_size")
 }
 
-func readTranslationQueryParameters(input *requests.TranslationsAdminFilters, qs url.Values) {
+func readTranslationAdminQueryParams(input *requests.TranslationsAdminFilters, qs url.Values) {
 	input.LanguageCodes = common.ReadQueryCSStrs(qs, "language_codes")
 	input.TableNames = common.ReadQueryCSStrs(qs, "table_names")
 	input.FieldNames = common.ReadQueryCSStrs(qs, "field_names")
@@ -116,6 +116,49 @@ func readTranslationQueryParameters(input *requests.TranslationsAdminFilters, qs
 	input.Sorts = common.ReadQueryCSStrs(qs, "sorts")
 	input.SortSafeList = []string{
 		"id", "language_code", "entity_id", "table_name", "-id", "-language_code", "-entity_ids", "-table_name",
+	}
+	input.Page = common.ReadQueryInt(qs, "page")
+	input.PageSize = common.ReadQueryInt(qs, "page_size")
+}
+
+func readUserAdminQueryParams(input *requests.UsersAdminFilters, qs url.Values) {
+	input.ID = common.ReadQueryUUID(qs, "id")
+	input.Phone = common.ReadQueryStr(qs, "phone")
+	input.Email = common.ReadQueryStr(qs, "email")
+	input.IsActice = common.ReadQueryBool(qs, "is_active")
+	input.IsBanned = common.ReadQueryBool(qs, "is_banned")
+	input.IsTrusted = common.ReadQueryBool(qs, "is_trusted")
+	input.IsInvited = common.ReadQueryBool(qs, "is_invited")
+	input.RefSignupsFrom = common.ReadQueryInt(qs, "ref_signups_from")
+	input.RefSignupsTo = common.ReadQueryInt(qs, "ref_signups_to")
+	input.ProdRefBoughtFrom = common.ReadQueryInt(qs, "prod_ref_bought_from")
+	input.ProdRefBoughtTo = common.ReadQueryInt(qs, "prod_ref_bought_to")
+	input.ProdRefBoughtFrom = common.ReadQueryInt(qs, "prod_ref_bought_from")
+	input.ProdRefBoughtTo = common.ReadQueryInt(qs, "prod_ref_bought_to")
+	input.WholeDynDiscPercentFrom = common.ReadQueryDecimal(qs, "whole_ddp_from")
+	input.WholeDynDiscPercentTo = common.ReadQueryDecimal(qs, "whole_ddp_to")
+	input.DynDiscPercentFrom = common.ReadQueryDecimal(qs, "ddp_from")
+	input.DynDiscPercentTo = common.ReadQueryDecimal(qs, "ddp_to")
+	input.BonusPointsFrom = common.ReadQueryDecimal(qs, "bonus_from")
+	input.BonusPointsTo = common.ReadQueryDecimal(qs, "bonus_to")
+	input.IsStaff = common.ReadQueryBool(qs, "is_staff")
+	input.IsAdmin = common.ReadQueryBool(qs, "is_admin")
+	input.IsSuperuser = common.ReadQueryBool(qs, "is_superuser")
+	input.Search = common.ReadQueryStr(qs, "search")
+	input.CreatedAtFrom = common.ReadQueryTime(qs, "created_at_from")
+	input.CreatedAtUpTo = common.ReadQueryTime(qs, "created_at_up_to")
+	input.UpdatedAtFrom = common.ReadQueryTime(qs, "updated_at_from")
+	input.UpdatedAtUpTo = common.ReadQueryTime(qs, "updated_at_up_to")
+	input.CreatedByIDs = common.ReadQueryCSUUIDs(qs, "created_by_ids")
+	input.UpdatedByIDs = common.ReadQueryCSUUIDs(qs, "updated_by_ids")
+	input.Sorts = common.ReadQueryCSStrs(qs, "sorts")
+	input.SortSafeList = []string{
+		"id", "phone", "email", "is_active", "is_banned", "is_trusted", "is_invited",
+		"ref_signups", "prod_ref_bought", "whole_ddp", "ddp", "bonus", "is_staff",
+		"created_at", "updated_at",
+		"-id", "-phone", "-email", "-is_active", "-is_banned", "-is_trusted", "-is_invited",
+		"-ref_signups", "-prod_ref_bought", "-whole_ddp", "-ddp", "-bonus", "-is_staff",
+		"-created_at", "-updated_at",
 	}
 	input.Page = common.ReadQueryInt(qs, "page")
 	input.PageSize = common.ReadQueryInt(qs, "page_size")

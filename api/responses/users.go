@@ -35,11 +35,11 @@ type UserSelfResponse struct {
 	UpdatedAt           time.Time       `json:"updated_at" validate:"required,gtefield=CreatedAt"`
 	CreatedByID         *uuid.UUID      `json:"created_by_id" validate:"omitempty,uuid"`
 	UpdatedByID         *uuid.UUID      `json:"updated_by_id" validate:"omitempty,uuid"`
+	Version             int             `json:"version" validate:"number,min=1"`
 }
 
 type UserAdminResponse struct {
 	UserSelfResponse
-	Version int `json:"version" validate:"number,min=1"`
 }
 
 type UserPublicResponse struct {

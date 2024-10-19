@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/internal/constants"
 	"github.com/kcharymyrat/e-commerce/internal/types"
+	"github.com/shopspring/decimal"
 )
 
 func ReadUUIDParam(r *http.Request) (uuid.UUID, error) {
@@ -80,6 +81,7 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	dec.DisallowUnknownFields()
 
 	err := dec.Decode(&dst)
+
 	if err != nil {
 
 		fmt.Printf("%v, %T\n", err.Error(), err)
@@ -194,6 +196,21 @@ func ReadQueryInt(qs url.Values, key string) *int {
 	return &i
 }
 
+func ReadQueryDecimal(qs url.Values, key string) *decimal.Decimal {
+	s := qs.Get(key)
+
+	if s == "" {
+		return nil
+	}
+
+	d, err := decimal.NewFromString(s)
+	if err != nil {
+		return nil
+	}
+
+	return &d
+}
+
 func ReadQueryTime(qs url.Values, key string) *time.Time {
 	s := qs.Get(key)
 	if s == "" {
@@ -206,4 +223,18 @@ func ReadQueryTime(qs url.Values, key string) *time.Time {
 	}
 
 	return &qsTime
+}
+
+func ReadQueryBool(qs url.Values, key string) *bool {
+	s := qs.Get(key)
+	if s == "" {
+		return nil
+	}
+
+	b, err := strconv.ParseBool(s)
+	if err != nil {
+		return nil
+	}
+
+	return &b
 }

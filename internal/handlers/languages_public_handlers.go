@@ -56,7 +56,7 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 		filters := requests.LanguagesAdminFilters{}
 
 		qs := r.URL.Query()
-		readLanguageQueryParameters(&filters, qs)
+		readLanguageAdminQueryParams(&filters, qs)
 		err := app.Validator.Struct(&filters)
 		if err != nil {
 			errs := err.(validator.ValidationErrors)

@@ -172,7 +172,7 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, commo
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := r.DBPOOL.Query(ctx, query, args)
+	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
 		return nil, common.Metadata{}, err
 	}
@@ -221,7 +221,7 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, commo
 		return nil, common.Metadata{}, err
 	}
 
-	metadata := common.CalculateMetadata(len(users), *f.PaginationFilter.Page, *f.PaginationFilter.PageSize)
+	metadata := common.CalculateMetadata(len(users), *f.Page, *f.PageSize)
 
 	return users, metadata, nil
 }
