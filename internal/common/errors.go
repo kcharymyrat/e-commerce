@@ -116,6 +116,24 @@ func NotFoundResponse(
 	ErrorResponse(logger, w, r, http.StatusNotFound, message)
 }
 
+func UnauthorizedResponse(
+	logger *zerolog.Logger,
+	localizer *i18n.Localizer,
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	message, e := localizer.Localize(&i18n.LocalizeConfig{
+		MessageID: "unauthorized",
+	})
+
+	if e != nil {
+		ErrorResponse(logger, w, r, http.StatusInternalServerError, e.Error())
+		return
+	}
+
+	ErrorResponse(logger, w, r, http.StatusUnauthorized, message)
+}
+
 func MethodNotAllowedResponse(
 	logger *zerolog.Logger,
 	localizer *i18n.Localizer,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,7 +86,7 @@ func (r UserRepository) Create(user *data.User) error {
 	return err
 }
 
-func (r UserRepository) Get(id uuid.UUID) (*data.User, error) {
+func (r UserRepository) GetByID(id uuid.UUID) (*data.User, error) {
 	query := `
 	SELECT * 
 	FROM users
@@ -102,6 +103,61 @@ func (r UserRepository) Get(id uuid.UUID) (*data.User, error) {
 		&user.FirstName,
 		&user.LastName,
 		&user.Patronomic,
+		&user.DOB,
+		&user.Email,
+		&user.IsActive,
+		&user.IsBanned,
+		&user.IsTrusted,
+		&user.InvitedByID,
+		&user.InvRefID,
+		&user.InvProdRefID,
+		&user.RefSignups,
+		&user.ProdRefSignups,
+		&user.ProdRefBought,
+		&user.TotalRefferals,
+		&user.WholeDynDiscPercent,
+		&user.DynDiscPercent,
+		&user.BonusPoints,
+		&user.IsStaff,
+		&user.IsAdmin,
+		&user.IsSuperuser,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.CreatedByID,
+		&user.UpdatedByID,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, common.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
+func (r UserRepository) GetByPhone(phone string) (*data.User, error) {
+	query := `
+	SELECT * 
+	FROM users
+	WHERE phone = $1
+	`
+	var user data.User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := r.DBPOOL.QueryRow(ctx, query, phone).Scan(
+		&user.ID,
+		&user.Phone,
+		&user.FirstName,
+		&user.LastName,
+		&user.Patronomic,
+		&user.PasswordHash,
 		&user.DOB,
 		&user.Email,
 		&user.IsActive,
@@ -227,28 +283,21 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, commo
 }
 
 func (r UserRepository) Update(user *data.User) error {
-	passwordHashBytes, err := auth.GeneratePasswordHash(user.Password)
-	if err != nil {
-		return err
-	}
-
 	query := `UPDATE users
-	SET 
-		phone = $1,
-		password = $2,
-		first_name = $3,
-		last_name = $4,
-		patronomic = $5,
-		email = $6
-		is_active = $7,
-		updated_by_id = $8,
-		version = version + 1,
-	WHERE id = $9 AND version = $10
-	`
+		SET 
+			phone = $1,
+			first_name = $2,
+			last_name = $3,
+			patronomic = $4,
+			email = $5
+			is_active = $6,
+			updated_by_id = $7,
+			version = version + 1
+		WHERE id = $8 AND version = $9
+		`
 
 	args := []interface{}{
 		user.Phone,
-		passwordHashBytes,
 		user.FirstName,
 		user.LastName,
 		user.Patronomic,
@@ -259,10 +308,45 @@ func (r UserRepository) Update(user *data.User) error {
 		user.Version,
 	}
 
+	if user.Password != "" {
+		user.Password = strings.TrimSpace(user.Password)
+		passwordHashBytes, err := auth.GeneratePasswordHash(user.Password)
+		if err != nil {
+			return err
+		}
+
+		query = `UPDATE users
+		SET 
+			phone = $1,
+			password = $2,
+			first_name = $3,
+			last_name = $4,
+			patronomic = $5,
+			email = $6
+			is_active = $7,
+			updated_by_id = $8,
+			version = version + 1,
+		WHERE id = $9 AND version = $10
+		`
+
+		args = []interface{}{
+			user.Phone,
+			passwordHashBytes,
+			user.FirstName,
+			user.LastName,
+			user.Patronomic,
+			user.Email,
+			user.IsActive,
+			user.UpdatedByID,
+			user.ID,
+			user.Version,
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = r.DBPOOL.QueryRow(ctx, query, args...).Scan(
+	err := r.DBPOOL.QueryRow(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Phone,
 		&user.FirstName,

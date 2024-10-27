@@ -51,3 +51,17 @@ type UserPublicResponse struct {
 	IsActive   bool       `json:"is_active" validate:"required"`
 	IsStaff    bool       `json:"is_staff" validate:"required"`
 }
+
+type LoginResponse struct {
+	ID          uuid.UUID `json:"id" validate:"required,uuid"`
+	Phone       string    `json:"phone" validate:"required,e164"`
+	FirstName   *string   `json:"first_name" validate:"omitempty,max=50,alpha"`
+	LastName    *string   `json:"last_name" validate:"omitempty,max=50,alpha"`
+	Patronomic  *string   `json:"patronomic" validate:"omitempty,max=50,alpha"`
+	IsActive    bool      `json:"is_active" validate:"required"`
+	IsBanned    bool      `json:"is_banned" validate:"required"`
+	IsStaff     bool      `json:"is_staff" validate:"required"`
+	IsAdmin     bool      `json:"is_admin" validate:"required"`
+	IsSuperuser bool      `json:"is_superuser" validate:"required"`
+	AccessToken string    `json:"access_token" validate:"required"`
+}

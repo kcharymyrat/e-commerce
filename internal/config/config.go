@@ -16,4 +16,5 @@ type Config struct {
 		HealthCheckPeriod time.Duration
 		ConnectTimeout    time.Duration
 	}
+	SecretKey []byte
 }

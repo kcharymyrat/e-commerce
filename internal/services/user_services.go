@@ -12,8 +12,12 @@ func CreateUserService(app *app.Application, user *data.User) error {
 	return app.Repositories.Users.Create(user)
 }
 
-func GetUserService(app *app.Application, id uuid.UUID) (*data.User, error) {
-	return app.Repositories.Users.Get(id)
+func GetUserByIDService(app *app.Application, id uuid.UUID) (*data.User, error) {
+	return app.Repositories.Users.GetByID(id)
+}
+
+func GetUserByPhoneService(app *app.Application, phone string) (*data.User, error) {
+	return app.Repositories.Users.GetByPhone(phone)
 }
 
 func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*data.User, common.Metadata, error) {
@@ -47,6 +51,9 @@ func PartialUpdateUsersAdminService(
 	}
 	if input.Password != nil {
 		user.Password = *input.Password
+	}
+	if input.Password == nil {
+		user.Password = ""
 	}
 	if input.FirstName != nil {
 		user.FirstName = input.FirstName

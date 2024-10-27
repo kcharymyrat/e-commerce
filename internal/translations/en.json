@@ -12,6 +12,7 @@
 
     "server_error": "The server encountered a problem and could not process your request.",
     "not_found": "The requested resource could not be found.",
+    "unauthorized": "You are not authorized to access this resource.",
     "method_not_allowed": "The {{.method}} method is not supported for this resource.",
     "bad_request": "Bad request: {{.error}}",
     "edit_conflict": "Unable to update the record due to an edit conflict, please try again.",

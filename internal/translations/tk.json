@@ -12,6 +12,7 @@
 
     "server_error": "Serwerde näsazlyk ýüze çykdy we haýyşy ýerine ýetirip bilmedi.",
     "not_found": "Talap edilen resurs tapylmady.",
+    "unauthorized": "Siziň bu resursa girmek ygtyýaryňyz ýok.",
     "method_not_allowed": "{{.method}} usuly bu resurs üçin goldanylmaýar.",
     "bad_request": "Nädogry haýyş (request): {{.error}}",
     "edit_conflict": "Üýtgetmek gapma-garşylygy sebäpli ýazgyny täzelemek başartmady, gaýtadan synanyşyň.",

@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/go-redis/redis_rate/v10"
@@ -54,6 +55,7 @@ func main() {
 	cfg.DB.MaxConnIdleTime = time.Duration(poolMaxConnIdleTimeMinutes) * time.Minute
 	cfg.DB.HealthCheckPeriod = time.Duration(poolHealthCheckPeriodMinutes) * time.Minute
 	cfg.DB.ConnectTimeout = time.Duration(poolConnectTimeoutSeconds) * time.Second
+	cfg.SecretKey = []byte(viper.GetString("SECRET_KEY"))
 
 	flag.Parse()
 
@@ -73,6 +75,7 @@ func main() {
 	validator := validation.NewValidator()
 	valUniTrans := validation.NewUniversalTranslator()
 	i18nBundle := loadTranslations()
+	wg := sync.WaitGroup{}
 
 	app := app.NewApplication(
 		cfg,
@@ -83,6 +86,7 @@ func main() {
 		validator,
 		valUniTrans,
 		i18nBundle,
+		&wg,
 	)
 
 	// Get the translator for each language (for example, English)

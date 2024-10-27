@@ -1,6 +1,8 @@
 package app
 
 import (
+	"sync"
+
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis_rate/v10"
@@ -20,6 +22,7 @@ type Application struct {
 	Validator    *validator.Validate
 	ValUniTrans  *ut.UniversalTranslator
 	I18nBundle   *i18n.Bundle
+	Wg           *sync.WaitGroup
 }
 
 func NewApplication(
@@ -31,6 +34,7 @@ func NewApplication(
 	validator *validator.Validate,
 	uniTrans *ut.UniversalTranslator,
 	i18nBundle *i18n.Bundle,
+	wg *sync.WaitGroup,
 ) *Application {
 	return &Application{
 		Config:       cfg,
@@ -41,5 +45,6 @@ func NewApplication(
 		Validator:    validator,
 		ValUniTrans:  uniTrans,
 		I18nBundle:   i18nBundle,
+		Wg:           wg,
 	}
 }

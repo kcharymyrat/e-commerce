@@ -24,7 +24,7 @@ func GetUsePublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		user, err := services.GetUserService(app, id)
+		user, err := services.GetUserByIDService(app, id)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):

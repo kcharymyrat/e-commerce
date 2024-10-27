@@ -90,3 +90,12 @@ type UserSelfPartialUpdate struct {
 	Email       *string   `json:"email" validate:"omitempty,email"`
 	UpdatedByID uuid.UUID `json:"updated_by_id" validate:"uuid"`
 }
+
+type AdminUserLoginReq struct {
+	Phone    string `json:"phone" validate:"required,e164"`
+	Password string `json:"password" validate:"required,min=8,max=72,password"`
+}
+
+type UserLoginReq struct {
+	Phone string `json:"phone" validate:"required,e164"`
+}
