@@ -13,7 +13,7 @@ CREATE TYPE promotion_type AS ENUM (
 CREATE TABLE IF NOT EXISTS sessions (
     id varchar(255) PRIMARY KEY,
     user_phone varchar(15) NOT NULL CHECK (user_phone ~ '^\+[1-9][0-9]{7,14}$'),
-    refresh_token text NOT NULL,
+    refresh_token text NOT NULL UNIQUE,
     is_revoked bool NOT NULL DEFAULT FALSE,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     expires_at timestamp(0) with time zone NOT NULL
