@@ -66,6 +66,15 @@ type ShortUserResponse struct {
 }
 
 type LoginResponse struct {
-	AccessToken string `json:"access_token" validate:"required"`
-	User        ShortUserResponse
+	SessionID             uuid.UUID `json:"session_id" validate:"required,uuid"`
+	AccessToken           string    `json:"access_token" validate:"required"`
+	RefreshToken          string    `json:"refresh_token" validate:"required"`
+	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at" validate:"required"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at" validate:"required"`
+	User                  ShortUserResponse
+}
+
+type RenewAccessTokenResponse struct {
+	AccessToken          string    `json:"access_token" validate:"required"`
+	AccessTokenExpiresAt time.Time `json:"access_token_expires_at" validate:"required"`
 }

@@ -8,12 +8,12 @@ import (
 )
 
 type UserClaims struct {
-	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
 	Phone       string    `json:"phone"`
 	FirstName   *string   `json:"first_name"`
 	LastName    *string   `json:"last_name"`
 	Patronomic  *string   `json:"patronomic"`
-	IsActice    bool      `json:"is_active"`
+	IsActive    bool      `json:"is_active"`
 	IsBanned    bool      `json:"is_banned"`
 	IsStaff     bool      `json:"is_staff"`
 	IsAdmin     bool      `json:"is_admin"`
@@ -22,7 +22,7 @@ type UserClaims struct {
 }
 
 func newUserClaims(
-	id uuid.UUID,
+	user_id uuid.UUID,
 	phone string,
 	firstName *string,
 	lastName *string,
@@ -39,12 +39,12 @@ func newUserClaims(
 		return nil, err
 	}
 	return &UserClaims{
-		ID:          id,
+		UserID:      user_id,
 		Phone:       phone,
 		FirstName:   firstName,
 		LastName:    lastName,
 		Patronomic:  patronomic,
-		IsActice:    isActive,
+		IsActive:    isActive,
 		IsBanned:    isBanned,
 		IsStaff:     isStaff,
 		IsAdmin:     isAdmin,

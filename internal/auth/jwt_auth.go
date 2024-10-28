@@ -82,7 +82,7 @@ func ParseJWT(tokenString string, secretKey []byte, logger *zerolog.Logger) (*Us
 	}
 
 	if claims, ok := token.Claims.(*UserClaims); ok && token.Valid {
-		logger.Info().Str("user_id", claims.ID.String()).Msg("token is valid")
+		logger.Info().Str("user_id", claims.UserID.String()).Msg("token is valid")
 		return claims, nil
 	}
 

@@ -99,3 +99,7 @@ type AdminUserLoginReq struct {
 type UserLoginReq struct {
 	Phone string `json:"phone" validate:"required,e164"`
 }
+
+type RenewAccessTokenReq struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
