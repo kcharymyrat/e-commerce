@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS user_referrals;
 DROP TABLE IF EXISTS user_product_referrals;

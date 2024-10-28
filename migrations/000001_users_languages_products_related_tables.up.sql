@@ -10,9 +10,18 @@ CREATE TYPE promotion_type AS ENUM (
 
 
 -- TABLES
+CREATE TABLE IF NOT EXISTS sessions (
+    id varchar(255) PRIMARY KEY,
+    user_phone varchar(15) NOT NULL CHECK (user_phone ~ '^\+[1-9][0-9]{7,14}$'),
+    refresh_token text NOT NULL,
+    is_revoked bool NOT NULL DEFAULT FALSE,
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    expires_at timestamp(0) with time zone NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    phone VARCHAR(15) NOT NULL UNIQUE CHECK (phone ~ '^\+[1-9][0-9]{7,14}$'),
+    phone varchar(15) NOT NULL UNIQUE CHECK (phone ~ '^\+[1-9][0-9]{7,14}$'),
     password_hash bytea NOT NULL,
 
     first_name varchar(50),

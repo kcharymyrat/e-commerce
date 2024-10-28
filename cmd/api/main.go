@@ -55,7 +55,12 @@ func main() {
 	cfg.DB.MaxConnIdleTime = time.Duration(poolMaxConnIdleTimeMinutes) * time.Minute
 	cfg.DB.HealthCheckPeriod = time.Duration(poolHealthCheckPeriodMinutes) * time.Minute
 	cfg.DB.ConnectTimeout = time.Duration(poolConnectTimeoutSeconds) * time.Second
-	cfg.SecretKey = []byte(viper.GetString("SECRET_KEY"))
+
+	secretKey := viper.GetString("SECRET_KEY")
+	if len(secretKey) < 32 {
+		log.Fatal().Msg("secret key must be at least 32 characters long")
+	}
+	cfg.SecretKey = []byte(secretKey)
 
 	flag.Parse()
 

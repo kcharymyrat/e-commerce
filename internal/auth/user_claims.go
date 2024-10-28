@@ -24,7 +24,11 @@ type UserClaims struct {
 func newUserClaims(
 	id uuid.UUID,
 	phone string,
+	firstName *string,
+	lastName *string,
+	patronomic *string,
 	isActive bool,
+	isBanned bool,
 	isStaff bool,
 	isAdmin bool,
 	isSuperuser bool,
@@ -37,7 +41,11 @@ func newUserClaims(
 	return &UserClaims{
 		ID:          id,
 		Phone:       phone,
+		FirstName:   firstName,
+		LastName:    lastName,
+		Patronomic:  patronomic,
 		IsActice:    isActive,
+		IsBanned:    isBanned,
 		IsStaff:     isStaff,
 		IsAdmin:     isAdmin,
 		IsSuperuser: isSuperuser,

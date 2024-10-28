@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
@@ -339,8 +340,42 @@ func LoginIsStaffUserHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		res := mappers.UserToUserSelfResponse(user)
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"user": res}, nil)
+		accessToken, _, err := auth.GenerateJWT(
+			user.ID,
+			user.Phone,
+			user.FirstName,
+			user.LastName,
+			user.Patronomic,
+			user.IsActive,
+			user.IsBanned,
+			user.IsStaff,
+			user.IsAdmin,
+			user.IsSuperuser,
+			5*time.Minute,
+			app.Config.SecretKey,
+			app.Logger,
+		)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		res := responses.LoginResponse{
+			AccessToken: accessToken,
+			User: responses.ShortUserResponse{
+				ID:          user.ID,
+				Phone:       user.Phone,
+				FirstName:   user.FirstName,
+				LastName:    user.LastName,
+				Patronomic:  user.Patronomic,
+				IsActive:    user.IsActive,
+				IsBanned:    user.IsBanned,
+				IsStaff:     user.IsStaff,
+				IsAdmin:     user.IsAdmin,
+				IsSuperuser: user.IsSuperuser,
+			},
+		}
+		err = common.WriteJson(w, http.StatusOK, types.Envelope{"result": res}, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

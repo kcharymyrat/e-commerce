@@ -52,7 +52,7 @@ type UserPublicResponse struct {
 	IsStaff    bool       `json:"is_staff" validate:"required"`
 }
 
-type LoginResponse struct {
+type ShortUserResponse struct {
 	ID          uuid.UUID `json:"id" validate:"required,uuid"`
 	Phone       string    `json:"phone" validate:"required,e164"`
 	FirstName   *string   `json:"first_name" validate:"omitempty,max=50,alpha"`
@@ -63,5 +63,9 @@ type LoginResponse struct {
 	IsStaff     bool      `json:"is_staff" validate:"required"`
 	IsAdmin     bool      `json:"is_admin" validate:"required"`
 	IsSuperuser bool      `json:"is_superuser" validate:"required"`
-	AccessToken string    `json:"access_token" validate:"required"`
+}
+
+type LoginResponse struct {
+	AccessToken string `json:"access_token" validate:"required"`
+	User        ShortUserResponse
 }

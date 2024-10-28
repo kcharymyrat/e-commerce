@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -10,19 +11,43 @@ import (
 )
 
 func GenerateJWT(
-	userID uuid.UUID, duration time.Duration, secretKey []byte, logger *zerolog.Logger,
+	userID uuid.UUID,
+	phone string,
+	firstName *string,
+	lastName *string,
+	patronomic *string,
+	isActive bool,
+	isBanned bool,
+	isStaff bool,
+	isAdmin bool,
+	isSuperuser bool,
+	duration time.Duration,
+	secretKey []byte,
+	logger *zerolog.Logger,
 ) (string, *UserClaims, error) {
-	user_claims, err := newUserClaims(userID, "", true, false, false, false, duration)
+	user_claims, err := newUserClaims(
+		userID,
+		phone,
+		firstName,
+		lastName,
+		patronomic,
+		isActive,
+		isBanned,
+		isStaff,
+		isAdmin,
+		isSuperuser,
+		duration,
+	)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to generate token")
-		return "", nil, err
+		return "", nil, fmt.Errorf("failed to generate token: %w", err)
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, user_claims)
 	tokenStr, err := token.SignedString(secretKey)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to sign token")
-		return "", nil, err
+		return "", nil, fmt.Errorf("failed to sign token: %w", err)
 	}
 
 	return tokenStr, user_claims, nil
