@@ -2,7 +2,7 @@ package common
 
 import "net/http"
 
-func GetAcceptLanguage(r *http.Request) string {
+func GetAcceptLanguageHeader(r *http.Request) string {
 	lang := r.Header.Get("Accept-Language")
 	switch {
 	case lang == "tk":

@@ -36,10 +36,11 @@ func Routes(app *app.Application) *chi.Mux {
 		})
 
 		r.Route("/users", func(r chi.Router) {
-			r.Get("/{id}", handlers.GetUsePublicHandler(app))
+			r.Get("/{id}", handlers.GetUserPublicHandler(app))
 		})
 
 		r.Route("/admin", func(r chi.Router) {
+			r.Use(middleware.AdminAuthMiddleware(app))
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
 				r.Post("/", handlers.CreateCategoryManagerHandler(app))
@@ -85,6 +86,7 @@ func Routes(app *app.Application) *chi.Mux {
 		})
 
 		r.Route("/me", func(r chi.Router) {
+			r.Use(middleware.SelfAuthMiddleware(app))
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/{id}", handlers.GetUserSelfHandler(app))
 				r.Put("/{id}", handlers.UpdateUserSelfHandler(app))

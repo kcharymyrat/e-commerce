@@ -14,7 +14,7 @@ func LocalizationMiddleware(app *app.Application) func(next http.Handler) http.H
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Detect the language from the Accept-Language header
-			lang := common.GetAcceptLanguage(r) // This function detects language from header
+			lang := common.GetAcceptLanguageHeader(r) // This function detects language from header
 			localizer := i18n.NewLocalizer(app.I18nBundle, lang)
 			valTrans, _ := app.ValUniTrans.GetTranslator(lang)
 

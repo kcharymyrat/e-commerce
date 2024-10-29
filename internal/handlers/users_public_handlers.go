@@ -13,7 +13,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func GetUsePublicHandler(app *app.Application) http.HandlerFunc {
+func GetUserPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)

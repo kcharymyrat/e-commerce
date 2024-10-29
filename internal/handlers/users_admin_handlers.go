@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	ut "github.com/go-playground/universal-translator"
@@ -435,9 +434,6 @@ func LogoutUserHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		authorization := r.Header.Get("Authorization")
-		access_token := strings.TrimPrefix(authorization, "Bearer ")
-
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
@@ -455,11 +451,7 @@ func LogoutUserHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
+		accessClaims := r.Context().Value(types.UserClaimsKey{}).(*auth.UserClaims)
 
 		if accessClaims.Phone != session.UserPhone {
 			common.UnauthorizedResponse(app.Logger, localizer, w, r)
@@ -490,9 +482,6 @@ func RenewAccessTokenReqHandler(app *app.Application) http.HandlerFunc {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		authorization := r.Header.Get("Authorization")
-		access_token := strings.TrimPrefix(authorization, "Bearer ")
-
 		input := requests.RenewAccessTokenReq{}
 		err := common.ReadJSON(w, r, input)
 		if err != nil {
@@ -517,11 +506,7 @@ func RenewAccessTokenReqHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
+		accessClaims := r.Context().Value(types.UserClaimsKey{}).(*auth.UserClaims)
 
 		if accessClaims.Phone != refreshClaims.Phone {
 			common.UnauthorizedResponse(app.Logger, localizer, w, r)
@@ -596,9 +581,6 @@ func RevokeSessionByIDHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		authorization := r.Header.Get("Authorization")
-		access_token := strings.TrimPrefix(authorization, "Bearer ")
-
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
@@ -616,11 +598,7 @@ func RevokeSessionByIDHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
+		accessClaims := r.Context().Value(types.UserClaimsKey{}).(*auth.UserClaims)
 
 		if accessClaims.Phone != session.UserPhone {
 			common.UnauthorizedResponse(app.Logger, localizer, w, r)

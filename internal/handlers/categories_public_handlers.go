@@ -20,7 +20,7 @@ import (
 
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang_code := common.GetAcceptLanguage(r)
+		lang_code := common.GetAcceptLanguageHeader(r)
 
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
@@ -78,7 +78,7 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang_code := common.GetAcceptLanguage(r)
+		lang_code := common.GetAcceptLanguageHeader(r)
 
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
