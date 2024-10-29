@@ -74,6 +74,13 @@ func Routes(app *app.Application) *chi.Mux {
 				r.Put("/{id}", handlers.UpdateUserAdminHandler(app))
 				r.Patch("/{id}", handlers.PartialUpdateUserAdminHandler(app))
 				r.Delete("/{id}", handlers.DeleteUserAdminHandler(app))
+				r.Post("/login", handlers.LoginUserHandler(app))
+				r.Post("/logout", handlers.LogoutUserHandler(app))
+			})
+
+			r.Route("/tokens", func(r chi.Router) {
+				r.Post("/renew", handlers.RenewAccessTokenReqHandler(app))
+				r.Post("/revoke", handlers.RevokeSessionByIDHandler(app))
 			})
 		})
 

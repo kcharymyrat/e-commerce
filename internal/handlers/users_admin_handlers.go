@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	ut "github.com/go-playground/universal-translator"
@@ -298,7 +299,7 @@ func DeleteUserAdminHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
-func LoginIsStaffUserHandler(app *app.Application) http.HandlerFunc {
+func LoginUserHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
@@ -338,6 +339,12 @@ func LoginIsStaffUserHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 		if !ok {
+			common.UnauthorizedResponse(app.Logger, localizer, w, r)
+			return
+		}
+
+		if !user.IsActive || user.IsBanned {
+			app.Logger.Info().Msg("user is not active or banned")
 			common.UnauthorizedResponse(app.Logger, localizer, w, r)
 			return
 		}
@@ -428,9 +435,34 @@ func LogoutUserHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
+		authorization := r.Header.Get("Authorization")
+		access_token := strings.TrimPrefix(authorization, "Bearer ")
+
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		session, err := services.GetSessionByIDService(app, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, common.ErrRecordNotFound):
+				common.UnauthorizedResponse(app.Logger, localizer, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			}
+			return
+		}
+
+		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		if accessClaims.Phone != session.UserPhone {
+			common.UnauthorizedResponse(app.Logger, localizer, w, r)
 			return
 		}
 
@@ -438,7 +470,7 @@ func LogoutUserHandler(app *app.Application) http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
-				common.NotFoundResponse(app.Logger, localizer, w, r)
+				common.UnauthorizedResponse(app.Logger, localizer, w, r)
 			default:
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			}
@@ -452,10 +484,14 @@ func LogoutUserHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
+// TODO: revoke token when user is banned
 func RenewAccessTokenReqHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
+
+		authorization := r.Header.Get("Authorization")
+		access_token := strings.TrimPrefix(authorization, "Bearer ")
 
 		input := requests.RenewAccessTokenReq{}
 		err := common.ReadJSON(w, r, input)
@@ -477,6 +513,17 @@ func RenewAccessTokenReqHandler(app *app.Application) http.HandlerFunc {
 
 		refreshClaims, err := auth.ParseJWT(input.RefreshToken, app.Config.SecretKey, app.Logger)
 		if err != nil {
+			common.UnauthorizedResponse(app.Logger, localizer, w, r)
+			return
+		}
+
+		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		if accessClaims.Phone != refreshClaims.Phone {
 			common.UnauthorizedResponse(app.Logger, localizer, w, r)
 			return
 		}
@@ -549,9 +596,34 @@ func RevokeSessionByIDHandler(app *app.Application) http.HandlerFunc {
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
+		authorization := r.Header.Get("Authorization")
+		access_token := strings.TrimPrefix(authorization, "Bearer ")
+
 		id, err := common.ReadUUIDParam(r)
 		if err != nil {
 			common.BadRequestResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		session, err := services.GetSessionByIDService(app, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, common.ErrRecordNotFound):
+				common.UnauthorizedResponse(app.Logger, localizer, w, r)
+			default:
+				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			}
+			return
+		}
+
+		accessClaims, err := auth.ParseJWT(access_token, app.Config.SecretKey, app.Logger)
+		if err != nil {
+			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
+			return
+		}
+
+		if accessClaims.Phone != session.UserPhone {
+			common.UnauthorizedResponse(app.Logger, localizer, w, r)
 			return
 		}
 
