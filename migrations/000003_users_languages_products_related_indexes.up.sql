@@ -19,6 +19,10 @@ CREATE INDEX IF NOT EXISTS idx_user_prod_refs_code ON user_product_referrals(cod
 CREATE INDEX IF NOT EXISTS idx_user_bght_prods_user_id ON user_bought_products(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_bght_prods_prod_id ON user_bought_products(product_id);
 
+-- countries table indexes
+CREATE INDEX IF NOT EXISTS idx_countries_code ON countries(code);
+CREATE INDEX IF NOT EXISTS idx_countries_name ON countries(name);
+
 -- languages table indexes
 CREATE INDEX IF NOT EXISTS idx_languages_code ON languages(code);
 CREATE INDEX IF NOT EXISTS idx_languages_name ON languages(name);

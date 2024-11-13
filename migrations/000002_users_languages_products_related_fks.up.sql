@@ -36,6 +36,16 @@ ADD CONSTRAINT user_prod_refs_product_id_fk FOREIGN KEY (product_id)
 REFERENCES products(id) ON DELETE CASCADE;
 
 
+-- countries table fk constraints
+ALTER TABLE countries
+ADD CONSTRAINT countries_created_by_id_fk FOREIGN KEY (created_by_id) 
+REFERENCES countries(id) ON DELETE RESTRICT;
+
+ALTER TABLE countries
+ADD CONSTRAINT countries_updated_by_id_fk FOREIGN KEY (updated_by_id) 
+REFERENCES countries(id) ON DELETE RESTRICT;
+
+
 -- languages table fk constraints
 ALTER TABLE languages
 ADD CONSTRAINT langs_created_by_id_fk FOREIGN KEY (created_by_id) 
@@ -95,6 +105,10 @@ REFERENCES users(id) ON DELETE RESTRICT;
 
 
 -- products table fk constraints
+ALTER TABLE products
+ADD CONSTRAINT products_countries_code_fk FOREIGN KEY (country_code) 
+REFERENCES countries(code) ON DELETE RESTRICT;
+
 ALTER TABLE products
 ADD CONSTRAINT products_created_by_id_fk FOREIGN KEY (created_by_id) 
 REFERENCES users(id) ON DELETE RESTRICT;

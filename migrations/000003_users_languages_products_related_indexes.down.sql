@@ -19,6 +19,10 @@ DROP INDEX IF EXISTS idx_user_prod_refs_code;
 DROP INDEX IF EXISTS idx_user_bght_prods_user_id;
 DROP INDEX IF EXISTS idx_user_bght_prods_prod_id;
 
+-- countries table indexes
+DROP INDEX IF EXISTS idx_countries_code;
+DROP INDEX IF EXISTS idx_countries_name;
+
 -- languages table indexes
 DROP INDEX IF EXISTS idx_languages_code;
 DROP INDEX IF EXISTS idx_languages_name;

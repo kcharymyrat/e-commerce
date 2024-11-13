@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS user_referrals;
 DROP TABLE IF EXISTS user_product_referrals;
 DROP TABLE IF EXISTS user_bought_products;
+DROP TABLE IF EXISTS countries;
 DROP TABLE IF EXISTS languages;
 DROP TABLE IF EXISTS translations;
 DROP TABLE IF EXISTS brands;

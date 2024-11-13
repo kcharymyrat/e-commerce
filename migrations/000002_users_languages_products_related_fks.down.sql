@@ -12,6 +12,10 @@ ALTER TABLE user_referrals DROP CONSTRAINT IF EXISTS user_refferal_user_id_fk;
 ALTER TABLE user_product_referrals DROP CONSTRAINT IF EXISTS user_prod_refs_user_id_fk;
 ALTER TABLE user_product_referrals DROP CONSTRAINT IF EXISTS user_prod_refs_product_id_fk;
 
+-- countries table fk constraints
+ALTER TABLE countries DROP CONSTRAINT IF EXISTS countries_created_by_id_fk;
+ALTER TABLE countries DROP CONSTRAINT IF EXISTS countries_updated_by_id_fk;
+
 -- languages table fk constraints
 ALTER TABLE languages DROP CONSTRAINT IF EXISTS langs_created_by_id_fk;
 ALTER TABLE languages DROP CONSTRAINT IF EXISTS langs_updated_by_id_fk;
@@ -35,6 +39,7 @@ ALTER TABLE promotions DROP CONSTRAINT IF EXISTS promo_created_by_id_fk;
 ALTER TABLE promotions DROP CONSTRAINT IF EXISTS promo_updated_by_id_fk;
 
 -- products table fk constraints
+ALTER TABLE products DROP CONSTRAINT IF EXISTS products_countries_code_fk;
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_created_by_id_fk;
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_updated_by_id_fk;
 

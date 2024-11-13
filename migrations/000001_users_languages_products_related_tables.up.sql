@@ -110,10 +110,25 @@ CREATE TABLE IF NOT EXISTS user_bought_products (
 );
 
 
+CREATE TABLE countries (
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code VARCHAR(2) UNIQUE NOT NULL,  -- ISO 3166-1 alpha-2 code
+    name VARCHAR(100) NOT NULL,
+
+    created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    created_by_id uuid NOT NULL,
+    updated_by_id uuid NOT NULL,
+    version integer NOT NULL DEFAULT 1,
+
+    CHECK (updated_at >= created_at)
+);
+
 CREATE TABLE IF NOT EXISTS languages (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     code varchar(10) NOT NULL UNIQUE,
     name varchar(50) NOT NULL,
+
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     created_by_id uuid NOT NULL,
@@ -202,6 +217,7 @@ CREATE TABLE IF NOT EXISTS products (
     slug varchar(50) NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
     description text,
     code varchar(32) NOT NULL UNIQUE,
+    country_code VARCHAR(2) NOT NULL,  
     weight_kg decimal(5, 2) NOT NULL DEFAULT 0.00 CHECK (weight_kg >= 0.00),
     stock_amount integer NOT NULL DEFAULT 0 CHECK (stock_amount >= 0),
     is_adult boolean NOT NULL DEFAULT FALSE,
