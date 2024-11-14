@@ -21,6 +21,10 @@ DROP TRIGGER IF EXISTS user_bght_prods_prevent_created_at_update ON user_bought_
 DROP TRIGGER IF EXISTS user_bght_prods_set_timestamps ON user_bought_products;
 
 -- languages table triggers
+DROP TRIGGER IF EXISTS countries_set_timestamps ON countries;
+DROP TRIGGER IF EXISTS countries_prevent_created_at_update ON countries;
+
+-- languages table triggers
 DROP TRIGGER IF EXISTS langs_set_timestamps ON languages;
 DROP TRIGGER IF EXISTS langs_prevent_created_at_update ON languages;
 

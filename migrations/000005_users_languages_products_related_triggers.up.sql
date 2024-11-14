@@ -76,6 +76,19 @@ FOR EACH ROW
 EXECUTE FUNCTION set_timestamps();
 
 
+-- countries table triggers
+CREATE TRIGGER countries_set_timestamps 
+BEFORE INSERT OR UPDATE ON countries
+FOR EACH ROW
+EXECUTE FUNCTION set_timestamps();
+
+CREATE TRIGGER countries_prevent_created_at_update
+BEFORE UPDATE ON countries
+FOR EACH ROW
+EXECUTE FUNCTION prevent_created_at_update();
+
+
+
 -- languages table triggers
 CREATE TRIGGER langs_set_timestamps 
 BEFORE INSERT OR UPDATE ON languages
