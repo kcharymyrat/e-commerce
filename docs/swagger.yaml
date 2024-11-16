@@ -1,0 +1,134 @@
+basePath: /
+definitions:
+  types.Envelope:
+    additionalProperties: true
+    type: object
+host: localhost:4000
+info:
+  contact:
+    email: kcharymyrat@gmail.com
+    name: Charymyrat Garryyev
+  description: Go lang E-commerce
+  license:
+    name: Apache 2.0
+    url: '""'
+  title: E-commerce
+  version: "1.0"
+paths:
+  /api/v1/categories:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: query
+        name: created_at_from
+        type: string
+      - in: query
+        name: created_at_up_to
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: created_by_ids
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: names
+        type: array
+      - in: query
+        maximum: 10000000
+        minimum: 1
+        name: page
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: parent_ids
+        type: array
+      - in: query
+        maxLength: 50
+        name: search
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: slugs
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: sort_safe_list
+        type: array
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: sorts
+        type: array
+      - in: query
+        name: updated_at_from
+        type: string
+      - in: query
+        name: updated_at_up_to
+        type: string
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: updated_by_ids
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.Envelope'
+      summary: List all categories
+      tags:
+      - Public
+  /api/v1/healthcheck:
+    get:
+      consumes:
+      - application/json
+      description: Returns the status of the API
+      operationId: healthcheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.Envelope'
+      summary: Get health check
+      tags:
+      - Healthcheck
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

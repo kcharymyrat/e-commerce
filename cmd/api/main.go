@@ -22,7 +22,26 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"golang.org/x/text/language"
+
+	_ "github.com/kcharymyrat/e-commerce/docs"
 )
+
+// @title E-commerce
+// @version 1.0
+// @description Go lang E-commerce
+
+// @contact.name Charymyrat Garryyev
+// @contact.email kcharymyrat@gmail.com
+
+// @license.name Apache 2.0
+// @license.url ""
+
+// @host localhost:4000
+// @BasePath /
+
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix

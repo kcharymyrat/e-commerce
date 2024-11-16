@@ -76,6 +76,15 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	}
 }
 
+// @Summary List all categories
+// @Tags Public
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.Envelope
+// @Failure 500 {object} types.Envelope
+// @Failure 422 {object} types.Envelope
+// @Param filters query requests.CategoriesAdminFilters true "Filters"
+// @Router /api/v1/categories [get]
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lang_code := common.GetAcceptLanguageHeader(r)

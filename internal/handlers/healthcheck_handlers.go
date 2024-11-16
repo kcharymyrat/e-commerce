@@ -10,6 +10,15 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+// @Summary Get health check
+// @Tags Healthcheck
+// @Description Returns the status of the API
+// @ID healthcheck
+// @Accept json
+// @Produce json
+// @Success 200 {object} types.Envelope
+// @Failure 500 {object} types.Envelope
+// @Router /api/v1/healthcheck [get]
 func HealthcheckHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)

@@ -6,6 +6,10 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/app"
 	"github.com/kcharymyrat/e-commerce/internal/handlers"
 	"github.com/kcharymyrat/e-commerce/internal/middleware"
+
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+
+	_ "github.com/kcharymyrat/e-commerce/docs"
 )
 
 func Routes(app *app.Application) *chi.Mux {
@@ -23,9 +27,18 @@ func Routes(app *app.Application) *chi.Mux {
 	r.MethodNotAllowed(middleware.MethodNotAllowed(app.Logger))
 
 	r.Route("/api/v1", func(r chi.Router) {
+
+		r.Get("/swagger/*", httpSwagger.WrapHandler)
+
 		r.Get("/healthcheck", handlers.HealthcheckHandler(app))
 
 		r.Route("/categories", func(r chi.Router) {
+			// @Summary List all categories
+			// @Tags Public
+			// @Accept json
+			// @Produce json
+			// @Success 200 {object} types.Envelope
+			// @Router /api/v1/categories [get]
 			r.Get("/", handlers.ListCategoriesPublicHandler(app))
 			r.Get("/{slug}", handlers.GetCategoryPublicHandler(app))
 		})
@@ -40,7 +53,7 @@ func Routes(app *app.Application) *chi.Mux {
 		})
 
 		r.Route("/admin", func(r chi.Router) {
-			r.Use(middleware.AdminAuthMiddleware(app))
+			// r.Use(middleware.AdminAuthMiddleware(app))
 			r.Route("/categories", func(r chi.Router) {
 				r.Get("/", handlers.ListCategoriesManagerHandler(app))
 				r.Post("/", handlers.CreateCategoryManagerHandler(app))
@@ -75,9 +88,10 @@ func Routes(app *app.Application) *chi.Mux {
 				r.Put("/{id}", handlers.UpdateUserAdminHandler(app))
 				r.Patch("/{id}", handlers.PartialUpdateUserAdminHandler(app))
 				r.Delete("/{id}", handlers.DeleteUserAdminHandler(app))
-				r.Post("/login", handlers.LoginUserHandler(app))
-				r.Post("/logout", handlers.LogoutUserHandler(app))
 			})
+
+			r.Post("/login", handlers.LoginAdminHandler(app))
+			r.Post("/logout", handlers.LogoutAdminHandler(app))
 
 			r.Route("/tokens", func(r chi.Router) {
 				r.Post("/renew", handlers.RenewAccessTokenReqHandler(app))
@@ -86,7 +100,7 @@ func Routes(app *app.Application) *chi.Mux {
 		})
 
 		r.Route("/me", func(r chi.Router) {
-			r.Use(middleware.SelfAuthMiddleware(app))
+			// r.Use(middleware.SelfAuthMiddleware(app))
 			r.Route("/users", func(r chi.Router) {
 				r.Get("/{id}", handlers.GetUserSelfHandler(app))
 				r.Put("/{id}", handlers.UpdateUserSelfHandler(app))
