@@ -233,7 +233,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.HealthcheckResponse"
                         }
                     },
                     "500": {
@@ -281,25 +281,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.Envelope"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "metadata": {
-                                            "$ref": "#/definitions/types.PaginationMetadata"
-                                        },
-                                        "results": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/responses.LanguagePublicResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.PaginatedResponse-responses_LanguagePublicResponse"
                         }
                     },
                     "404": {
@@ -337,7 +319,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "translations are empty for this endpoint",
+                        "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.DetailResponse-responses_LanguagePublicResponse"
                         }
@@ -445,10 +427,6 @@ const docTemplate = `{
                 }
             }
         },
-        "types.Envelope": {
-            "type": "object",
-            "additionalProperties": true
-        },
         "types.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -456,6 +434,17 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.HealthcheckResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -470,6 +459,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.DetailResponse-responses_CategoryPublicResponse"
+                    }
+                }
+            }
+        },
+        "types.PaginatedResponse-responses_LanguagePublicResponse": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/types.PaginationMetadata"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.DetailResponse-responses_LanguagePublicResponse"
                     }
                 }
             }

@@ -17,18 +17,18 @@ import (
 // @Accept json
 // @Produce json
 // @Router /api/v1/healthcheck [get]
-// @Success 200 {object} types.Envelope
+// @Success 200 {object} types.HealthcheckResponse
 // @Failure 500 {object} types.ErrorResponse
 func HealthcheckHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
-		data := map[string]string{
-			"status":      "available",
-			"environment": app.Config.Env,
+		healthcheckRes := types.HealthcheckResponse{
+			Status:      "available",
+			Environment: app.Config.Env,
 		}
 
-		err := common.WriteJson(w, http.StatusOK, types.Envelope{"data": data}, nil)
+		err := common.WriteHealthcheckJson(w, http.StatusOK, healthcheckRes, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

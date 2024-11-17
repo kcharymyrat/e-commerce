@@ -1,9 +1,12 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
+	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/types"
 )
@@ -88,7 +91,12 @@ func GetTranslationSlice(
 		if languageCode != "en" {
 			tr, err := GetByEntityIDLangCodeFieldName(app, entityID, languageCode, field)
 			if err != nil {
-				return nil, err
+				switch {
+				case errors.Is(err, common.ErrRecordNotFound):
+					continue
+				default:
+					return nil, err
+				}
 			}
 			translations = append(translations, tr)
 		}

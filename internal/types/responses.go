@@ -4,6 +4,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type HealthcheckResponse struct {
+	Status      string `json:"status"`
+	Environment string `json:"environment"`
+}
+
 type ErrorResponse struct {
 	Code  int    `json:"code"`
 	Error string `json:"error"`

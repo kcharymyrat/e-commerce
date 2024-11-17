@@ -24,11 +24,13 @@ import (
 // @Param filters query requests.LanguagesAdminFilters true "Filters"
 // @Produce json
 // @Router /api/v1/languages [get]
-// @Success 200 {object} types.Envelope{metadata=types.PaginationMetadata,results=[]responses.LanguagePublicResponse}
+// @Success 200 {object} types.PaginatedResponse[responses.LanguagePublicResponse]
 // @Failure 404 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse
 func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		langCode := common.GetAcceptLanguageHeader(r)
+
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
 
@@ -47,22 +49,25 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		languages, metadata, err := services.ListLanguagesService(app, &filters)
+		langsWithTrs, metadata, err := services.ListLanguagesPublicService(app, &filters, langCode)
+		langWithTransResponses := make([]*types.DetailResponse[responses.LanguagePublicResponse], len(langsWithTrs))
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		languagesResponse := make([]*responses.LanguagePublicResponse, len(languages))
-		for _, language := range languages {
-			res := mappers.LanguageToLanguagePublicResponseMapper(language)
-			languagesResponse = append(languagesResponse, res)
+		for _, langWithTrs := range langsWithTrs {
+			langPublicResponse := mappers.LanguageToLanguagePublicResponseMapper(langWithTrs.Language)
+			detailResponse := types.NewDetailResponse(langPublicResponse, langWithTrs.Translations)
+			langWithTransResponses = append(langWithTransResponses, detailResponse)
 		}
 
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{
-			"metadata": metadata,
-			"results":  languagesResponse,
-		}, nil)
+		// Write the response as JSON
+		paginatedRes := types.PaginatedResponse[responses.LanguagePublicResponse]{
+			Metadata: metadata,
+			Results:  langWithTransResponses,
+		}
+		err = common.WritePaginatedJson(w, http.StatusOK, paginatedRes, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -76,7 +81,7 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 // @Param id path uuid true "UUID"
 // @Produce json
 // @Router /api/v1/languages/{id} [get]
-// @Success 200 {object} types.DetailResponse[responses.LanguagePublicResponse] "translations are empty for this endpoint"
+// @Success 200 {object} types.DetailResponse[responses.LanguagePublicResponse]
 // @Failure 400 {object} types.ErrorResponse
 // @Failure 404 {object} types.ErrorResponse
 // @Failure 500 {object} types.ErrorResponse

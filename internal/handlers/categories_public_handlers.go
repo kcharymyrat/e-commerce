@@ -29,7 +29,7 @@ import (
 // @Failure 422 {object} types.ErrorResponse
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang_code := common.GetAcceptLanguageHeader(r)
+		langCode := common.GetAcceptLanguageHeader(r)
 
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
@@ -49,7 +49,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		catsWithTrs, metadata, err := services.ListCategoriesPublicService(app, &filters, lang_code)
+		catsWithTrs, metadata, err := services.ListCategoriesPublicService(app, &filters, langCode)
 		catWithTransResponses := make([]*types.DetailResponse[responses.CategoryPublicResponse], len(catsWithTrs))
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
@@ -87,7 +87,7 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 // @Failure 500 {object} types.ErrorResponse
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		lang_code := common.GetAcceptLanguageHeader(r)
+		langCode := common.GetAcceptLanguageHeader(r)
 
 		// valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)
@@ -98,7 +98,7 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		catWithTrs, err := services.GetCategoryBySlugPublicService(app, slug, lang_code)
+		catWithTrs, err := services.GetCategoryBySlugPublicService(app, slug, langCode)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
