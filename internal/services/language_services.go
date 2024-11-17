@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
-	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 func CreateLanguageService(app *app.Application, language *data.Language) error {
@@ -19,7 +19,7 @@ func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, err
 func ListLanguagesService(
 	app *app.Application,
 	filters *requests.LanguagesAdminFilters,
-) ([]*data.Language, common.Metadata, error) {
+) ([]*data.Language, types.Metadata, error) {
 	return app.Repositories.Languages.List(filters)
 }
 

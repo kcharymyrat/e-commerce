@@ -12,6 +12,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 type LanguageRepository struct {
@@ -117,7 +118,7 @@ func (r LanguageRepository) GetByCode(code string) (*data.Language, error) {
 	return &language, nil
 }
 
-func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Language, common.Metadata, error) {
+func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Language, types.Metadata, error) {
 	query := `
 		SELECT *
 		FROM languages
@@ -153,7 +154,7 @@ func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Lan
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 	defer rows.Close()
 
@@ -173,14 +174,14 @@ func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Lan
 			&language.Version,
 		)
 		if err != nil {
-			return nil, common.Metadata{}, err
+			return nil, types.Metadata{}, err
 		}
 		languages = append(languages, &language)
 		totalRecords++
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

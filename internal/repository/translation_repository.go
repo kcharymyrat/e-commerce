@@ -13,6 +13,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 type TranslationRepository struct {
@@ -97,7 +98,7 @@ func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) 
 	return &translation, nil
 }
 
-func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*data.Translation, common.Metadata, error) {
+func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*data.Translation, types.Metadata, error) {
 
 	query := `
 		SELECT COUNT(*) OVER(), * 
@@ -155,7 +156,7 @@ func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*da
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 	defer rows.Close()
 
@@ -180,13 +181,13 @@ func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*da
 			&tr.Version,
 		)
 		if err != nil {
-			return nil, common.Metadata{}, err
+			return nil, types.Metadata{}, err
 		}
 		trs = append(trs, &tr)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

@@ -15,6 +15,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 type UserRepository struct {
@@ -195,7 +196,7 @@ func (r UserRepository) GetByPhone(phone string) (*data.User, error) {
 	return &user, nil
 }
 
-func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, common.Metadata, error) {
+func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, types.Metadata, error) {
 	query := `SELECT *
 	FROM users
 	WHERE 1=1`
@@ -230,7 +231,7 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, commo
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 
 	users := []*data.User{}
@@ -268,13 +269,13 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, commo
 			&user.Version,
 		)
 		if err != nil {
-			return nil, common.Metadata{}, err
+			return nil, types.Metadata{}, err
 		}
 		users = append(users, &user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(len(users), *f.Page, *f.PageSize)

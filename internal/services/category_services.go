@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
-	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 func CreateCategoryService(app *app.Application, category *data.Category) error {
@@ -23,7 +23,7 @@ func GetCategoryBySlugService(app *app.Application, slug string) (*data.Category
 func ListCategoriesService(
 	app *app.Application,
 	filters *requests.CategoriesAdminFilters,
-) ([]*data.Category, common.Metadata, error) {
+) ([]*data.Category, types.Metadata, error) {
 	return app.Repositories.Categories.List(filters)
 }
 

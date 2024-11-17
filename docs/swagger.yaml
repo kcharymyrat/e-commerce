@@ -1,7 +1,59 @@
 basePath: /
 definitions:
+  data.Category:
+    properties:
+      created_at:
+        type: string
+      created_by_id:
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      id:
+        type: string
+      image_url:
+        type: string
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+      parent_id:
+        type: string
+      slug:
+        type: string
+      updated_at:
+        type: string
+      updated_by_id:
+        type: string
+      version:
+        minimum: 1
+        type: integer
+    required:
+    - created_at
+    - created_by_id
+    - id
+    - image_url
+    - name
+    - slug
+    - updated_at
+    - updated_by_id
+    - version
+    type: object
   types.Envelope:
     additionalProperties: true
+    type: object
+  types.Metadata:
+    properties:
+      current_page:
+        type: integer
+      first_page:
+        type: integer
+      last_page:
+        type: integer
+      page_size:
+        type: integer
+      total_records:
+        type: integer
     type: object
 host: localhost:4000
 info:
@@ -17,8 +69,7 @@ info:
 paths:
   /api/v1/categories:
     get:
-      consumes:
-      - application/json
+      description: List categories with pagination and filters
       parameters:
       - in: query
         name: created_at_from
@@ -94,18 +145,66 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.Envelope'
+            allOf:
+            - $ref: '#/definitions/types.Envelope'
+            - properties:
+                metadata:
+                  $ref: '#/definitions/types.Metadata'
+                results:
+                  items:
+                    $ref: '#/definitions/data.Category'
+                  type: array
+              type: object
         "422":
           description: Unprocessable Entity
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Envelope'
+            - properties:
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Envelope'
+            - properties:
+                error:
+                  type: string
+              type: object
+      summary: List categories
+      tags:
+      - categories
+  /api/v1/categories/{slug}:
+    get:
+      consumes:
+      - multipart/form-data
+      description: Get specific category details by slug
+      parameters:
+      - description: Slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/types.Envelope'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/types.Envelope'
-      summary: List all categories
+      summary: Get category by slug
       tags:
-      - Public
+      - categories
   /api/v1/healthcheck:
     get:
       consumes:
@@ -126,6 +225,69 @@ paths:
       summary: Get health check
       tags:
       - Healthcheck
+  /api/v1/languages:
+    get:
+      description: List languages with pagination and filters
+      parameters:
+      - in: query
+        maximum: 10000000
+        minimum: 1
+        name: page
+        type: integer
+      - in: query
+        maximum: 100
+        minimum: 1
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.Envelope'
+      summary: List languages
+      tags:
+      - languages
+  /api/v1/languages/{id}:
+    get:
+      description: Get specific language details by id
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.Envelope'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.Envelope'
+      summary: Get language by id
+      tags:
+      - languages
 securityDefinitions:
   ApiKeyAuth:
     in: header

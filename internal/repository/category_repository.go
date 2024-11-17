@@ -13,6 +13,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
 	"github.com/kcharymyrat/e-commerce/internal/filters"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 type CategoryRepository struct {
@@ -123,7 +124,7 @@ func (r CategoryRepository) GetBySlug(slug string) (*data.Category, error) {
 	return &category, nil
 }
 
-func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Category, common.Metadata, error) {
+func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Category, types.Metadata, error) {
 	query := `
 		SELECT (
 			count(*) OVER(),
@@ -180,7 +181,7 @@ func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Ca
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 	defer rows.Close()
 
@@ -204,13 +205,13 @@ func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Ca
 			&category.Version,
 		)
 		if err != nil {
-			return nil, common.Metadata{}, err
+			return nil, types.Metadata{}, err
 		}
 		categories = append(categories, &category)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, common.Metadata{}, err
+		return nil, types.Metadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

@@ -33,12 +33,6 @@ func Routes(app *app.Application) *chi.Mux {
 		r.Get("/healthcheck", handlers.HealthcheckHandler(app))
 
 		r.Route("/categories", func(r chi.Router) {
-			// @Summary List all categories
-			// @Tags Public
-			// @Accept json
-			// @Produce json
-			// @Success 200 {object} types.Envelope
-			// @Router /api/v1/categories [get]
 			r.Get("/", handlers.ListCategoriesPublicHandler(app))
 			r.Get("/{slug}", handlers.GetCategoryPublicHandler(app))
 		})

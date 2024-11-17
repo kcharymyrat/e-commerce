@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
-	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 func CreateTranslationService(app *app.Application, tr *data.Translation) error {
@@ -19,7 +19,7 @@ func GetTranslationService(app *app.Application, id uuid.UUID) (*data.Translatio
 func ListTranslationsService(
 	app *app.Application,
 	filters *requests.TranslationsAdminFilters,
-) ([]*data.Translation, common.Metadata, error) {
+) ([]*data.Translation, types.Metadata, error) {
 	return app.Repositories.Translations.List(filters)
 }
 

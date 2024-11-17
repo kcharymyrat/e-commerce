@@ -4,8 +4,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/kcharymyrat/e-commerce/api/requests"
 	"github.com/kcharymyrat/e-commerce/internal/app"
-	"github.com/kcharymyrat/e-commerce/internal/common"
 	"github.com/kcharymyrat/e-commerce/internal/data"
+	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
 func CreateUserService(app *app.Application, user *data.User) error {
@@ -20,7 +20,7 @@ func GetUserByPhoneService(app *app.Application, phone string) (*data.User, erro
 	return app.Repositories.Users.GetByPhone(phone)
 }
 
-func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*data.User, common.Metadata, error) {
+func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*data.User, types.Metadata, error) {
 	return app.Repositories.Users.List(f)
 }
 
