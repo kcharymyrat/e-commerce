@@ -96,7 +96,7 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		trMapWrapper := make(map[string]map[string]string)
 
 		nameFieldTrMap := make(map[string]string)
-		name_field_tr, name_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
+		name_field_tr, name_value_tr, err := utils.GetTranslatedFieldNameAndValue(app, category.ID, lang_code, "name")
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
@@ -106,7 +106,7 @@ func GetCategoryManagerHandler(app *app.Application) http.HandlerFunc {
 		trMapWrapper["name"] = nameFieldTrMap
 
 		descFieldTrMap := make(map[string]string)
-		desc_field_tr, desc_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
+		desc_field_tr, desc_value_tr, err := utils.GetTranslatedFieldNameAndValue(app, category.ID, lang_code, "description")
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
@@ -159,7 +159,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 
 			trans := make(map[string]map[string]string)
 			nameFieldTrMap := make(map[string]string)
-			name_field_tr, name_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
+			name_field_tr, name_value_tr, err := utils.GetTranslatedFieldNameAndValue(app, category.ID, lang_code, "name")
 			if err != nil {
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 				return
@@ -169,7 +169,7 @@ func ListCategoriesManagerHandler(app *app.Application) http.HandlerFunc {
 			trans["name"] = nameFieldTrMap
 
 			descFieldTrMap := make(map[string]string)
-			desc_field_tr, desc_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
+			desc_field_tr, desc_value_tr, err := utils.GetTranslatedFieldNameAndValue(app, category.ID, lang_code, "description")
 			if err != nil {
 				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 				return

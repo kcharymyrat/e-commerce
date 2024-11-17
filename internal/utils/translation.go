@@ -5,7 +5,7 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/app"
 )
 
-func GetTranslationMap(
+func GetTranslatedFieldNameAndValue(
 	app *app.Application,
 	entityID uuid.UUID,
 	languageCode, fieldName string,

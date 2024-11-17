@@ -19,3 +19,8 @@ type Category struct {
 	UpdatedByID uuid.UUID  `json:"updated_by_id" db:"updated_by_id" validate:"required,uuid"`
 	Version     int        `json:"version" db:"version" validate:"required,number,min=1"`
 }
+
+type CategoryWithTranslations struct {
+	Category     *Category
+	Translations []*Translation
+}

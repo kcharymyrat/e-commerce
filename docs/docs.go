@@ -35,6 +35,12 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Languages: en, ru, tk",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
                         "name": "created_at_from",
                         "in": "query"
                     },
@@ -141,61 +147,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.Envelope"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "metadata": {
-                                            "$ref": "#/definitions/types.Metadata"
-                                        },
-                                        "results": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/data.Category"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.PaginatedResponse-responses_CategoryPublicResponse"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.Envelope"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/types.Envelope"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -217,7 +181,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Slug",
+                        "description": "Languages: en, ru, tk",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category Slug",
                         "name": "slug",
                         "in": "path",
                         "required": true
@@ -227,19 +197,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.DetailResponse-responses_CategoryPublicResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -269,7 +239,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -286,6 +256,12 @@ const docTemplate = `{
                 ],
                 "summary": "List languages",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Languages: en, ru, tk",
+                        "name": "Accept-Language",
+                        "in": "header"
+                    },
                     {
                         "maximum": 10000000,
                         "minimum": 1,
@@ -305,19 +281,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Envelope"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "metadata": {
+                                            "$ref": "#/definitions/types.PaginationMetadata"
+                                        },
+                                        "results": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/responses.LanguagePublicResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -336,35 +330,34 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Languages: en, ru, tk",
+                        "name": "Accept-Language",
+                        "in": "header"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "translations are empty for this endpoint",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.DetailResponse-responses_LanguagePublicResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/types.Envelope"
+                            "$ref": "#/definitions/types.ErrorResponse"
                         }
                     }
                 }
@@ -372,56 +365,83 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "data.Category": {
+        "responses.CategoryPublicResponse": {
             "type": "object",
-            "required": [
-                "created_at",
-                "created_by_id",
-                "id",
-                "image_url",
-                "name",
-                "slug",
-                "updated_at",
-                "updated_by_id",
-                "version"
-            ],
             "properties": {
                 "created_at": {
-                    "type": "string"
-                },
-                "created_by_id": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "description": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string",
-                    "maxLength": 500
+                    "format": "uuid"
+                },
+                "image_url": {
+                    "type": "string",
+                    "format": "url",
+                    "example": "https://example.com/image.jpg"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Electronics"
+                },
+                "parent_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "slug": {
+                    "type": "string",
+                    "format": "slug",
+                    "example": "electronics"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "responses.LanguagePublicResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "image_url": {
-                    "type": "string"
-                },
                 "name": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3
-                },
-                "parent_id": {
                     "type": "string"
+                }
+            }
+        },
+        "types.DetailResponse-responses_CategoryPublicResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.CategoryPublicResponse"
                 },
-                "slug": {
-                    "type": "string"
+                "translations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.TranslationResponse"
+                    }
+                }
+            }
+        },
+        "types.DetailResponse-responses_LanguagePublicResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.LanguagePublicResponse"
                 },
-                "updated_at": {
-                    "type": "string"
-                },
-                "updated_by_id": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer",
-                    "minimum": 1
+                "translations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.TranslationResponse"
+                    }
                 }
             }
         },
@@ -429,7 +449,32 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": true
         },
-        "types.Metadata": {
+        "types.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.PaginatedResponse-responses_CategoryPublicResponse": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/types.PaginationMetadata"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.DetailResponse-responses_CategoryPublicResponse"
+                    }
+                }
+            }
+        },
+        "types.PaginationMetadata": {
             "type": "object",
             "properties": {
                 "current_page": {
@@ -446,6 +491,39 @@ const docTemplate = `{
                 },
                 "total_records": {
                     "type": "integer"
+                }
+            }
+        },
+        "types.TranslationResponse": {
+            "type": "object",
+            "properties": {
+                "entity_id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "field_name": {
+                    "type": "string",
+                    "example": "name"
+                },
+                "id": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "language_code": {
+                    "type": "string",
+                    "example": "ru"
+                },
+                "table_name": {
+                    "type": "string",
+                    "example": "products"
+                },
+                "translated_field_name": {
+                    "type": "string",
+                    "example": "название"
+                },
+                "translated_value": {
+                    "type": "string",
+                    "example": "ноутбук"
                 }
             }
         }

@@ -20,12 +20,13 @@ import (
 // @Summary List languages
 // @Description List languages with pagination and filters
 // @Tags languages
-// @Produce json
+// @Param Accept-Language header string false "Languages: en, ru, tk"
 // @Param filters query requests.LanguagesAdminFilters true "Filters"
+// @Produce json
 // @Router /api/v1/languages [get]
-// @Success 200 {object} types.Envelope
-// @Failure 404 {object} types.Envelope
-// @Failure 500 {object} types.Envelope
+// @Success 200 {object} types.Envelope{metadata=types.PaginationMetadata,results=[]responses.LanguagePublicResponse}
+// @Failure 404 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
 func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		valTrans := r.Context().Value(constants.ValTransKey).(ut.Translator)
@@ -71,13 +72,14 @@ func ListLanguagesPublicHandler(app *app.Application) http.HandlerFunc {
 // @Summary Get language by id
 // @Description Get specific language details by id
 // @Tags languages
+// @Param Accept-Language header string false "Languages: en, ru, tk"
+// @Param id path uuid true "UUID"
 // @Produce json
-// @Param id path string true "ID"
 // @Router /api/v1/languages/{id} [get]
-// @Success 200 {object} types.Envelope
-// @Failure 400 {object} types.Envelope
-// @Failure 404 {object} types.Envelope
-// @Failure 500 {object} types.Envelope
+// @Success 200 {object} types.DetailResponse[responses.LanguagePublicResponse] "translations are empty for this endpoint"
+// @Failure 400 {object} types.ErrorResponse
+// @Failure 404 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
 func GetLanguagePublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// valTrans := r.Context().Value(common.ValTransKey).(ut.Translator)
@@ -102,7 +104,8 @@ func GetLanguagePublicHandler(app *app.Application) http.HandlerFunc {
 
 		languageResponse := mappers.LanguageToLanguagePublicResponseMapper(language)
 
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{"language": languageResponse}, nil)
+		detailResponse := types.NewDetailResponse(languageResponse, nil)
+		err = common.WriteDetailJson(w, http.StatusOK, detailResponse, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

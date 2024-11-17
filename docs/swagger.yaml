@@ -1,48 +1,80 @@
 basePath: /
 definitions:
-  data.Category:
+  responses.CategoryPublicResponse:
     properties:
       created_at:
-        type: string
-      created_by_id:
+        format: date-time
         type: string
       description:
-        maxLength: 500
+        type: string
+      id:
+        format: uuid
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        format: url
+        type: string
+      name:
+        example: Electronics
+        type: string
+      parent_id:
+        format: uuid
+        type: string
+      slug:
+        example: electronics
+        format: slug
+        type: string
+      updated_at:
+        format: date-time
+        type: string
+    type: object
+  responses.LanguagePublicResponse:
+    properties:
+      code:
         type: string
       id:
         type: string
-      image_url:
-        type: string
       name:
-        maxLength: 50
-        minLength: 3
         type: string
-      parent_id:
-        type: string
-      slug:
-        type: string
-      updated_at:
-        type: string
-      updated_by_id:
-        type: string
-      version:
-        minimum: 1
-        type: integer
-    required:
-    - created_at
-    - created_by_id
-    - id
-    - image_url
-    - name
-    - slug
-    - updated_at
-    - updated_by_id
-    - version
+    type: object
+  types.DetailResponse-responses_CategoryPublicResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.CategoryPublicResponse'
+      translations:
+        items:
+          $ref: '#/definitions/types.TranslationResponse'
+        type: array
+    type: object
+  types.DetailResponse-responses_LanguagePublicResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.LanguagePublicResponse'
+      translations:
+        items:
+          $ref: '#/definitions/types.TranslationResponse'
+        type: array
     type: object
   types.Envelope:
     additionalProperties: true
     type: object
-  types.Metadata:
+  types.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+    type: object
+  types.PaginatedResponse-responses_CategoryPublicResponse:
+    properties:
+      metadata:
+        $ref: '#/definitions/types.PaginationMetadata'
+      results:
+        items:
+          $ref: '#/definitions/types.DetailResponse-responses_CategoryPublicResponse'
+        type: array
+    type: object
+  types.PaginationMetadata:
     properties:
       current_page:
         type: integer
@@ -54,6 +86,30 @@ definitions:
         type: integer
       total_records:
         type: integer
+    type: object
+  types.TranslationResponse:
+    properties:
+      entity_id:
+        format: uuid
+        type: string
+      field_name:
+        example: name
+        type: string
+      id:
+        format: uuid
+        type: string
+      language_code:
+        example: ru
+        type: string
+      table_name:
+        example: products
+        type: string
+      translated_field_name:
+        example: название
+        type: string
+      translated_value:
+        example: ноутбук
+        type: string
     type: object
 host: localhost:4000
 info:
@@ -71,6 +127,10 @@ paths:
     get:
       description: List categories with pagination and filters
       parameters:
+      - description: 'Languages: en, ru, tk'
+        in: header
+        name: Accept-Language
+        type: string
       - in: query
         name: created_at_from
         type: string
@@ -145,34 +205,15 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/types.Envelope'
-            - properties:
-                metadata:
-                  $ref: '#/definitions/types.Metadata'
-                results:
-                  items:
-                    $ref: '#/definitions/data.Category'
-                  type: array
-              type: object
+            $ref: '#/definitions/types.PaginatedResponse-responses_CategoryPublicResponse'
         "422":
           description: Unprocessable Entity
           schema:
-            allOf:
-            - $ref: '#/definitions/types.Envelope'
-            - properties:
-                error:
-                  type: string
-              type: object
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/types.Envelope'
-            - properties:
-                error:
-                  type: string
-              type: object
+            $ref: '#/definitions/types.ErrorResponse'
       summary: List categories
       tags:
       - categories
@@ -182,7 +223,11 @@ paths:
       - multipart/form-data
       description: Get specific category details by slug
       parameters:
-      - description: Slug
+      - description: 'Languages: en, ru, tk'
+        in: header
+        name: Accept-Language
+        type: string
+      - description: Category Slug
         in: path
         name: slug
         required: true
@@ -193,15 +238,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.DetailResponse-responses_CategoryPublicResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Get category by slug
       tags:
       - categories
@@ -221,7 +266,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Get health check
       tags:
       - Healthcheck
@@ -229,6 +274,10 @@ paths:
     get:
       description: List languages with pagination and filters
       parameters:
+      - description: 'Languages: en, ru, tk'
+        in: header
+        name: Accept-Language
+        type: string
       - in: query
         maximum: 10000000
         minimum: 1
@@ -245,15 +294,24 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.Envelope'
+            allOf:
+            - $ref: '#/definitions/types.Envelope'
+            - properties:
+                metadata:
+                  $ref: '#/definitions/types.PaginationMetadata'
+                results:
+                  items:
+                    $ref: '#/definitions/responses.LanguagePublicResponse'
+                  type: array
+              type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
       summary: List languages
       tags:
       - languages
@@ -261,30 +319,29 @@ paths:
     get:
       description: Get specific language details by id
       parameters:
-      - description: ID
-        in: path
-        name: id
-        required: true
+      - description: 'Languages: en, ru, tk'
+        in: header
+        name: Accept-Language
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: translations are empty for this endpoint
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.DetailResponse-responses_LanguagePublicResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/types.Envelope'
+            $ref: '#/definitions/types.ErrorResponse'
       summary: Get language by id
       tags:
       - languages

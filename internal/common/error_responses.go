@@ -19,9 +19,12 @@ func ErrorResponse(
 	status int,
 	message interface{},
 ) {
-	envel := types.Envelope{"error": message}
+	envel := types.ErrorResponse{
+		Code:  status,
+		Error: message.(string),
+	}
 
-	err := WriteJson(w, status, envel, nil)
+	err := WriteErrorJson(w, status, envel, nil)
 	if err != nil {
 		LogError(logger, r, err)
 		w.WriteHeader(http.StatusInternalServerError)

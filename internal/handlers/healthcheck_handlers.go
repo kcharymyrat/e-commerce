@@ -16,9 +16,9 @@ import (
 // @ID healthcheck
 // @Accept json
 // @Produce json
-// @Success 200 {object} types.Envelope
-// @Failure 500 {object} types.Envelope
 // @Router /api/v1/healthcheck [get]
+// @Success 200 {object} types.Envelope
+// @Failure 500 {object} types.ErrorResponse
 func HealthcheckHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		localizer := r.Context().Value(constants.LocalizerKey).(*i18n.Localizer)

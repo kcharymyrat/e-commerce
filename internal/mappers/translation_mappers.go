@@ -28,5 +28,10 @@ func TranslationToTranslationManagerResponseMappper(tr *data.Translation) *respo
 		FieldName:           tr.FieldName,
 		TranslatedFieldName: tr.TranslatedFieldName,
 		TranslatedValue:     tr.TranslatedValue,
+		CreatedAt:           tr.CreatedAt,
+		UpdatedAt:           tr.UpdatedAt,
+		CreatedByID:         tr.CreatedByID,
+		UpdatedByID:         tr.UpdatedByID,
+		Version:             tr.Version,
 	}
 }

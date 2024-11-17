@@ -70,3 +70,28 @@ func PartialUpdateTranslationService(
 func DeleteTranslationService(app *app.Application, id uuid.UUID) error {
 	return app.Repositories.Translations.Delete(id)
 }
+
+func GetByEntityIDLangCodeFieldName(
+	app *app.Application, entityID uuid.UUID, languageCode, fieldName string,
+) (*data.Translation, error) {
+	return app.Repositories.Translations.GetByEntityIDLangCodeFieldName(entityID, languageCode, fieldName)
+}
+
+func GetTranslationSlice(
+	app *app.Application,
+	entityID uuid.UUID,
+	languageCode string,
+	fieldsToTranslate []string,
+) ([]*data.Translation, error) {
+	translations := []*data.Translation{}
+	for _, field := range fieldsToTranslate {
+		if languageCode != "en" {
+			tr, err := GetByEntityIDLangCodeFieldName(app, entityID, languageCode, field)
+			if err != nil {
+				return nil, err
+			}
+			translations = append(translations, tr)
+		}
+	}
+	return translations, nil
+}

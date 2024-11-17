@@ -14,19 +14,19 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/mappers"
 	"github.com/kcharymyrat/e-commerce/internal/services"
 	"github.com/kcharymyrat/e-commerce/internal/types"
-	"github.com/kcharymyrat/e-commerce/internal/utils"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 // @Summary List categories
 // @Description List categories with pagination and filters
 // @Tags categories
-// @Produce json
+// @Param Accept-Language header string false "Languages: en, ru, tk"
 // @Param filters query requests.CategoriesAdminFilters true "Filters"
+// @Produce json
 // @Router /api/v1/categories [get]
-// @Success 200 {object} types.Envelope{metadata=types.Metadata,results=[]data.Category}
-// @Failure 500 {object} types.Envelope{error=string}
-// @Failure 422 {object} types.Envelope{error=string}
+// @Success 200 {object} types.PaginatedResponse[responses.CategoryPublicResponse]
+// @Failure 500 {object} types.ErrorResponse
+// @Failure 422 {object} types.ErrorResponse
 func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lang_code := common.GetAcceptLanguageHeader(r)
@@ -49,50 +49,25 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		categories, metadata, err := services.ListCategoriesService(app, &filters)
+		catsWithTrs, metadata, err := services.ListCategoriesPublicService(app, &filters, lang_code)
+		catWithTransResponses := make([]*types.DetailResponse[responses.CategoryPublicResponse], len(catsWithTrs))
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 			return
 		}
 
-		catWithTransResponses := make([]*responses.CategoryWithTranslationsPublicResponse, len(categories))
-		for _, category := range categories {
-			cat := mappers.CategoryToCategoryPublicResponseMapper(category)
-
-			trans := make(map[string]map[string]string)
-			nameFieldTrMap := make(map[string]string)
-			name_field_tr, name_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
-			if err != nil {
-				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-				return
-			}
-			nameFieldTrMap["field_name"] = name_field_tr
-			nameFieldTrMap["field_value"] = name_value_tr
-			trans["name"] = nameFieldTrMap
-
-			descFieldTrMap := make(map[string]string)
-			desc_field_tr, desc_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
-			if err != nil {
-				common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-				return
-			}
-			descFieldTrMap["field_name"] = desc_field_tr
-			descFieldTrMap["field_value"] = desc_value_tr
-			trans["description"] = nameFieldTrMap
-
-			catWithTrans := responses.CategoryWithTranslationsPublicResponse{
-				Category:     *cat,
-				Translations: trans,
-			}
-
-			catWithTransResponses = append(catWithTransResponses, &catWithTrans)
+		for _, catWithTrs := range catsWithTrs {
+			categoryPublicResponse := mappers.CategoryToCategoryPublicResponseMapper(catWithTrs.Category)
+			detailResponse := types.NewDetailResponse(categoryPublicResponse, catWithTrs.Translations)
+			catWithTransResponses = append(catWithTransResponses, detailResponse)
 		}
 
 		// Write the response as JSON
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{
-			"metadata": metadata,
-			"results":  catWithTransResponses,
-		}, nil)
+		paginatedRes := types.PaginatedResponse[responses.CategoryPublicResponse]{
+			Metadata: metadata,
+			Results:  catWithTransResponses,
+		}
+		err = common.WritePaginatedJson(w, http.StatusOK, paginatedRes, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}
@@ -102,13 +77,14 @@ func ListCategoriesPublicHandler(app *app.Application) http.HandlerFunc {
 // @Summary Get category by slug
 // @Description Get specific category details by slug
 // @Tags categories
+// @Param Accept-Language header string false "Languages: en, ru, tk"
+// @Param slug path string true "Category Slug"
 // @Accept multipart/form-data
 // @Produce json
-// @Param slug path string true "Slug"
 // @Router /api/v1/categories/{slug} [get]
-// @Success 200 {object} types.Envelope
-// @Failure 404 {object} types.Envelope
-// @Failure 500 {object} types.Envelope
+// @Success 200 {object} types.DetailResponse[responses.CategoryPublicResponse]
+// @Failure 404 {object} types.ErrorResponse
+// @Failure 500 {object} types.ErrorResponse
 func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lang_code := common.GetAcceptLanguageHeader(r)
@@ -122,7 +98,7 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		category, err := services.GetCategoryBySlugService(app, slug)
+		catWithTrs, err := services.GetCategoryBySlugPublicService(app, slug, lang_code)
 		if err != nil {
 			switch {
 			case errors.Is(err, common.ErrRecordNotFound):
@@ -133,34 +109,10 @@ func GetCategoryPublicHandler(app *app.Application) http.HandlerFunc {
 			return
 		}
 
-		categoryPublicResponse := mappers.CategoryToCategoryPublicResponseMapper(category)
+		categoryPublicResponse := mappers.CategoryToCategoryPublicResponseMapper(catWithTrs.Category)
 
-		trMapWrapper := make(map[string]map[string]string)
-
-		nameFieldTrMap := make(map[string]string)
-		name_field_tr, name_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "name")
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-		nameFieldTrMap["field_name"] = name_field_tr
-		nameFieldTrMap["field_value"] = name_value_tr
-		trMapWrapper["name"] = nameFieldTrMap
-
-		descFieldTrMap := make(map[string]string)
-		desc_field_tr, desc_value_tr, err := utils.GetTranslationMap(app, category.ID, lang_code, "description")
-		if err != nil {
-			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
-			return
-		}
-		descFieldTrMap["field_name"] = desc_field_tr
-		descFieldTrMap["field_value"] = desc_value_tr
-		trMapWrapper["description"] = nameFieldTrMap
-
-		err = common.WriteJson(w, http.StatusOK, types.Envelope{
-			"category":     categoryPublicResponse,
-			"translations": trMapWrapper,
-		}, nil)
+		detailResponse := types.NewDetailResponse(categoryPublicResponse, catWithTrs.Translations)
+		err = common.WriteDetailJson(w, http.StatusOK, detailResponse, nil)
 		if err != nil {
 			common.ServerErrorResponse(app.Logger, localizer, w, r, err)
 		}

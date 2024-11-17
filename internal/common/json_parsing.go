@@ -11,32 +11,6 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
-func WriteJson(
-	w http.ResponseWriter,
-	status int,
-	data types.Envelope,
-	headers http.Header,
-) error {
-	// js, err := json.Marshal(data)
-	js, err := json.MarshalIndent(data, "", "  ") // FIXME:Change this latter
-	if err != nil {
-		return err
-	}
-
-	js = append(js, '\n')
-
-	for key, value := range headers {
-		w.Header()[key] = value
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-
-	w.Write(js)
-
-	return nil
-}
-
 // TODO: Tranlate the errors
 func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	maxBytes := 1_048_576
@@ -92,6 +66,107 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	if err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
 	}
+
+	return nil
+}
+
+func WriteJson(
+	w http.ResponseWriter,
+	status int,
+	data types.Envelope,
+	headers http.Header,
+) error {
+	// js, err := json.Marshal(data)
+	js, err := json.MarshalIndent(data, "", "  ") // FIXME:Change this latter
+	if err != nil {
+		return err
+	}
+
+	js = append(js, '\n')
+
+	for key, value := range headers {
+		w.Header()[key] = value
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	w.Write(js)
+
+	return nil
+}
+
+func WritePaginatedJson[T any](
+	w http.ResponseWriter,
+	status int,
+	data types.PaginatedResponse[T],
+	headers http.Header,
+) error {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	js = append(js, '\n')
+
+	for key, value := range headers {
+		w.Header()[key] = value
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	w.Write(js)
+
+	return nil
+}
+
+func WriteDetailJson[T any](
+	w http.ResponseWriter,
+	status int,
+	data *types.DetailResponse[T],
+	headers http.Header,
+) error {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	js = append(js, '\n')
+
+	for key, value := range headers {
+		w.Header()[key] = value
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	w.Write(js)
+
+	return nil
+}
+
+func WriteErrorJson(
+	w http.ResponseWriter,
+	status int,
+	data types.ErrorResponse,
+	headers http.Header,
+) error {
+	js, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	js = append(js, '\n')
+
+	for key, value := range headers {
+		w.Header()[key] = value
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	w.Write(js)
 
 	return nil
 }
