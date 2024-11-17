@@ -98,7 +98,7 @@ func (r TranslationRepository) GetByID(id uuid.UUID) (*data.Translation, error) 
 	return &translation, nil
 }
 
-func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*data.Translation, types.Metadata, error) {
+func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*data.Translation, types.PaginationMetadata, error) {
 
 	query := `
 		SELECT COUNT(*) OVER(), * 
@@ -156,7 +156,7 @@ func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*da
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 	defer rows.Close()
 
@@ -181,13 +181,13 @@ func (r TranslationRepository) List(f *requests.TranslationsAdminFilters) ([]*da
 			&tr.Version,
 		)
 		if err != nil {
-			return nil, types.Metadata{}, err
+			return nil, types.PaginationMetadata{}, err
 		}
 		trs = append(trs, &tr)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

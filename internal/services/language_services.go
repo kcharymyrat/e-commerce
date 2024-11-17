@@ -19,7 +19,7 @@ func GetLanguageService(app *app.Application, id uuid.UUID) (*data.Language, err
 func ListLanguagesService(
 	app *app.Application,
 	filters *requests.LanguagesAdminFilters,
-) ([]*data.Language, types.Metadata, error) {
+) ([]*data.Language, types.PaginationMetadata, error) {
 	return app.Repositories.Languages.List(filters)
 }
 

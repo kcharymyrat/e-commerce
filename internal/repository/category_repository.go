@@ -124,7 +124,7 @@ func (r CategoryRepository) GetBySlug(slug string) (*data.Category, error) {
 	return &category, nil
 }
 
-func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Category, types.Metadata, error) {
+func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Category, types.PaginationMetadata, error) {
 	query := `
 		SELECT (
 			count(*) OVER(),
@@ -181,7 +181,7 @@ func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Ca
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 	defer rows.Close()
 
@@ -205,13 +205,13 @@ func (r CategoryRepository) List(f *requests.CategoriesAdminFilters) ([]*data.Ca
 			&category.Version,
 		)
 		if err != nil {
-			return nil, types.Metadata{}, err
+			return nil, types.PaginationMetadata{}, err
 		}
 		categories = append(categories, &category)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

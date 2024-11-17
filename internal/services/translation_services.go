@@ -19,7 +19,7 @@ func GetTranslationService(app *app.Application, id uuid.UUID) (*data.Translatio
 func ListTranslationsService(
 	app *app.Application,
 	filters *requests.TranslationsAdminFilters,
-) ([]*data.Translation, types.Metadata, error) {
+) ([]*data.Translation, types.PaginationMetadata, error) {
 	return app.Repositories.Translations.List(filters)
 }
 

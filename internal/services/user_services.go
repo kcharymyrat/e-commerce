@@ -20,7 +20,7 @@ func GetUserByPhoneService(app *app.Application, phone string) (*data.User, erro
 	return app.Repositories.Users.GetByPhone(phone)
 }
 
-func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*data.User, types.Metadata, error) {
+func ListUsersService(app *app.Application, f *requests.UsersAdminFilters) ([]*data.User, types.PaginationMetadata, error) {
 	return app.Repositories.Users.List(f)
 }
 

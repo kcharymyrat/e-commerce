@@ -196,7 +196,7 @@ func (r UserRepository) GetByPhone(phone string) (*data.User, error) {
 	return &user, nil
 }
 
-func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, types.Metadata, error) {
+func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, types.PaginationMetadata, error) {
 	query := `SELECT *
 	FROM users
 	WHERE 1=1`
@@ -231,7 +231,7 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, types
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 
 	users := []*data.User{}
@@ -269,13 +269,13 @@ func (r UserRepository) List(f *requests.UsersAdminFilters) ([]*data.User, types
 			&user.Version,
 		)
 		if err != nil {
-			return nil, types.Metadata{}, err
+			return nil, types.PaginationMetadata{}, err
 		}
 		users = append(users, &user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(len(users), *f.Page, *f.PageSize)

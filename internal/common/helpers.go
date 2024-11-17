@@ -6,12 +6,12 @@ import (
 	"github.com/kcharymyrat/e-commerce/internal/types"
 )
 
-func CalculateMetadata(totalRecords, page, pageSize int) types.Metadata {
+func CalculateMetadata(totalRecords, page, pageSize int) types.PaginationMetadata {
 	if totalRecords <= 0 {
-		return types.Metadata{}
+		return types.PaginationMetadata{}
 	}
 
-	return types.Metadata{
+	return types.PaginationMetadata{
 		CurrentPage:  page,
 		PageSize:     pageSize,
 		FirstPage:    1,

@@ -118,7 +118,7 @@ func (r LanguageRepository) GetByCode(code string) (*data.Language, error) {
 	return &language, nil
 }
 
-func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Language, types.Metadata, error) {
+func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Language, types.PaginationMetadata, error) {
 	query := `
 		SELECT *
 		FROM languages
@@ -154,7 +154,7 @@ func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Lan
 
 	rows, err := r.DBPOOL.Query(ctx, query, args...)
 	if err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 	defer rows.Close()
 
@@ -174,14 +174,14 @@ func (r LanguageRepository) List(f *requests.LanguagesAdminFilters) ([]*data.Lan
 			&language.Version,
 		)
 		if err != nil {
-			return nil, types.Metadata{}, err
+			return nil, types.PaginationMetadata{}, err
 		}
 		languages = append(languages, &language)
 		totalRecords++
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, types.Metadata{}, err
+		return nil, types.PaginationMetadata{}, err
 	}
 
 	metadata := common.CalculateMetadata(totalRecords, *f.Page, *f.PageSize)

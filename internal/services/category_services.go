@@ -23,7 +23,7 @@ func GetCategoryBySlugService(app *app.Application, slug string) (*data.Category
 func ListCategoriesService(
 	app *app.Application,
 	filters *requests.CategoriesAdminFilters,
-) ([]*data.Category, types.Metadata, error) {
+) ([]*data.Category, types.PaginationMetadata, error) {
 	return app.Repositories.Categories.List(filters)
 }
 
