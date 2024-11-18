@@ -37,6 +37,29 @@ definitions:
       name:
         type: string
     type: object
+  responses.UserPublicResponse:
+    properties:
+      dob:
+        type: string
+      email:
+        type: string
+      first_name:
+        maxLength: 50
+        type: string
+      is_active:
+        type: boolean
+      is_staff:
+        type: boolean
+      last_name:
+        maxLength: 50
+        type: string
+      patronomic:
+        maxLength: 50
+        type: string
+    required:
+    - is_active
+    - is_staff
+    type: object
   types.DetailResponse-responses_CategoryPublicResponse:
     properties:
       data:
@@ -50,6 +73,15 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.LanguagePublicResponse'
+      translations:
+        items:
+          $ref: '#/definitions/types.TranslationResponse'
+        type: array
+    type: object
+  types.DetailResponse-responses_UserPublicResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.UserPublicResponse'
       translations:
         items:
           $ref: '#/definitions/types.TranslationResponse'
@@ -349,6 +381,38 @@ paths:
       summary: Get language by id
       tags:
       - languages
+  /api/v1/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by id (uuid)
+      parameters:
+      - description: 'Languages: en, ru, tk'
+        in: header
+        name: Accept-Language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.DetailResponse-responses_UserPublicResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Get user by id
+      tags:
+      - users
 securityDefinitions:
   ApiKeyAuth:
     in: header
